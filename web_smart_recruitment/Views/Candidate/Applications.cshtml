@@ -1,0 +1,100 @@
+@{
+    ViewData["Title"] = "Đơn ứng tuyển của tôi";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        .app-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            align-items: center;
+            padding: 24px;
+        }
+        .app-item:hover {
+            background: #fafafa;
+        }
+        .status-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 99px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+}
+
+<partial name="_CandidateNavbar" />
+
+<main class="sr-main">
+    <div style="margin-bottom: 3rem;">
+        <h1 class="el-display-hero" style="font-size: 40px; margin: 0;">Lịch sử ứng tuyển</h1>
+        <p class="el-text-muted">Theo dõi trạng thái và kết quả phân tích AI cho các vị trí bạn đã nộp đơn.</p>
+    </div>
+
+    <div class="el-bordered">
+        <div class="app-item" style="background: var(--el-bg-light); border-bottom: 1px solid var(--el-border); font-weight: 600; font-size: 13px; color: var(--el-warm-gray);">
+            <div>Vị trí & Công ty</div>
+            <div>Ngày nộp</div>
+            <div>Trạng thái</div>
+            <div style="text-align: right;">Kết quả AI</div>
+        </div>
+        <div id="app-list"></div>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        (function() {
+            const s = SR_AUTH.requireAuth("UngVien", '@Url.Action("Login", "Auth")');
+            if (!s) return;
+            SR_AUTH.updateNavPlaceholders();
+
+            const listEl = document.getElementById("app-list");
+            const apps = SR_DEMO.donUngTuyen.filter(d => d.maUngVien === s.maTaiKhoan);
+
+            if (apps.length === 0) {
+                listEl.innerHTML = '<div style="padding: 3rem; text-align: center;" class="el-text-muted">Bạn chưa nộp đơn ứng tuyển nào.</div>';
+                return;
+            }
+
+            let html = "";
+            apps.forEach(d => {
+                const tin = SR_DEMO.getTin(d.maTin);
+                const kq = SR_DEMO.getKetQuaByDon(d.maDon);
+                const company = tin ? SR_DEMO.tenCongTy(tin.maNhaTuyenDung) : "—";
+
+                let statusClass = "el-status--info";
+                let statusText = "Đang xử lý";
+
+                switch(d.trangThai) {
+                    case "DaNop": statusClass = "el-status--info"; statusText = "Mới nộp"; break;
+                    case "AIDaLoc": statusClass = "el-status--warning"; statusText = "AI Đã lọc"; break;
+                    case "TrungTuyen": statusClass = "el-status--success"; statusText = "Trúng tuyển"; break;
+                    case "TuChoi": statusClass = "el-status--danger"; statusText = "Từ chối"; break;
+                }
+
+                const score = kq && kq.diemPhuHop != null ? `${kq.diemPhuHop}%` : (kq && kq.trangThaiXuLy === "DangXuLy" ? "..." : "—");
+
+                html += `
+                    <div class="el-bordered-item app-item">
+                        <div>
+                            <a href='@Url.Action("JobDetail", "Candidate")?maTin=${tin.maTin}' style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 4px;">${SR_UI.escapeHtml(tin ? tin.tieuDe : "—")}</a>
+                            <span class="el-text-muted" style="font-size: 13px;">${SR_UI.escapeHtml(company)}</span>
+                        </div>
+                        <div class="el-text-warm" style="font-size: 14px;">${d.ngayNop}</div>
+                        <div>
+                            <span class="el-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-weight: 700; font-size: 18px; color: ${kq && kq.diemPhuHop > 80 ? 'var(--el-success)' : 'var(--el-black)'}">${score}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listEl.innerHTML = html;
+        })();
+    </script>
+}

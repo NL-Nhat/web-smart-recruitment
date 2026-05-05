@@ -1,0 +1,12 @@
+<header class="sr-topbar">
+    <div class="sr-topbar-inner">
+        <a class="sr-brand" asp-controller="Home" asp-action="Index"><span class="sr-brand-mark">SR</span>Admin Portal</a>
+        <nav class="sr-nav">
+            <a asp-controller="Admin" asp-action="Dashboard" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "is-active" : "")'>Thống kê</a>
+            <a asp-controller="Admin" asp-action="Users" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Users" ? "is-active" : "")'>Người dùng</a>
+            <a asp-controller="Admin" asp-action="Skills" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Skills" ? "is-active" : "")'>Kỹ năng</a>
+            <a asp-controller="Admin" asp-action="Reports" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Reports" ? "is-active" : "")'>Báo cáo</a>
+            <span id="sr-user-slot" data-logout-href='@Url.Action("Login", "Admin")'></span>
+        </nav>
+    </div>
+</header>

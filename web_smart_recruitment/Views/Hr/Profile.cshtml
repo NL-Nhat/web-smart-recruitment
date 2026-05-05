@@ -1,0 +1,152 @@
+@{
+    ViewData["Title"] = "Hồ sơ doanh nghiệp";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        .profile-header-container { margin-bottom: 40px; }
+        .profile-banner { height: 280px; background: #2D3748; border-radius: 24px 24px 0 0; position: relative; overflow: hidden; }
+        .profile-banner img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+        .banner-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.2); display: flex; justify-content: flex-end; padding: 20px; }
+        .profile-info-card { background: white; border-radius: 0 0 24px 24px; padding: 0 40px 40px; position: relative; border: 1px solid var(--el-border-subtle); border-top: none; display: flex; align-items: flex-end; gap: 32px; }
+        .profile-logo-wrapper { width: 180px; height: 180px; background: white; border-radius: 24px; border: 8px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-top: -90px; flex-shrink: 0; position: relative; overflow: hidden; }
+        .profile-logo-wrapper img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
+        .profile-meta-main { flex: 1; padding-bottom: 10px; }
+        .co-name-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .co-name-row h1 { font-size: 32px; font-weight: 700; margin: 0; color: var(--el-black); }
+        .edit-icon-btn { background: none; border: none; color: var(--el-warm-gray); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
+        .edit-icon-btn:hover { color: var(--el-black); }
+        .co-sub-info { display: flex; gap: 24px; align-items: center; color: var(--el-dark-gray); font-size: 15px; }
+        .info-item-link { display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; }
+        .form-section-card { background: white; border-radius: 24px; padding: 40px; border: 1px solid var(--el-border-subtle); margin-top: 24px; }
+        .img-edit-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; opacity: 0; transition: opacity 0.2s; cursor: pointer; }
+        .profile-banner:hover .img-edit-overlay, .profile-logo-wrapper:hover .img-edit-overlay { opacity: 1; }
+    </style>
+}
+
+<partial name="_HrNavbar" />
+
+<main class="sr-main">
+    <div class="profile-header-container">
+        <div class="profile-banner">
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" alt="Banner">
+            <div class="img-edit-overlay">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <span style="font-size: 13px; font-weight: 600; margin-top: 8px;">Đổi ảnh bìa</span>
+            </div>
+        </div>
+
+        <div class="profile-info-card">
+            <div class="profile-logo-wrapper">
+                <img id="logo-preview" src="https://via.placeholder.com/180" alt="Logo">
+                <div class="img-edit-overlay">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                </div>
+            </div>
+
+            <div class="profile-meta-main">
+                <div class="co-name-row">
+                    <h1 id="disp-name">VNG Corporation</h1>
+                    <button class="edit-icon-btn" title="Chỉnh sửa tên">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                </div>
+                <div class="co-sub-info">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <a href="#" id="disp-web" class="info-item-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            <span>vng.com.vn</span>
+                        </a>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div id="disp-loc" style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            <span>VNG Campus, Quận 7, TP.HCM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding-bottom: 12px;">
+                <button class="el-btn-primary" id="btn-save-top" style="height: 44px; padding: 0 24px;">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <form id="f-profile">
+        <div class="form-section-card">
+            <div id="msg"></div>
+            <div class="form-section">
+                <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 24px; border-bottom: 1px solid var(--el-border-subtle); padding-bottom: 12px;">Thông tin chi tiết</h2>
+                <div class="el-grid el-grid--2" style="row-gap: 24px; column-gap: 32px;">
+                    <div class="el-form-group">
+                        <label class="el-label">Tên đầy đủ công ty</label>
+                        <input class="el-input" id="tenCongTy" required>
+                    </div>
+                    <div class="el-form-group">
+                        <label class="el-label">Website (URL)</label>
+                        <input class="el-input" id="website" placeholder="https://...">
+                    </div>
+                    <div class="el-form-group">
+                        <label class="el-label">Quy mô nhân sự</label>
+                        <select class="el-select" id="quyMo">
+                            <option value="1-50 nhân viên">1-50 nhân viên</option>
+                            <option value="50-200 nhân viên">50-200 nhân viên</option>
+                            <option value="200-500 nhân viên">200-500 nhân viên</option>
+                            <option value="500-1000 nhân viên">500-1000 nhân viên</option>
+                            <option value="1000+ nhân viên">1000+ nhân viên</option>
+                        </select>
+                    </div>
+                    <div class="el-form-group">
+                        <label class="el-label">Số điện thoại liên hệ</label>
+                        <input class="el-input" id="sdt">
+                    </div>
+                    <div class="el-form-group" style="grid-column: 1 / -1;">
+                        <label class="el-label">Địa chỉ trụ sở chính</label>
+                        <input class="el-input" id="diaChi" placeholder="Số nhà, tên đường, quận/huyện, thành phố...">
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 16px;">
+                <button type="submit" class="el-btn-primary" style="padding: 0 40px; height: 52px; font-size: 16px;">Lưu tất cả cập nhật</button>
+            </div>
+        </div>
+    </form>
+</main>
+
+@section Scripts {
+    <script>
+        (function() {
+            const s = SR_AUTH.requireAuth("NhaTuyenDung", '@Url.Action("Login", "Auth")');
+            if (!s) return;
+            SR_AUTH.updateNavPlaceholders();
+            
+            const co = SR_DEMO.nhaTuyenDung.find(n => n.maNhaTuyenDung === s.maTaiKhoan);
+            if (co) {
+                document.getElementById("disp-name").textContent = co.tenCongTy || "Chưa đặt tên";
+                document.getElementById("disp-web").querySelector('span').textContent = (co.website || "website.com").replace('https://', '');
+                document.getElementById("disp-loc").querySelector('span').textContent = co.diaChi || "Chưa có địa chỉ";
+                document.getElementById("logo-preview").src = co.logo || "https://via.placeholder.com/180";
+
+                document.getElementById("tenCongTy").value = co.tenCongTy || "";
+                document.getElementById("website").value = co.website || "";
+                document.getElementById("quyMo").value = co.quyMo || "1-50 nhân viên";
+                document.getElementById("sdt").value = co.soDienThoai || "";
+                document.getElementById("diaChi").value = co.diaChi || "";
+            }
+
+            document.getElementById("f-profile").addEventListener("submit", function(e) {
+                e.preventDefault();
+                document.getElementById("msg").innerHTML = '<div class="sr-alert sr-alert--success" style="margin-bottom: 24px;">Đã lưu hồ sơ doanh nghiệp thành công (Demo).</div>';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                document.getElementById("disp-name").textContent = document.getElementById("tenCongTy").value;
+                document.getElementById("disp-web").querySelector('span').textContent = document.getElementById("website").value.replace('https://', '');
+                document.getElementById("disp-loc").querySelector('span').textContent = document.getElementById("diaChi").value;
+            });
+
+            document.getElementById("btn-save-top").onclick = () => document.getElementById("f-profile").requestSubmit();
+        })();
+    </script>
+}

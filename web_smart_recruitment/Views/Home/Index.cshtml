@@ -1,0 +1,91 @@
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        .hero-section {
+            background: var(--el-warm-stone);
+            border-radius: 40px;
+            padding: 100px 60px;
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--el-black);
+            font-weight: 500;
+            font-size: 15px;
+        }
+    </style>
+}
+
+<header class="sr-topbar">
+    <div class="sr-topbar-inner">
+        <a class="sr-brand" asp-controller="Home" asp-action="Index">
+            <span class="sr-brand-mark">SR</span>
+            Smart Recruiter
+        </a>
+        <nav class="nav-links">
+            <a asp-controller="Home" asp-action="About">Giới thiệu</a>
+            <a asp-controller="Candidate" asp-action="Jobs">Việc làm</a>
+            <a asp-controller="Auth" asp-action="Login">Đăng nhập</a>
+            <a class="el-btn-primary" asp-controller="Auth" asp-action="Register" style="color: white; background: var(--el-black);">Bắt đầu ngay</a>
+        </nav>
+    </div>
+</header>
+
+<main class="sr-main">
+    <section class="hero-section">
+        <h1 class="el-display-hero" style="font-size: 72px; margin-bottom: 24px;">Tuyển dụng thông minh bằng AI.</h1>
+        <p class="el-text-muted" style="font-size: 20px; max-width: 720px; margin: 0 auto 48px; line-height: 1.6;">
+            Nền tảng kết nối nhân tài thế hệ mới, tích hợp trí tuệ nhân tạo để phân tích,
+            đánh giá và xếp hạng ứng viên dựa trên dữ liệu thực tế.
+        </p>
+        <div style="display: flex; gap: 16px; justify-content: center;">
+            <a class="el-btn-primary" asp-controller="Auth" asp-action="Login" style="padding: 16px 32px; font-size: 16px; text-decoration: none; color: white;">Khám phá ngay</a>
+            <a class="el-btn-warm" asp-controller="Home" asp-action="About" style="padding: 16px 32px; font-size: 16px; text-decoration: none;">Tìm hiểu AI Analysis</a>
+        </div>
+    </section>
+
+    <section style="margin-bottom: 8rem;">
+        <h2 class="el-section-heading" style="text-align: center; margin-bottom: 4rem;">Hệ sinh thái của chúng tôi</h2>
+        <div class="el-grid el-grid--2">
+            <div class="el-card">
+                <div style="width: 48px; height: 48px; background: var(--el-warm-stone); border-radius: 12px; display: grid; place-items: center; margin-bottom: 24px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <h3 style="font-size: 22px; margin-bottom: 12px; font-weight: 600;">Cho Ứng viên</h3>
+                <p class="el-text-muted" style="line-height: 1.6;">Tìm kiếm công việc mơ ước với sự hỗ trợ từ AI. Nhận phân tích hồ sơ và gợi ý lộ trình nghề nghiệp cá nhân hóa.</p>
+                <a asp-controller="Candidate" asp-action="Jobs" style="margin-top: 24px; display: inline-block; color: var(--el-black); font-weight: 600; text-decoration: none;">Tìm việc làm →</a>
+            </div>
+
+            <div class="el-card">
+                <div style="width: 48px; height: 48px; background: var(--el-warm-stone); border-radius: 12px; display: grid; place-items: center; margin-bottom: 24px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                </div>
+                <h3 style="font-size: 22px; margin-bottom: 12px; font-weight: 600;">Cho Nhà tuyển dụng</h3>
+                <p class="el-text-muted" style="line-height: 1.6;">Tự động hóa quy trình lọc CV. Sắp xếp ứng viên theo mức độ phù hợp và ra quyết định tuyển dụng nhanh gấp 10 lần.</p>
+                <a asp-controller="Hr" asp-action="Dashboard" style="margin-top: 24px; display: inline-block; color: var(--el-black); font-weight: 600; text-decoration: none;">Trải nghiệm Portal →</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="sr-footer" style="background: var(--el-white); border-top: 1px solid var(--el-border); padding: 40px 0;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+        <div class="sr-brand" style="font-size: 18px;">
+            <span class="sr-brand-mark" style="width: 24px; height: 24px; font-size: 12px;">SR</span>
+            Smart Recruiter
+        </div>
+        <div class="el-text-muted" style="font-size: 13px;">
+            © 2024 AI Powered Recruitment Platform. Designed for modern teams.
+        </div>
+    </div>
+</footer>

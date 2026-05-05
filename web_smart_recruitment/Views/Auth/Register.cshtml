@@ -1,0 +1,100 @@
+@{
+    ViewData["Title"] = "Đăng ký ứng viên";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        body { margin: 0; background: var(--el-white); }
+        .split-screen {
+            display: flex;
+            height: 100vh;
+        }
+        .split-left {
+            flex: 1;
+            background: var(--el-black);
+            color: var(--el-white);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px;
+            position: relative;
+        }
+        .split-right {
+            flex: 1.2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .reg-box {
+            width: 100%;
+            max-width: 480px;
+        }
+    </style>
+}
+
+<div class="split-screen">
+    <div class="split-left">
+        <div>
+            <a class="sr-brand" asp-controller="Home" asp-action="Index" style="font-size: 24px; margin-bottom: 60px; display: inline-block; color: white;">
+                <span class="sr-brand-mark" style="background: white; color: black;">SR</span>Smart Recruiter
+            </a>
+            <h1 class="el-display-hero" style="font-size: 56px; margin-bottom: 24px; color: white;">Bắt đầu sự nghiệp mới.</h1>
+            <p style="font-size: 18px; opacity: 0.7; max-width: 400px; line-height: 1.6;">
+                Gia nhập cộng đồng ứng viên tài năng và để AI giúp bạn tìm thấy bến đỗ tiếp theo trong sự nghiệp.
+            </p>
+        </div>
+    </div>
+
+    <div class="split-right">
+        <div class="reg-box">
+            <h2 class="el-card-heading" style="margin-bottom: 8px;">Tạo tài khoản ứng viên</h2>
+            <p class="el-text-muted" style="margin-bottom: 32px; font-size: 15px;">Điền thông tin bên dưới để bắt đầu hành trình của bạn.</p>
+
+            <div id="sr-reg-alert"></div>
+
+            <form id="form-reg" novalidate>
+                <div class="el-form-group">
+                    <label class="el-label" for="hoTen">Họ và tên</label>
+                    <input class="el-input" id="hoTen" placeholder="Nguyễn Văn A" required />
+                </div>
+                <div class="el-form-group">
+                    <label class="el-label" for="email">Email</label>
+                    <input class="el-input" type="email" id="email" placeholder="name@domain.com" required />
+                </div>
+                <div class="el-form-group">
+                    <label class="el-label" for="password">Mật khẩu</label>
+                    <input class="el-input" type="password" id="password" placeholder="Tối thiểu 8 ký tự" required />
+                </div>
+                <button type="submit" class="el-btn-primary" style="width: 100%; height: 48px; justify-content: center; margin-top: 12px;">Đăng ký tài khoản</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 32px; font-size: 14px; color: var(--el-warm-gray);">
+                Đã có tài khoản? <a asp-controller="Auth" asp-action="Login" style="color: var(--el-black); font-weight: 600; text-decoration: none;">Đăng nhập ngay</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            document.getElementById("form-reg").addEventListener("submit", function (e) {
+                e.preventDefault();
+                var box = document.getElementById("sr-reg-alert");
+                var hoTen = document.getElementById("hoTen").value;
+                var email = document.getElementById("email").value;
+                var password = document.getElementById("password").value;
+
+                var r = SR_AUTH.registerCandidate(email, password, hoTen);
+                if (!r.ok) {
+                    box.innerHTML = '<div class="sr-alert sr-alert--error" style="margin-bottom: 20px;">' + SR_UI.escapeHtml(r.message) + "</div>";
+                    return;
+                }
+                box.innerHTML = '<div class="sr-alert sr-alert--success" style="margin-bottom: 20px;">' + SR_UI.escapeHtml(r.message) + ' <a href="@Url.Action("Login", "Auth")" style="font-weight: 600;">Đăng nhập</a></div>';
+            });
+        })();
+    </script>
+}

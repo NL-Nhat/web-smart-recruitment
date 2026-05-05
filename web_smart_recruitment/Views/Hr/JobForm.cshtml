@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Tạo tin tuyển dụng";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .form-section {
+            margin-bottom: 3rem;
+        }
+        .form-section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--el-border);
+        }
+        .skill-row {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 40px;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 12px;
+        }
+        .input-grid-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+    </style>
+}
+
+<partial name="_HrNavbar" />
+
+<main class="sr-main">
+    <div class="form-container">
+        <div style="margin-bottom: 3rem;">
+            <a asp-action="Jobs" class="el-btn-white" style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 24px; padding: 8px 16px; font-size: 13px; text-decoration: none; color: var(--el-black);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Quay lại
+            </a>
+            <h1 class="el-display-hero" style="font-size: 40px; margin: 0;">Tạo tin tuyển dụng mới</h1>
+            <p class="el-text-muted">Cung cấp thông tin chi tiết về vị trí và yêu cầu để AI hỗ trợ lọc hồ sơ chính xác nhất.</p>
+        </div>
+
+        <div class="el-card">
+            <div id="msg"></div>
+            <form id="f-job">
+                <!-- Thông tin cơ bản -->
+                <div class="form-section">
+                    <h2 class="form-section-title">Thông tin cơ bản</h2>
+
+                    <div class="el-form-group" style="margin-bottom: 32px;">
+                        <label class="el-label" for="tieuDe">Tiêu đề vị trí</label>
+                        <input class="el-input" id="tieuDe" placeholder="Ví dụ: Senior Backend Engineer (.NET)" required />
+                    </div>
+
+                    <div class="input-grid-row">
+                        <div class="el-form-group">
+                            <label class="el-label" for="phongBan">Phòng ban</label>
+                            <input class="el-input" id="phongBan" placeholder="Kỹ thuật, Sản phẩm..." />
+                        </div>
+                        <div class="el-form-group">
+                            <label class="el-label" for="diaDiem">Địa điểm</label>
+                            <input class="el-input" id="diaDiem" placeholder="Hà Nội, TP.HCM..." required />
+                        </div>
+                    </div>
+
+                    <div class="input-grid-row">
+                        <div class="el-form-group">
+                            <label class="el-label" for="hinhThuc">Hình thức</label>
+                            <select class="el-select" id="hinhThuc">
+                                <option value="FullTime">Full-time</option>
+                                <option value="PartTime">Part-time</option>
+                                <option value="Online">Remote / Online</option>
+                                <option value="Intern">Internship</option>
+                            </select>
+                        </div>
+                        <div class="el-form-group">
+                            <label class="el-label" for="hanNop">Hạn nộp CV</label>
+                            <input class="el-input" id="hanNop" type="date" />
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 40px; padding-top: 40px; border-top: 1px solid var(--el-border-subtle);">
+                        <div class="input-grid-row" style="margin-bottom: 0;">
+                            <div class="el-form-group">
+                                <label class="el-label" for="luongMin">Lương tối thiểu (VNĐ)</label>
+                                <input class="el-input" id="luongMin" type="number" placeholder="0" />
+                            </div>
+                            <div class="el-form-group">
+                                <label class="el-label" for="luongMax">Lương tối đa (VNĐ)</label>
+                                <input class="el-input" id="luongMax" type="number" placeholder="0" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nội dung JD -->
+                <div class="form-section">
+                    <h2 class="form-section-title">Nội dung tuyển dụng</h2>
+                    <div class="el-form-group">
+                        <label class="el-label" for="moTa">Mô tả công việc</label>
+                        <textarea class="el-textarea" id="moTa" rows="5" placeholder="Các trách nhiệm chính của vị trí này..." required></textarea>
+                    </div>
+                    <div class="el-form-group">
+                        <label class="el-label" for="yeuCau">Yêu cầu ứng viên</label>
+                        <textarea class="el-textarea" id="yeuCau" rows="5" placeholder="Kỹ năng, kinh nghiệm cần có..." required></textarea>
+                    </div>
+                    <div class="el-form-group">
+                        <label class="el-label" for="quyenLoi">Quyền lợi & Chế độ</label>
+                        <textarea class="el-textarea" id="quyenLoi" rows="4" placeholder="Lương thưởng, bảo hiểm, môi trường làm việc..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Kỹ năng AI -->
+                <div class="form-section">
+                    <h2 class="form-section-title">Thiết lập AI Matcher</h2>
+                    <p class="el-text-muted" style="font-size: 14px; margin-bottom: 20px;">Chọn các kỹ năng cốt lõi để AI chấm điểm mức độ phù hợp của ứng viên.</p>
+                    <div id="skill-rows"></div>
+                    <button type="button" class="el-btn-warm" id="add-skill" style="padding: 8px 16px; font-size: 13px;">+ Thêm kỹ năng</button>
+                </div>
+
+                <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--el-border); display: flex; justify-content: flex-end; gap: 16px;">
+                    <button type="submit" class="el-btn-primary" style="padding: 0 40px; height: 52px; font-size: 16px;">Đăng tin tuyển dụng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        (function() {
+            const s = SR_AUTH.requireAuth("NhaTuyenDung", '@Url.Action("Login", "Auth")');
+            if (!s) return;
+            SR_AUTH.updateNavPlaceholders();
+
+            function createSkillRow() {
+                const opts = '<option value="">— Chọn kỹ năng —</option>' +
+                    SR_DEMO.danhMucKyNang.map(k => `<option value="${k.maKyNang}">${SR_UI.escapeHtml(k.tenKyNang)}</option>`).join("");
+
+                const row = document.createElement('div');
+                row.className = 'skill-row';
+                row.innerHTML = `
+                    <div class="el-form-group" style="margin-bottom:0">
+                        <label class="el-label">Kỹ năng</label>
+                        <select class="el-select sk-id">${opts}</select>
+                    </div>
+                    <div class="el-form-group" style="margin-bottom:0">
+                        <label class="el-label">Mức độ yêu cầu</label>
+                        <select class="el-select sk-cap">
+                            <option value="BatBuoc">Bắt buộc (Must-have)</option>
+                            <option value="UuTien">Ưu tiên (Nice-to-have)</option>
+                            <option value="KhongBatBuoc">Không bắt buộc</option>
+                        </select>
+                    </div>
+                    <button type="button" class="el-icon-btn el-icon-btn--danger rm" style="margin-bottom: 8px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                `;
+                return row;
+            }
+
+            const box = document.getElementById("skill-rows");
+            box.appendChild(createSkillRow());
+            box.appendChild(createSkillRow());
+
+            box.addEventListener("click", function(e) {
+                const btn = e.target.closest(".rm");
+                if (btn) {
+                    const row = btn.closest(".skill-row");
+                    if (box.querySelectorAll(".skill-row").length > 1) row.remove();
+                }
+            });
+
+            document.getElementById("add-skill").addEventListener("click", function() {
+                box.appendChild(createSkillRow());
+            });
+
+            document.getElementById("f-job").addEventListener("submit", function(e) {
+                e.preventDefault();
+                document.getElementById("msg").innerHTML = '<div class="sr-alert sr-alert--success">Đã lưu tin tuyển dụng thành công (Demo).</div>';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Trạng thái tin tuyển dụng";
+}
+
+<partial name="_HrNavbar" />
+
+<main class="sr-main" style="max-width: 520px">
+    <h1 class="sr-page-title">Trạng thái tin tuyển dụng</h1>
+    <p class="sr-page-sub">
+        <code>TinTuyenDung.TrangThai</code>: mở nhận CV (<strong>DangMo</strong>), đóng (<strong>DaDong</strong>), hủy
+        (<strong>DaHuy</strong>).
+    </p>
+    <div class="sr-card">
+        <div id="msg"></div>
+        <p id="job-line" class="sr-text-sm"></p>
+        <form id="f-st">
+            <div class="sr-form-group">
+                <label class="sr-label" for="trangThai">Trạng thái mới</label>
+                <select class="sr-select" id="trangThai">
+                    <option value="DangMo">DangMo — Đang mở nhận CV</option>
+                    <option value="DaDong">DaDong — Đã đóng</option>
+                    <option value="DaHuy">DaHuy — Đã hủy</option>
+                </select>
+            </div>
+            <button type="submit" class="sr-btn sr-btn--primary">Cập nhật (demo)</button>
+            <a class="sr-btn sr-btn--secondary" id="link-ats" href="#">ATS</a>
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        (function() {
+            var sess = SR_AUTH.requireAuth("NhaTuyenDung", '@Url.Action("Login", "Auth")');
+            if (!sess) return;
+            SR_AUTH.updateNavPlaceholders();
+            var maTin = parseInt(new URLSearchParams(location.search).get("maTin") || "0", 10);
+            var tin = SR_DEMO.getTin(maTin);
+            if (!tin || tin.maNhaTuyenDung !== sess.maTaiKhoan) {
+                document.getElementById("job-line").textContent = "Tin không hợp lệ.";
+            } else {
+                document.getElementById("job-line").innerHTML =
+                    "<strong>" +
+                    SR_UI.escapeHtml(tin.tieuDe) +
+                    "</strong> — hiện tại: " +
+                    SR_UI.tinBadge(tin.trangThai);
+                document.getElementById("trangThai").value = tin.trangThai;
+                document.getElementById("link-ats").href = '@Url.Action("Applications", "Hr")?maTin=' + maTin;
+            }
+            document.getElementById("f-st").addEventListener("submit", function (e) {
+                e.preventDefault();
+                document.getElementById("msg").innerHTML =
+                    '<div class="sr-alert sr-alert--success">Demo: cập nhật qua API vào <code>TinTuyenDung.TrangThai</code>.</div>';
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,135 @@
+@{
+    ViewData["Title"] = "Khám phá cơ hội";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        .search-bar {
+            background: var(--el-white);
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: var(--el-shadow-outline), var(--el-shadow-elevation);
+            margin-bottom: 3rem;
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+        }
+        .job-card {
+            background: var(--el-white);
+            border: 1px solid var(--el-border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        .job-card:hover {
+            border-color: var(--el-black);
+            box-shadow: var(--el-shadow-elevation);
+            transform: translateY(-2px);
+        }
+        .job-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .job-tag {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--el-warm-gray);
+            background: var(--el-bg-light);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+    </style>
+}
+
+<partial name="_CandidateNavbar" />
+
+<main class="sr-main">
+    <div style="margin-bottom: 2rem;">
+        <h1 class="el-display-hero" style="font-size: 40px; margin: 0;">Khám phá cơ hội</h1>
+        <p class="el-text-muted">Tìm kiếm vị trí phù hợp với năng lực và định hướng của bạn qua hệ thống AI.</p>
+    </div>
+
+    <div class="search-bar">
+        <div class="el-form-group" style="flex: 2; margin-bottom: 0;">
+            <label class="el-label">Từ khóa</label>
+            <input class="el-input" id="q" type="search" placeholder="Vị trí, kỹ năng, công ty..." />
+        </div>
+        <div class="el-form-group" style="flex: 1; margin-bottom: 0;">
+            <label class="el-label">Địa điểm</label>
+            <select class="el-select" id="loc">
+                <option value="">Tất cả địa điểm</option>
+                <option value="Hà Nội">Hà Nội</option>
+                <option value="TP.HCM">TP.HCM</option>
+                <option value="Đà Nẵng">Đà Nẵng</option>
+            </select>
+        </div>
+        <button class="el-btn-primary" style="height: 48px;" id="btn-search">Tìm kiếm</button>
+    </div>
+
+    <div id="job-list" class="el-grid el-grid--3"></div>
+</main>
+
+@section Scripts {
+    <script>
+        (function() {
+            SR_AUTH.updateNavPlaceholders();
+            const listEl = document.getElementById("job-list");
+
+            function render() {
+                const q = document.getElementById("q").value.toLowerCase();
+                const loc = document.getElementById("loc").value.toLowerCase();
+
+                const jobs = SR_DEMO.tinTuyenDung.filter(t => t.trangThai === "DangMo");
+                let html = "";
+
+                jobs.forEach(t => {
+                    const company = SR_DEMO.tenCongTy(t.maNhaTuyenDung);
+                    const blob = (t.tieuDe + " " + company + " " + t.moTaCongViec).toLowerCase();
+
+                    if (q && !blob.includes(q)) return;
+                    if (loc && !t.diaDiem.toLowerCase().includes(loc)) return;
+
+                    html += `
+                        <a href='@Url.Action("JobDetail", "Candidate")?maTin=${t.maTin}' class="job-card">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                    <span style="font-size: 13px; font-weight: 600; color: var(--el-warm-gray);">${SR_UI.escapeHtml(company)}</span>
+                                    <span class="el-status el-status--info" style="font-size: 10px;">${t.hinhThucLamViec}</span>
+                                </div>
+                                <h3 style="font-size: 18px; margin: 0 0 8px; font-weight: 600;">${SR_UI.escapeHtml(t.tieuDe)}</h3>
+                                <p class="el-text-muted" style="font-size: 14px; margin-bottom: 16px;">${SR_UI.escapeHtml(t.moTaCongViec.slice(0, 100))}...</p>
+                            </div>
+                            <div>
+                                <div style="display: flex; gap: 12px; font-size: 13px; margin-bottom: 12px;">
+                                    <span class="el-text-warm">📍 ${SR_UI.escapeHtml(t.diaDiem)}</span>
+                                    <span style="font-weight: 600; color: var(--el-black);">${SR_UI.formatVnd(t.mucLuongToiThieu)} - ${SR_UI.formatVnd(t.mucLuongToiDa)}</span>
+                                </div>
+                                <div class="job-tags">
+                                    ${SR_DEMO.skillsForTin(t.maTin).slice(0, 3).map(s => `<span class="job-tag">${s.tenKyNang}</span>`).join("")}
+                                    ${SR_DEMO.skillsForTin(t.maTin).length > 3 ? `<span class="job-tag">+${SR_DEMO.skillsForTin(t.maTin).length - 3}</span>` : ""}
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+
+                listEl.innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; padding: 3rem;"><p class="el-text-muted">Không tìm thấy công việc phù hợp.</p></div>';
+            }
+
+            document.getElementById("q").addEventListener("input", render);
+            document.getElementById("loc").addEventListener("change", render);
+            document.getElementById("btn-search").addEventListener("click", render);
+
+            render();
+        })();
+    </script>
+}

@@ -1,0 +1,130 @@
+@{
+    ViewData["Title"] = "ATS Dashboard";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        .ats-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            align-items: center;
+            padding: 20px 24px;
+        }
+        .score-box {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--el-black);
+        }
+        .score-box.high { color: var(--el-success); }
+    </style>
+}
+
+<partial name="_HrNavbar" />
+
+<main class="sr-main">
+    <div style="margin-bottom: 3rem;">
+        <h1 class="el-display-hero" style="font-size: 40px; margin: 0;" id="title-job">ATS Dashboard</h1>
+        <p class="el-text-muted">Danh sách ứng viên được xếp hạng tự động bởi AI dựa trên mức độ phù hợp với JD.</p>
+    </div>
+
+    <div class="el-card" style="padding: 16px 24px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 14px; font-weight: 600; color: var(--el-warm-gray);">
+            SẮP XẾP THEO: <span style="color: var(--el-black);">ĐIỂM AI (GIẢM DẦN)</span>
+        </div>
+        <div class="el-text-muted" style="font-size: 13px;">
+            Đang hiển thị <span id="count-uv" style="font-weight: 600; color: var(--el-black);">0</span> ứng viên
+        </div>
+    </div>
+
+    <div class="el-bordered">
+        <div class="ats-row" style="background: var(--el-bg-light); border-bottom: 1px solid var(--el-border); font-weight: 600; font-size: 13px; color: var(--el-warm-gray);">
+            <div>Họ tên ứng viên</div>
+            <div>Điểm phù hợp</div>
+            <div>Đề xuất AI</div>
+            <div>Trạng thái đơn</div>
+            <div style="text-align: right;">Hành động</div>
+        </div>
+        <div id="tb"></div>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        (function() {
+            const s = SR_AUTH.requireAuth("NhaTuyenDung", '@Url.Action("Login", "Auth")');
+            if (!s) return;
+            SR_AUTH.updateNavPlaceholders();
+
+            const params = new URLSearchParams(location.search);
+            const maTin = parseInt(params.get("maTin") || "0", 10);
+            const tin = SR_DEMO.getTin(maTin);
+            const listEl = document.getElementById("tb");
+
+            if (!tin || tin.maNhaTuyenDung !== s.maTaiKhoan) {
+                document.getElementById("title-job").textContent = "Không có quyền truy cập";
+                listEl.innerHTML = '<div style="padding: 3rem; text-align: center;" class="el-text-muted">Vui lòng chọn một tin tuyển dụng hợp lệ từ danh sách của bạn.</div>';
+                return;
+            }
+
+            document.getElementById("title-job").textContent = "ATS: " + tin.tieuDe;
+
+            const data = SR_DEMO.donUngTuyen
+                .filter(d => d.maTin === maTin)
+                .map(d => {
+                    const kq = SR_DEMO.getKetQuaByDon(d.maDon);
+                    const score = kq && kq.diemPhuHop != null ? Number(kq.diemPhuHop) : -1;
+                    return { d, kq, score };
+                })
+                .sort((a, b) => b.score - a.score);
+
+            document.getElementById("count-uv").textContent = data.length;
+
+            if (data.length === 0) {
+                listEl.innerHTML = '<div style="padding: 3rem; text-align: center;" class="el-text-muted">Chưa có ứng viên nào nộp đơn cho vị trí này.</div>';
+                return;
+            }
+
+            let html = "";
+            data.forEach(x => {
+                const uv = SR_DEMO.getUngVien(x.d.maUngVien);
+                const scoreText = x.score >= 0 ? `${x.score}%` : (x.kq && x.kq.trangThaiXuLy === "DangXuLy" ? "Đang xử lý..." : "—");
+
+                let statusBadge = "";
+                switch(x.d.trangThai) {
+                    case "DaNop": statusBadge = '<span class="el-status el-status--info">Mới nộp</span>'; break;
+                    case "AIDaLoc": statusBadge = '<span class="el-status el-status--warning">AI Đã lọc</span>'; break;
+                    case "PhongVan": statusBadge = '<span class="el-status el-status--primary" style="background: #E0E7FF; color: #4F46E5;">Phỏng vấn</span>'; break;
+                    case "TrungTuyen": statusBadge = '<span class="el-status el-status--success">Trúng tuyển</span>'; break;
+                    case "TuChoi": statusBadge = '<span class="el-status el-status--danger">Từ chối</span>'; break;
+                }
+
+                let deXuatBadge = "—";
+                if (x.kq && x.kq.deXuat) {
+                    switch(x.kq.deXuat) {
+                        case "TuyenNhanh": deXuatBadge = '<span class="el-status el-status--success" style="background: #D1FAE5;">Tuyển nhanh</span>'; break;
+                        case "CoTheCanNhac": deXuatBadge = '<span class="el-status el-status--warning">Cân nhắc</span>'; break;
+                        case "LoaiBo": deXuatBadge = '<span class="el-status el-status--danger">Loại bỏ</span>'; break;
+                    }
+                }
+
+                html += `
+                    <div class="el-bordered-item ats-row">
+                        <div>
+                            <span style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 2px;">${SR_UI.escapeHtml(uv ? uv.hoTen : 'Ẩn danh')}</span>
+                            <span class="el-text-muted" style="font-size: 12px;">Nộp ngày: ${x.d.ngayNop}</span>
+                        </div>
+                        <div class="score-box ${x.score > 80 ? 'high' : ''}">${scoreText}</div>
+                        <div>${deXuatBadge}</div>
+                        <div>${statusBadge}</div>
+                        <div style="text-align: right;">
+                            <a href='@Url.Action("AiCandidate", "Hr")?maDon=${x.d.maDon}' class="el-btn-primary" style="padding: 6px 16px; font-size: 13px;">Chi tiết AI</a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listEl.innerHTML = html;
+        })();
+    </script>
+}

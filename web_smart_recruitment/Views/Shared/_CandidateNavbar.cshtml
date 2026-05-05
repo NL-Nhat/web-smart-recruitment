@@ -1,0 +1,11 @@
+<header class="sr-topbar">
+    <div class="sr-topbar-inner">
+        <a class="sr-brand" asp-controller="Home" asp-action="Index"><span class="sr-brand-mark">SR</span>Smart Recruiter</a>
+        <nav class="sr-nav">
+            <a asp-controller="Candidate" asp-action="Jobs" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Jobs" ? "is-active" : "")'>Tìm việc làm</a>
+            <a asp-controller="Candidate" asp-action="Applications" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Applications" ? "is-active" : "")'>Đơn ứng tuyển</a>
+            <a asp-controller="Candidate" asp-action="Interviews" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Interviews" ? "is-active" : "")'>Lịch phỏng vấn</a>
+            <span id="sr-user-slot" data-logout-href='@Url.Action("Index", "Home")'></span>
+        </nav>
+    </div>
+</header>

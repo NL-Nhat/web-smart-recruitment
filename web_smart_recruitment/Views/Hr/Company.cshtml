@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Thông tin công ty";
+}
+
+<partial name="_HrNavbar" />
+
+<main class="sr-main" style="max-width: 560px">
+    <h1 class="sr-page-title">Hồ sơ nhà tuyển dụng</h1>
+    <p class="sr-page-sub">Bảng <code>NhaTuyenDung</code> — khóa chính = <code>MaTaiKhoan</code>.</p>
+    <div class="sr-card">
+        <div id="msg"></div>
+        <form id="f-co">
+            <div class="sr-form-group">
+                <label class="sr-label" for="hoTen">Họ tên HR</label>
+                <input class="sr-input" id="hoTen" required />
+            </div>
+            <div class="sr-form-group">
+                <label class="sr-label" for="tenCongTy">Tên công ty</label>
+                <input class="sr-input" id="tenCongTy" required />
+            </div>
+            <div class="sr-form-group">
+                <label class="sr-label" for="sdt">Số điện thoại liên hệ</label>
+                <input class="sr-input" id="sdt" />
+            </div>
+            <button type="submit" class="sr-btn sr-btn--primary">Lưu (demo)</button>
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        (function() {
+            var s = SR_AUTH.requireAuth("NhaTuyenDung", '@Url.Action("Login", "Auth")');
+            if (!s) return;
+            SR_AUTH.updateNavPlaceholders();
+            var ntd = SR_DEMO.nhaTuyenDung.find(function (n) {
+                return n.maNhaTuyenDung === s.maTaiKhoan;
+            });
+            if (ntd) {
+                document.getElementById("hoTen").value = ntd.hoTen;
+                document.getElementById("tenCongTy").value = ntd.tenCongTy || "";
+                document.getElementById("sdt").value = ntd.soDienThoai || "";
+            }
+            document.getElementById("f-co").addEventListener("submit", function (e) {
+                e.preventDefault();
+                document.getElementById("msg").innerHTML =
+                    '<div class="sr-alert sr-alert--success">Demo: cập nhật qua API vào <code>NhaTuyenDung</code>.</div>';
+            });
+        })();
+    </script>
+}

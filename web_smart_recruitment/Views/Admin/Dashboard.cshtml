@@ -1,0 +1,214 @@
+@{
+    ViewData["Title"] = "Hệ thống Quản trị";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        body { background: #F8FAFC; }
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+        .admin-sidebar {
+            background: var(--el-black);
+            color: white;
+            padding: 32px 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            width: 280px;
+            height: 100vh;
+        }
+        .sidebar-brand {
+            font-weight: 800;
+            font-size: 20px;
+            margin-bottom: 48px;
+            display: flex;
+            align-items: center; gap: 12px;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        .admin-nav-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+        .admin-nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .admin-nav-link.is-active {
+            background: white !important;
+            color: black !important;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .admin-content {
+            padding: 40px;
+            margin-left: 280px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        .stat-grid-admin {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .stat-card-admin {
+            background: white;
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .chart-placeholder {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid rgba(0,0,0,0.05);
+            height: 400px;
+            display: grid;
+            place-items: center;
+        }
+    </style>
+}
+
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+            <div style="width:32px; height:32px; background:white; border-radius:8px; display:grid; place-items:center; color:black; font-weight:900;">SR</div>
+            Smart Recruiter
+        </div>
+        <nav class="sidebar-nav">
+            <a asp-action="Dashboard" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "is-active" : "")'>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                Tổng quan
+            </a>
+            <a asp-action="Users" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Users" ? "is-active" : "")'>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                Quản lý người dùng
+            </a>
+            <a asp-action="Skills" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Skills" ? "is-active" : "")'>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path><path d="M16.24 16.24l2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path><path d="M4.93 19.07l2.83-2.83"></path><path d="M16.24 7.76l2.83-2.83"></path></svg>
+                Quản lý kỹ năng
+            </a>
+            <a asp-action="Reports" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Reports" ? "is-active" : "")'>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                Báo cáo dữ liệu
+            </a>
+            <div style="margin-top: 32px; padding: 0 16px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase;">Hệ thống</div>
+            <a asp-action="Profile" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "is-active" : "")'>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                Hồ sơ Admin
+            </a>
+            <a href="#" id="admin-logout" class="admin-nav-link" style="color: #ef4444; margin-top: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Đăng xuất
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-content">
+        <header class="admin-header">
+            <div>
+                <h1 style="font-size: 28px; font-weight: 800; margin: 0; color: var(--el-black);">Hệ thống Quản trị</h1>
+                <p class="el-text-muted">Chào mừng trở lại, quản trị viên hệ thống.</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="el-btn-primary">Xuất báo cáo tổng hợp</button>
+            </div>
+        </header>
+
+        <div class="stat-grid-admin">
+            <div class="stat-card-admin">
+                <div class="el-text-muted" style="font-size: 13px; font-weight: 600;">TỔNG NGƯỜI DÙNG</div>
+                <div style="font-size: 28px; font-weight: 800; margin-top: 8px;" id="count-users">0</div>
+                <div style="font-size: 12px; color: var(--el-success); margin-top: 4px;">+12.5% so với tháng trước</div>
+            </div>
+            <div class="stat-card-admin">
+                <div class="el-text-muted" style="font-size: 13px; font-weight: 600;">NHÀ TUYỂN DỤNG</div>
+                <div style="font-size: 28px; font-weight: 800; margin-top: 8px;" id="count-hr">0</div>
+                <div style="font-size: 12px; color: var(--el-success); margin-top: 4px;">+4 công ty mới tuần này</div>
+            </div>
+            <div class="stat-card-admin">
+                <div class="el-text-muted" style="font-size: 13px; font-weight: 600;">TIN TUYỂN DỤNG</div>
+                <div style="font-size: 28px; font-weight: 800; margin-top: 8px;" id="count-jobs">0</div>
+                <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px;">12 tin sắp hết hạn</div>
+            </div>
+            <div class="stat-card-admin">
+                <div class="el-text-muted" style="font-size: 13px; font-weight: 600;">LƯỢT ỨNG TUYỂN</div>
+                <div style="font-size: 28px; font-weight: 800; margin-top: 8px;" id="count-apps">0</div>
+                <div style="font-size: 12px; color: var(--el-success); margin-top: 4px;">+85 hồ sơ mới hôm nay</div>
+            </div>
+        </div>
+
+        <div class="sr-grid" style="grid-template-columns: 2fr 1fr; gap: 32px;">
+            <div>
+                <div class="chart-placeholder">
+                    <div style="text-align: center;">
+                        <div style="font-size: 14px; color: var(--el-warm-gray); margin-bottom: 20px;">BIỂU ĐỒ TĂNG TRƯỞNG NGƯỜI DÙNG (DEMO)</div>
+                        <div style="display: flex; align-items: flex-end; gap: 24px; height: 200px;">
+                            <div style="width: 40px; height: 60%; background: var(--el-black); border-radius: 4px;"></div>
+                            <div style="width: 40px; height: 80%; background: var(--el-black); border-radius: 4px;"></div>
+                            <div style="width: 40px; height: 40%; background: var(--el-black); border-radius: 4px;"></div>
+                            <div style="width: 40px; height: 90%; background: var(--el-black); border-radius: 4px;"></div>
+                            <div style="width: 40px; height: 75%; background: var(--el-black); border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="el-card" style="height: 100%;">
+                    <h3 style="font-size: 18px; font-weight: 700; margin-top: 0; margin-bottom: 24px;">Thông báo hệ thống</h3>
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div style="padding: 12px; background: #FFF7ED; border-radius: 12px; border: 1px solid #FFEDD5; color: #9A3412; font-size: 13px;">
+                            <strong>Bảo trì server:</strong> Hệ thống sẽ bảo trì vào 0h ngày mai.
+                        </div>
+                        <div style="padding: 12px; background: #F0FDF4; border-radius: 12px; border: 1px solid #DCFCE7; color: #166534; font-size: 13px;">
+                            <strong>AI Updated:</strong> Model phân tích CV vừa được cập nhật phiên bản 2.1.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            const s = SR_AUTH.requireAuth("Admin", '@Url.Action("Login", "Admin")');
+            if (!s) return;
+            
+            document.getElementById("count-users").textContent = SR_DEMO.taiKhoan.length;
+            document.getElementById("count-hr").textContent = SR_DEMO.nhaTuyenDung.length;
+            document.getElementById("count-jobs").textContent = SR_DEMO.tinTuyenDung.length;
+            document.getElementById("count-apps").textContent = SR_DEMO.donUngTuyen.length;
+
+            document.getElementById("admin-logout").onclick = function() {
+                SR_AUTH.logout();
+                location.href = '@Url.Action("Login", "Admin")';
+            };
+        })();
+    </script>
+}

@@ -1,0 +1,269 @@
+/* ElevenLabs Inspired Design System for SmartRecruiter */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+
+:root {
+  /* Colors */
+  --el-white: #ffffff;
+  --el-bg-light: #f5f5f5;
+  --el-warm-stone: rgba(245, 242, 239, 0.8);
+  --el-black: #000000;
+  --el-dark-gray: #4e4e4e;
+  --el-warm-gray: #777169;
+  --el-border: #e5e5e5;
+  --el-border-subtle: rgba(0, 0, 0, 0.05);
+  
+  /* Status Colors */
+  --el-success: #059669;
+  --el-success-soft: #ecfdf5;
+  --el-warning: #d97706;
+  --el-warning-soft: #fffbeb;
+  --el-danger: #dc2626;
+  --el-danger-soft: #fef2f2;
+  --el-info: #1d4ed8;
+  --el-info-soft: #eff6ff;
+
+  /* Shadows */
+  --el-shadow-inset: rgba(0,0,0,0.075) 0px 0px 0px 0.5px inset;
+  --el-shadow-outline: rgba(0,0,0,0.06) 0px 0px 0px 1px;
+  --el-shadow-elevation: rgba(0,0,0,0.04) 0px 4px 4px;
+  --el-shadow-warm: rgba(78, 50, 23, 0.04) 0px 6px 16px;
+  --el-shadow-card: rgba(0,0,0,0.4) 0px 0px 1px, rgba(0,0,0,0.04) 0px 4px 4px;
+
+  /* Typography */
+  --el-font-display: "Waldenburg", "Inter", system-ui, sans-serif;
+  --el-font-body: "Inter", system-ui, sans-serif;
+  --el-font-mono: "Geist Mono", "ui-monospace", monospace;
+
+  /* Spacing */
+  --el-radius-card: 20px;
+  --el-radius-pill: 9999px;
+  --el-radius-warm: 30px;
+}
+
+/* Global Styles */
+body {
+  background-color: var(--el-bg-light);
+  color: var(--el-black);
+  font-family: var(--el-font-body);
+  line-height: 1.6;
+  letter-spacing: 0.18px; /* Airy body text */
+}
+
+/* Typography Classes */
+.el-display-hero {
+  font-family: var(--el-font-display);
+  font-weight: 300;
+  font-size: 48px;
+  line-height: 1.08;
+  letter-spacing: -0.96px;
+}
+
+.el-section-heading {
+  font-family: var(--el-font-display);
+  font-weight: 300;
+  font-size: 36px;
+  line-height: 1.17;
+}
+
+.el-card-heading {
+  font-family: var(--el-font-display);
+  font-weight: 300;
+  font-size: 32px;
+  line-height: 1.13;
+}
+
+/* Button Classes */
+.el-btn-primary {
+  background-color: var(--el-black);
+  color: var(--el-white);
+  padding: 10px 24px;
+  border-radius: var(--el-radius-pill);
+  font-weight: 500;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.el-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.el-btn-warm {
+  background-color: var(--el-warm-stone);
+  color: var(--el-black);
+  padding: 12px 24px;
+  border-radius: var(--el-radius-warm);
+  font-weight: 500;
+  font-size: 15px;
+  border: none;
+  box-shadow: var(--el-shadow-warm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.el-btn-warm:hover {
+  background-color: #f5f2ef;
+  transform: translateY(-2px);
+  box-shadow: rgba(78, 50, 23, 0.08) 0px 8px 20px;
+}
+
+.el-btn-white {
+  background-color: var(--el-white);
+  color: var(--el-black);
+  padding: 10px 24px;
+  border-radius: var(--el-radius-pill);
+  font-weight: 500;
+  font-size: 15px;
+  box-shadow: var(--el-shadow-card);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Card Classes */
+.el-card {
+  background-color: var(--el-white);
+  border-radius: var(--el-radius-card);
+  padding: 32px;
+  box-shadow: var(--el-shadow-outline), var(--el-shadow-elevation);
+  border: 1px solid var(--el-border-subtle);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.el-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--el-shadow-outline), rgba(0,0,0,0.08) 0px 8px 16px;
+}
+
+/* Utility */
+.el-text-muted {
+  color: var(--el-dark-gray);
+}
+
+.el-text-warm {
+  color: var(--el-warm-gray);
+}
+
+/* Grid & Layout */
+.el-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.el-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.el-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.el-grid--4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 1024px) {
+  .el-grid--3, .el-grid--4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .el-grid--2, .el-grid--3, .el-grid--4 { grid-template-columns: 1fr; }
+}
+
+/* Bordered Containers */
+.el-bordered {
+  border: 1px solid var(--el-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.el-bordered-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--el-border);
+  background: var(--el-white);
+  transition: background 0.2s ease;
+}
+
+.el-bordered-item:last-child {
+  border-bottom: none;
+}
+
+.el-bordered-item:hover {
+  background: var(--el-bg-light);
+}
+
+/* Status Badges */
+.el-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.el-status--success { background: var(--el-success-soft); color: var(--el-success); }
+.el-status--warning { background: var(--el-warning-soft); color: var(--el-warning); }
+.el-status--danger { background: var(--el-danger-soft); color: var(--el-danger); }
+.el-status--info { background: var(--el-info-soft); color: var(--el-info); }
+
+/* Management Icons (CSS-based placeholder icons) */
+.el-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--el-border);
+  background: var(--el-white);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--el-dark-gray);
+}
+
+.el-icon-btn:hover {
+  background: var(--el-bg-light);
+  color: var(--el-black);
+  border-color: var(--el-black);
+}
+
+.el-icon-btn--danger:hover {
+  background: var(--el-danger-soft);
+  color: var(--el-danger);
+  border-color: var(--el-danger);
+}
+
+/* Form Styles */
+.el-form-group {
+  margin-bottom: 20px;
+}
+
+.el-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--el-dark-gray);
+}
+
+.el-input, .el-select, .el-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--el-border);
+  border-radius: 12px;
+  font-family: var(--el-font-body);
+  font-size: 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.el-input:focus, .el-select:focus, .el-textarea:focus {
+  outline: none;
+  border-color: var(--el-black);
+  box-shadow: 0 0 0 4px rgba(0,0,0,0.05);
+}

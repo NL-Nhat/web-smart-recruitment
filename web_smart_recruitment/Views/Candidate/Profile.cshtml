@@ -1,0 +1,180 @@
+@{
+    ViewData["Title"] = "Hồ sơ năng lực";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        .insight-card {
+            background: var(--el-white);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--el-shadow-elevation);
+            border: 1px solid var(--el-border-subtle);
+        }
+        .sk-opt:hover {
+            background: var(--el-bg-light);
+            color: var(--el-black);
+        }
+        .skill-del:hover {
+            opacity: 1 !important;
+            color: var(--el-danger);
+        }
+    </style>
+}
+
+<partial name="_CandidateNavbar" />
+
+<main class="sr-main">
+    <div style="margin-bottom: 3rem;">
+        <h1 class="el-display-hero" style="font-size: 40px; margin: 0;">Hồ sơ năng lực</h1>
+        <p class="el-text-muted">Hoàn thiện thông tin để AI tối ưu hóa khả năng gợi ý công việc phù hợp.</p>
+    </div>
+
+    <div class="el-grid el-grid--2">
+        <div class="el-card">
+            <h2 class="el-card-heading" style="font-size: 24px; margin-top: 0;">Thông tin cá nhân</h2>
+            <div id="msg"></div>
+            <form id="f-profile">
+                <div class="el-form-group">
+                    <label class="el-label" for="hoTen">Họ và tên</label>
+                    <input class="el-input" id="hoTen" placeholder="Nguyễn Văn A" required />
+                </div>
+                <div class="el-grid el-grid--2">
+                    <div class="el-form-group">
+                        <label class="el-label" for="sdt">Số điện thoại</label>
+                        <input class="el-input" id="sdt" placeholder="090..." />
+                    </div>
+                    <div class="el-form-group">
+                        <label class="el-label" for="namKn">Số năm kinh nghiệm</label>
+                        <input class="el-input" id="namKn" type="number" min="0" placeholder="0" />
+                    </div>
+                </div>
+                <div class="el-form-group">
+                    <label class="el-label" for="linkedin">Link LinkedIn</label>
+                    <input class="el-input" id="linkedin" placeholder="linkedin.com/in/..." />
+                </div>
+                <div class="el-form-group">
+                    <label class="el-label" for="chucDanh">Chức danh hiện tại</label>
+                    <input class="el-input" id="chucDanh" placeholder="Software Engineer, Designer..." />
+                </div>
+                <button type="submit" class="el-btn-primary" style="width: 100%; height: 48px; justify-content: center; margin-top: 1rem;">Lưu hồ sơ cá nhân</button>
+            </form>
+        </div>
+
+        <div class="el-card" style="background: var(--el-warm-stone); border: none;">
+            <h2 class="el-card-heading" style="font-size: 24px; margin-top: 0;">AI Insights</h2>
+            <p class="el-text-muted" style="font-size: 14px; margin-bottom: 24px;">Dựa trên dữ liệu hồ sơ, hệ thống AI đưa ra các phân tích sau:</p>
+            
+            <div class="insight-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <p style="margin: 0; font-weight: 600; font-size: 14px; color: var(--el-black);">Kỹ năng của tôi</p>
+                    <button type="button" class="el-btn-warm" style="padding: 4px 10px; font-size: 11px;" id="btn-add-skill">+ Thêm</button>
+                </div>
+                <div class="sr-chips" id="my-skills" style="margin-top: 12px;">
+                    <!-- Skills will be rendered here -->
+                </div>
+            </div>
+
+            <div class="insight-card">
+                <p style="margin: 0; font-weight: 600; font-size: 14px; color: var(--el-black);">Gợi ý lộ trình (AI)</p>
+                <p style="font-size: 13px; color: var(--el-dark-gray); margin-top: 8px; line-height: 1.5;">
+                    Bạn có 85% điểm phù hợp với các vị trí Senior Frontend. 
+                    Hãy bổ sung thêm kiến thức về <strong>Next.js</strong> và <strong>Micro-frontends</strong> để tăng khả năng cạnh tranh.
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div id="skill-picker" style="display:none; position:absolute; background:white; border:1px solid var(--el-border); border-radius:12px; box-shadow:var(--el-shadow-elevation); width:280px; z-index:100; padding:12px; margin-top:8px;">
+    <input type="text" class="el-input" id="sk-search" placeholder="Tìm kỹ năng..." style="margin-bottom:12px; height:36px; font-size:13px;">
+    <div id="sk-list" style="max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:4px;"></div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            const s = SR_AUTH.requireAuth("UngVien", '@Url.Action("Login", "Auth")');
+            if (!s) return;
+            SR_AUTH.updateNavPlaceholders();
+            
+            const uv = SR_DEMO.getUngVien(s.maTaiKhoan);
+            if (uv) {
+                document.getElementById("hoTen").value = uv.hoTen || s.tenHienThi || "";
+                document.getElementById("sdt").value = uv.soDienThoai || "";
+                document.getElementById("linkedin").value = uv.linkLinkedIn || "";
+                document.getElementById("chucDanh").value = uv.chucDanhHienTai || "";
+                document.getElementById("namKn").value = uv.soNamKinhNghiem != null ? uv.soNamKinhNghiem : "";
+            }
+
+            const mySkills = ["ReactJS", "TypeScript", "UI Design"];
+            const skillsEl = document.getElementById("my-skills");
+            const availableSkills = SR_DEMO.danhMucKyNang;
+
+            function renderSkills() {
+                skillsEl.innerHTML = mySkills.map(s => `
+                    <span class="el-status el-status--success" style="font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                        ${SR_UI.escapeHtml(s)}
+                        <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;" onclick="removeSkill('${s}')">&times;</span>
+                    </span>
+                `).join("") || '<span class="el-text-muted" style="font-size: 13px;">Chưa có kỹ năng nào được thêm.</span>';
+            }
+
+            window.removeSkill = function(name) {
+                const idx = mySkills.indexOf(name);
+                if (idx > -1) {
+                    mySkills.splice(idx, 1);
+                    renderSkills();
+                }
+            };
+
+            const btnAdd = document.getElementById("btn-add-skill");
+            const picker = document.getElementById("skill-picker");
+            const skSearch = document.getElementById("sk-search");
+            const skList = document.getElementById("sk-list");
+
+            btnAdd.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const rect = btnAdd.getBoundingClientRect();
+                picker.style.top = (rect.bottom + window.scrollY) + "px";
+                picker.style.left = (rect.left + window.scrollX - 240) + "px";
+                picker.style.display = picker.style.display === "none" ? "block" : "none";
+                if (picker.style.display === "block") skSearch.focus();
+                renderAvailable("");
+            });
+
+            skSearch.addEventListener("input", (e) => renderAvailable(e.target.value));
+
+            function renderAvailable(q) {
+                const filtered = availableSkills.filter(s => 
+                    s.tenKyNang.toLowerCase().includes(q.toLowerCase()) && !mySkills.includes(s.tenKyNang)
+                ).slice(0, 10);
+
+                skList.innerHTML = filtered.map(s => `
+                    <div class="sk-opt" style="padding:8px 12px; cursor:pointer; border-radius:6px; font-size:13px;" onclick="addSkill('${s.tenKyNang}')">
+                        ${SR_UI.escapeHtml(s.tenKyNang)} <span style="font-size:10px; color:var(--el-warm-gray); float:right;">${s.phanLoai}</span>
+                    </div>
+                `).join("") || '<div style="font-size:12px; color:var(--el-warm-gray); text-align:center; padding:8px;">Không tìm thấy</div>';
+            }
+
+            window.addSkill = function(name) {
+                mySkills.push(name);
+                renderSkills();
+                picker.style.display = "none";
+            };
+
+            document.addEventListener("click", () => picker.style.display = "none");
+            picker.addEventListener("click", (e) => e.stopPropagation());
+
+            renderSkills();
+
+            document.getElementById("f-profile").addEventListener("submit", function (e) {
+                e.preventDefault();
+                document.getElementById("msg").innerHTML = '<div class="sr-alert sr-alert--success" style="margin-bottom: 20px;">Đã lưu hồ sơ thành công (Demo).</div>';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+    </script>
+}

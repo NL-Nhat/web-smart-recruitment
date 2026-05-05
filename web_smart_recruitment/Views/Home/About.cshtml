@@ -1,0 +1,91 @@
+@{
+    ViewData["Title"] = "Giới thiệu";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin: 4rem 0;
+        }
+        .waveform-bg {
+            background: linear-gradient(135deg, #f5f2ef 0%, #e5e5e5 100%);
+            height: 300px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .waveform-bg::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,0,0,0.03) 20px, rgba(0,0,0,0.03) 40px);
+        }
+    </style>
+}
+
+<header class="sr-topbar">
+    <div class="sr-topbar-inner">
+        <a class="sr-brand" asp-controller="Home" asp-action="Index">
+            <span class="sr-brand-mark">SR</span>
+            Smart Recruiter
+        </a>
+        <nav class="sr-nav">
+            <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+            <a asp-controller="Candidate" asp-action="Jobs">Việc làm</a>
+            <a asp-controller="Auth" asp-action="Login">Đăng nhập</a>
+        </nav>
+    </div>
+</header>
+
+<main class="sr-main">
+    <section class="sr-hero" style="max-width: 900px;">
+        <h1 class="el-display-hero">Tương lai của tuyển dụng là Trí tuệ nhân tạo</h1>
+        <p class="sr-page-sub">
+            Smart Recruiter không chỉ là một trang web tìm việc. Chúng tôi xây dựng một cầu nối thông minh, nơi AI hiểu rõ kỹ năng của bạn hơn cả những dòng chữ trên giấy.
+        </p>
+    </section>
+
+    <div class="feature-grid">
+        <div>
+            <h2 class="el-section-heading">Phân tích CV chuyên sâu</h2>
+            <p class="el-text-muted">
+                Công nghệ NLP (Natural Language Processing) của chúng tôi bóc tách từng từ khóa, dự án và kinh nghiệm trong CV của bạn để tạo ra một "Bản đồ năng lực" kỹ thuật số.
+            </p>
+            <ul style="padding-left: 1.2rem; color: var(--el-dark-gray);">
+                <li>Trích xuất kỹ năng tự động</li>
+                <li>Đánh giá mức độ phù hợp với JD</li>
+                <li>Gợi ý lộ trình thăng tiến</li>
+            </ul>
+        </div>
+        <div class="waveform-bg">
+            <div style="font-family: var(--el-font-mono); font-size: 12px; color: var(--el-warm-gray); z-index: 1;">
+                [AI Analysis Processing...] <br>
+                Extracting: ReactJS (98%) <br>
+                Extracting: Node.js (85%) <br>
+                Matching: Senior Dev Role (92.5%)
+            </div>
+        </div>
+    </div>
+
+    <section class="el-card" style="background: var(--el-warm-stone); border: none; text-align: center; padding: 4rem;">
+        <h2 class="el-section-heading">Sẵn sàng để bứt phá?</h2>
+        <p class="sr-page-sub">Hãy để AI giúp bạn tìm thấy bến đỗ tiếp theo trong sự nghiệp.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a class="sr-btn sr-btn--primary" asp-controller="Auth" asp-action="Register">Tạo hồ sơ ứng viên</a>
+            <a class="sr-btn sr-btn--white" asp-controller="Auth" asp-action="Login">Dành cho Nhà tuyển dụng</a>
+        </div>
+    </section>
+</main>
+
+<footer class="sr-footer">
+    © 2024 Smart Recruiter — Đồ án thực tập thiết kế UI/UX
+</footer>

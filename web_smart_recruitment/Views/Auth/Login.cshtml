@@ -1,0 +1,121 @@
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        body { margin: 0; background: var(--el-white); }
+        .split-screen {
+            display: flex;
+            height: 100vh;
+        }
+        .split-left {
+            flex: 1.2;
+            background: var(--el-warm-stone);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .split-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+        }
+        .decoration-circle {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: var(--el-white);
+            border-radius: 50%;
+            opacity: 0.3;
+            top: -100px;
+            left: -100px;
+        }
+    </style>
+}
+
+<div class="split-screen">
+    <div class="split-left">
+        <div class="decoration-circle"></div>
+        <div style="position: relative; z-index: 1;">
+            <a class="sr-brand" asp-controller="Home" asp-action="Index" style="font-size: 24px; margin-bottom: 60px; display: inline-block;">
+                <span class="sr-brand-mark">SR</span>Smart Recruiter
+            </a>
+            <h1 class="el-display-hero" style="font-size: 64px; margin-bottom: 24px;">Tuyển dụng thông minh bằng AI.</h1>
+            <p class="el-text-muted" style="font-size: 20px; max-width: 480px; line-height: 1.5;">
+                Khám phá quy trình tuyển dụng hiện đại, nơi AI giúp kết nối ứng viên tài năng với những cơ hội phù hợp nhất.
+            </p>
+        </div>
+    </div>
+
+    <div class="split-right">
+        <div class="login-box">
+            <h2 class="el-card-heading" style="margin-bottom: 8px;">Chào mừng trở lại</h2>
+            <p class="el-text-muted" style="margin-bottom: 32px; font-size: 15px;">Vui lòng nhập thông tin để truy cập hệ thống.</p>
+
+            <div id="sr-login-alert"></div>
+
+            <form id="form-login" novalidate>
+                <div class="el-form-group">
+                    <label class="el-label" for="vaiTro">Bạn tham gia với vai trò</label>
+                    <select class="el-select" id="vaiTro" required>
+                        <option value="">— Chọn vai trò —</option>
+                        <option value="UngVien">Ứng viên tài năng</option>
+                        <option value="NhaTuyenDung">Nhà tuyển dụng chuyên nghiệp</option>
+                    </select>
+                </div>
+                <div class="el-form-group">
+                    <label class="el-label" for="email">Email đăng nhập</label>
+                    <input class="el-input" type="email" id="email" placeholder="name@company.com" required />
+                </div>
+                <div class="el-form-group">
+                    <label class="el-label" for="password">Mật khẩu</label>
+                    <input class="el-input" type="password" id="password" placeholder="••••••••" required />
+                </div>
+                <button type="submit" class="el-btn-primary" style="width: 100%; height: 48px; justify-content: center; margin-top: 12px;">Đăng nhập ngay</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 32px; font-size: 14px; color: var(--el-warm-gray);">
+                Chưa có tài khoản? <a asp-controller="Auth" asp-action="Register" style="color: var(--el-black); font-weight: 600; text-decoration: none;">Đăng ký miễn phí</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var form = document.getElementById("form-login");
+            var alertEl = document.getElementById("sr-login-alert");
+            function show(msg, kind) {
+                alertEl.innerHTML = '<div class="sr-alert sr-alert--' + (kind || "error") + '" style="margin-bottom: 20px;">' + SR_UI.escapeHtml(msg) + '</div>';
+            }
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+                var email = document.getElementById("email").value;
+                var password = document.getElementById("password").value;
+                var vaiTro = document.getElementById("vaiTro").value;
+                if (!vaiTro) { show("Vui lòng chọn vai trò."); return; }
+
+                var r = SR_AUTH.login(email, password, vaiTro);
+                if (!r.ok) { show(r.message); return; }
+
+                show("Đăng nhập thành công. Đang chuyển hướng...", "success");
+                var s = SR_AUTH.getSession();
+                var target = s.vaiTro === "UngVien" ? '@Url.Action("Jobs", "Candidate")' : '@Url.Action("Dashboard", "Hr")';
+                setTimeout(function () { location.href = target; }, 800);
+            });
+        })();
+    </script>
+}
