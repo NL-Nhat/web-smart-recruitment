@@ -1,0 +1,42 @@
+## Build results
+bin/
+obj/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Rider / VSCode
+.idea/
+.vscode/
+
+## ASP.NET Core
+appsettings.Development.json
+appsettings.*.json
+
+## Logs
+logs/
+*.log
+
+## OS files
+.DS_Store
+Thumbs.db
+
+## Node (nếu có frontend)
+node_modules/
+dist/
+build/
+
+## Publish
+publish/
+wwwroot/dist/
+
+## Secrets
+secrets.json
+
+## Others
+*.cache
+*.tmp
