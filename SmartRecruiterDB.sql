@@ -1,4 +1,4 @@
-﻿-- Kiem tra xem database da ton tai hay chua, ton tai thi xoa
+-- Kiem tra xem database da ton tai hay chua, ton tai thi xoa
 IF EXISTS (SELECT * FROM sys.databases WHERE name = N'SmartRecruiterDB')
 BEGIN
     -- Dong tat ca cac ket noi den co so du lieu
@@ -21,16 +21,22 @@ GO
 -- HỆ THỐNG SMART RECRUITER - DATABASE SCHEMA (INT IDENTITY)
 -- =========================================================================
 
--- 1. TÀI KHOẢN (Dùng chung cho Authentication)
+-- 1. VAI TRÒ
+CREATE TABLE VaiTro (
+    MaVaiTro INT IDENTITY(1,1) PRIMARY KEY,
+    TenVaiTro VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- 2. TÀI KHOẢN (Dùng chung cho Authentication)
 CREATE TABLE TaiKhoan (
     MaTaiKhoan INT IDENTITY(1,1) PRIMARY KEY,
     Email NVARCHAR(100) NOT NULL UNIQUE,
     MatKhauHash NVARCHAR(255) NOT NULL,
-    VaiTro VARCHAR(50) NOT NULL, 
+    MaVaiTro INT NOT NULL, 
     TrangThaiHoatDong BIT DEFAULT 1, -- 1: Hoạt động, 0: Khóa
     NgayTao DATETIME DEFAULT GETDATE(),
     NgayCapNhat DATETIME DEFAULT GETDATE(),
-    CONSTRAINT CHK_TaiKhoan_VaiTro CHECK (VaiTro IN ('NhaTuyenDung', 'UngVien', 'Admin'))
+    FOREIGN KEY (MaVaiTro) REFERENCES VaiTro(MaVaiTro)
 );
 
 -- 2. HỒ SƠ NHÀ TUYỂN DỤNG
@@ -164,7 +170,7 @@ CREATE INDEX IX_TinTuyenDung_NhaTuyenDung ON TinTuyenDung(MaNhaTuyenDung);
 CREATE INDEX IX_DonUngTuyen_Tin_TrangThai ON DonUngTuyen(MaTin, TrangThai);
 CREATE INDEX IX_DonUngTuyen_UngVien ON DonUngTuyen(MaUngVien);
 CREATE INDEX IX_UngVien_HoTen ON UngVien(HoTen);
-CREATE INDEX IX_TaiKhoan_VaiTro ON TaiKhoan(VaiTro);
+CREATE INDEX IX_TaiKhoan_VaiTro ON TaiKhoan(MaVaiTro);
 
 -- 12. LỊCH HẸN PHỎNG VẤN
 CREATE TABLE LichHenPhongVan (
@@ -190,27 +196,37 @@ CREATE INDEX IX_LichHen_ThoiGian ON LichHenPhongVan(ThoiGian);
 -- =========================================================================
 
 -- ---------------------------------------------------------
+-- 0. VAI TRÒ
+-- ---------------------------------------------------------
+SET IDENTITY_INSERT VaiTro ON;
+INSERT INTO VaiTro (MaVaiTro, TenVaiTro) VALUES 
+(1, 'Admin'),
+(2, 'NhaTuyenDung'),
+(3, 'UngVien');
+SET IDENTITY_INSERT VaiTro OFF;
+
+-- ---------------------------------------------------------
 -- 1. TÀI KHOẢN (2 Admin, 4 HR, 8 Ứng viên)
 -- ---------------------------------------------------------
 SET IDENTITY_INSERT TaiKhoan ON;
-INSERT INTO TaiKhoan (MaTaiKhoan, Email, MatKhauHash, VaiTro, TrangThaiHoatDong, NgayTao, NgayCapNhat) VALUES 
+INSERT INTO TaiKhoan (MaTaiKhoan, Email, MatKhauHash, MaVaiTro, TrangThaiHoatDong, NgayTao, NgayCapNhat) VALUES 
 -- Admins (ID: 1-2)
-(1, 'admin1@smartrecruit.vn', 'hash_admin1', 'Admin', 1, '2023-01-01 08:00', '2023-01-01 08:00'),
-(2, 'admin2@smartrecruit.vn', 'hash_admin2', 'Admin', 1, '2023-01-02 08:00', '2023-01-02 08:00'),
+(1, 'admin1@smartrecruit.vn', 'hash_admin1', 1, 1, '2023-01-01 08:00', '2023-01-01 08:00'),
+(2, 'admin2@smartrecruit.vn', 'hash_admin2', 1, 1, '2023-01-02 08:00', '2023-01-02 08:00'),
 -- HRs (ID: 3-6)
-(3, 'tuyendung@fpt.com.vn', 'hash_hr1', 'NhaTuyenDung', 1, '2023-05-10 09:00', '2023-05-10 09:00'),
-(4, 'hr.vng@vng.com.vn', 'hash_hr2', 'NhaTuyenDung', 1, '2023-06-15 10:00', '2023-06-15 10:00'),
-(5, 'recruitment@viettel.vn', 'hash_hr3', 'NhaTuyenDung', 1, '2023-07-20 08:30', '2023-07-20 08:30'),
-(6, 'hr@momo.vn', 'hash_hr4', 'NhaTuyenDung', 1, '2023-08-05 14:00', '2023-08-05 14:00'),
+(3, 'tuyendung@fpt.com.vn', 'hash_hr1', 2, 1, '2023-05-10 09:00', '2023-05-10 09:00'),
+(4, 'hr.vng@vng.com.vn', 'hash_hr2', 2, 1, '2023-06-15 10:00', '2023-06-15 10:00'),
+(5, 'recruitment@viettel.vn', 'hash_hr3', 2, 1, '2023-07-20 08:30', '2023-07-20 08:30'),
+(6, 'hr@momo.vn', 'hash_hr4', 2, 1, '2023-08-05 14:00', '2023-08-05 14:00'),
 -- Candidates (ID: 7-14)
-(7, 'nguyenvana@gmail.com', 'hash_uv1', 'UngVien', 1, '2024-01-10 09:15', '2024-01-10 09:15'),
-(8, 'tranthingoc@gmail.com', 'hash_uv2', 'UngVien', 1, '2024-01-12 10:20', '2024-01-12 10:20'),
-(9, 'lehoanghai.dev@gmail.com', 'hash_uv3', 'UngVien', 1, '2024-02-05 14:00', '2024-02-05 14:00'),
-(10, 'phamminhtuan@gmail.com', 'hash_uv4', 'UngVien', 1, '2024-02-20 16:45', '2024-02-20 16:45'),
-(11, 'hoangthanhmai@gmail.com', 'hash_uv5', 'UngVien', 1, '2024-03-01 08:30', '2024-03-01 08:30'),
-(12, 'vuminhduc.ai@gmail.com', 'hash_uv6', 'UngVien', 1, '2024-03-15 11:11', '2024-03-15 11:11'),
-(13, 'doanvanhau.it@gmail.com', 'hash_uv7', 'UngVien', 1, '2024-03-20 09:00', '2024-03-20 09:00'),
-(14, 'ngotienhiep@gmail.com', 'hash_uv8', 'UngVien', 0, '2024-04-01 10:00', '2024-04-05 10:00'); -- Bị khóa
+(7, 'nguyenvana@gmail.com', 'hash_uv1', 3, 1, '2024-01-10 09:15', '2024-01-10 09:15'),
+(8, 'tranthingoc@gmail.com', 'hash_uv2', 3, 1, '2024-01-12 10:20', '2024-01-12 10:20'),
+(9, 'lehoanghai.dev@gmail.com', 'hash_uv3', 3, 1, '2024-02-05 14:00', '2024-02-05 14:00'),
+(10, 'phamminhtuan@gmail.com', 'hash_uv4', 3, 1, '2024-02-20 16:45', '2024-02-20 16:45'),
+(11, 'hoangthanhmai@gmail.com', 'hash_uv5', 3, 1, '2024-03-01 08:30', '2024-03-01 08:30'),
+(12, 'vuminhduc.ai@gmail.com', 'hash_uv6', 3, 1, '2024-03-15 11:11', '2024-03-15 11:11'),
+(13, 'doanvanhau.it@gmail.com', 'hash_uv7', 3, 1, '2024-03-20 09:00', '2024-03-20 09:00'),
+(14, 'ngotienhiep@gmail.com', 'hash_uv8', 3, 0, '2024-04-01 10:00', '2024-04-05 10:00'); -- Bị khóa
 SET IDENTITY_INSERT TaiKhoan OFF;
 
 -- ---------------------------------------------------------
@@ -396,31 +412,31 @@ SET IDENTITY_INSERT KetQua_AI OFF;
 -- Tiếp nối ID từ 15 đến 35
 -- ---------------------------------------------------------
 SET IDENTITY_INSERT TaiKhoan ON;
-INSERT INTO TaiKhoan (MaTaiKhoan, Email, MatKhauHash, VaiTro, TrangThaiHoatDong, NgayTao) VALUES 
+INSERT INTO TaiKhoan (MaTaiKhoan, Email, MatKhauHash, MaVaiTro, TrangThaiHoatDong, NgayTao) VALUES 
 -- HRs mới (ID: 15-20)
-(15, 'hr@shopee.vn', 'hash_hr5', 'NhaTuyenDung', 1, '2024-05-01 08:00'),
-(16, 'tuyendung@tiki.vn', 'hash_hr6', 'NhaTuyenDung', 1, '2024-05-02 08:00'),
-(17, 'talent@vnpay.vn', 'hash_hr7', 'NhaTuyenDung', 1, '2024-05-03 08:00'),
-(18, 'hr@nashtech.com', 'hash_hr8', 'NhaTuyenDung', 1, '2024-05-04 08:00'),
-(19, 'recruitment@katalon.com', 'hash_hr9', 'NhaTuyenDung', 1, '2024-05-05 08:00'),
-(20, 'careers@vinai.io', 'hash_hr10', 'NhaTuyenDung', 1, '2024-05-06 08:00'),
+(15, 'hr@shopee.vn', 'hash_hr5', 2, 1, '2024-05-01 08:00'),
+(16, 'tuyendung@tiki.vn', 'hash_hr6', 2, 1, '2024-05-02 08:00'),
+(17, 'talent@vnpay.vn', 'hash_hr7', 2, 1, '2024-05-03 08:00'),
+(18, 'hr@nashtech.com', 'hash_hr8', 2, 1, '2024-05-04 08:00'),
+(19, 'recruitment@katalon.com', 'hash_hr9', 2, 1, '2024-05-05 08:00'),
+(20, 'careers@vinai.io', 'hash_hr10', 2, 1, '2024-05-06 08:00'),
 
 -- Candidates mới (ID: 21-35)
-(21, 'lethanh.ba@gmail.com', 'hash_uv21', 'UngVien', 1, '2024-06-01 09:00'),
-(22, 'tranquoctoan.qa@gmail.com', 'hash_uv22', 'UngVien', 1, '2024-06-02 10:00'),
-(23, 'nguyenha.mobile@gmail.com', 'hash_uv23', 'UngVien', 1, '2024-06-03 11:00'),
-(24, 'phamhung.ios@gmail.com', 'hash_uv24', 'UngVien', 1, '2024-06-04 14:00'),
-(25, 'dovan.data@gmail.com', 'hash_uv25', 'UngVien', 1, '2024-06-05 15:00'),
-(26, 'lynhan.uxui@gmail.com', 'hash_uv26', 'UngVien', 1, '2024-06-06 16:00'),
-(27, 'vuongdinh.php@gmail.com', 'hash_uv27', 'UngVien', 1, '2024-06-07 09:30'),
-(28, 'caothang.go@gmail.com', 'hash_uv28', 'UngVien', 1, '2024-06-08 10:30'),
-(29, 'dinhbao.vue@gmail.com', 'hash_uv29', 'UngVien', 1, '2024-06-09 11:30'),
-(30, 'truonggiang.ruby@gmail.com', 'hash_uv30', 'UngVien', 1, '2024-06-10 14:30'),
-(31, 'ngocmai.tester@gmail.com', 'hash_uv31', 'UngVien', 1, '2024-06-11 15:30'),
-(32, 'hoangnam.sysadmin@gmail.com', 'hash_uv32', 'UngVien', 1, '2024-06-12 16:30'),
-(33, 'tuananh.fullstack@gmail.com', 'hash_uv33', 'UngVien', 1, '2024-06-13 09:00'),
-(34, 'minhthu.marketing@gmail.com', 'hash_uv34', 'UngVien', 1, '2024-06-14 10:00'),
-(35, 'bichtram.hr@gmail.com', 'hash_uv35', 'UngVien', 1, '2024-06-15 11:00');
+(21, 'lethanh.ba@gmail.com', 'hash_uv21', 3, 1, '2024-06-01 09:00'),
+(22, 'tranquoctoan.qa@gmail.com', 'hash_uv22', 3, 1, '2024-06-02 10:00'),
+(23, 'nguyenha.mobile@gmail.com', 'hash_uv23', 3, 1, '2024-06-03 11:00'),
+(24, 'phamhung.ios@gmail.com', 'hash_uv24', 3, 1, '2024-06-04 14:00'),
+(25, 'dovan.data@gmail.com', 'hash_uv25', 3, 1, '2024-06-05 15:00'),
+(26, 'lynhan.uxui@gmail.com', 'hash_uv26', 3, 1, '2024-06-06 16:00'),
+(27, 'vuongdinh.php@gmail.com', 'hash_uv27', 3, 1, '2024-06-07 09:30'),
+(28, 'caothang.go@gmail.com', 'hash_uv28', 3, 1, '2024-06-08 10:30'),
+(29, 'dinhbao.vue@gmail.com', 'hash_uv29', 3, 1, '2024-06-09 11:30'),
+(30, 'truonggiang.ruby@gmail.com', 'hash_uv30', 3, 1, '2024-06-10 14:30'),
+(31, 'ngocmai.tester@gmail.com', 'hash_uv31', 3, 1, '2024-06-11 15:30'),
+(32, 'hoangnam.sysadmin@gmail.com', 'hash_uv32', 3, 1, '2024-06-12 16:30'),
+(33, 'tuananh.fullstack@gmail.com', 'hash_uv33', 3, 1, '2024-06-13 09:00'),
+(34, 'minhthu.marketing@gmail.com', 'hash_uv34', 3, 1, '2024-06-14 10:00'),
+(35, 'bichtram.hr@gmail.com', 'hash_uv35', 3, 1, '2024-06-15 11:00');
 SET IDENTITY_INSERT TaiKhoan OFF;
 
 -- ---------------------------------------------------------

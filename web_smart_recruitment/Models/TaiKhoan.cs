@@ -11,13 +11,15 @@ public partial class TaiKhoan
 
     public string MatKhauHash { get; set; } = null!;
 
-    public string VaiTro { get; set; } = null!;
+    public int MaVaiTro { get; set; }
 
     public bool? TrangThaiHoatDong { get; set; }
 
     public DateTime? NgayTao { get; set; }
 
     public DateTime? NgayCapNhat { get; set; }
+
+    public virtual VaiTro MaVaiTroNavigation { get; set; } = null!;
 
     public virtual NhaTuyenDung? NhaTuyenDung { get; set; }
 
