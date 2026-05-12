@@ -68,6 +68,13 @@
             <h2 class="el-card-heading" style="margin-bottom: 8px;">Chào mừng trở lại</h2>
             <p class="el-text-muted" style="margin-bottom: 32px; font-size: 15px;">Vui lòng nhập thông tin để truy cập hệ thống.</p>
 
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="sr-alert sr-alert--success" style="margin-bottom: 20px;">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
             <form asp-action="Login" method="post">
                 <div asp-validation-summary="ModelOnly" class="sr-alert sr-alert--error" style="margin-bottom: 20px;"></div>
 

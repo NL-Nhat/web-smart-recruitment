@@ -105,6 +105,14 @@ namespace web_smart_recruitment.Services
         }
 
         /// <summary>
+        /// Băm mật khẩu người dùng bằng thuật toán BCrypt.
+        /// </summary>
+        public string HashPassword(string password)
+        {
+            return BCrypt.Net.BCrypt.HashPassword(password);
+        }
+
+        /// <summary>
         /// Kiểm tra mật khẩu người dùng nhập vào so với mã hash trong Database.
         /// Sử dụng thư viện BCrypt đảm bảo tính bảo mật cao nhất hiện nay.
         /// </summary>

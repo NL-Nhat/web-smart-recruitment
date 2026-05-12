@@ -128,9 +128,134 @@ namespace web_smart_recruitment.Controllers
             Response.Cookies.Append("RefreshToken", refreshToken, cookieOptions);
         }
 
-        public IActionResult Register()
+        /// <summary>
+        /// Hiển thị trang đăng ký tài khoản.
+        /// Load danh sách vai trò từ DB để người dùng lựa chọn (Ứng viên hoặc Nhà tuyển dụng).
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Register()
         {
+            var roles = await _context.VaiTros
+                .Where(r => r.TenVaiTro != "Admin")
+                .ToListAsync();
+            
+            ViewBag.Roles = roles;
             return View();
+        }
+
+        /// <summary>
+        /// Xử lý logic đăng ký tài khoản mới.
+        /// Quy trình: Băm mật khẩu -> Lưu bảng TaiKhoan -> Lưu bảng con (UngVien hoặc NhaTuyenDung).
+        /// Sử dụng Transaction để đảm bảo tính toàn vẹn dữ liệu.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Roles = await _context.VaiTros.Where(r => r.TenVaiTro != "Admin").ToListAsync();
+                return View(model);
+            }
+
+            // 1. Kiểm tra Email đã tồn tại chưa
+            var existingUser = await _context.TaiKhoans.AnyAsync(a => a.Email == model.Email);
+            if (existingUser)
+            {
+                ModelState.AddModelError("Email", "Email này đã được sử dụng. Vui lòng chọn email khác.");
+                ViewBag.Roles = await _context.VaiTros.Where(r => r.TenVaiTro != "Admin").ToListAsync();
+                return View(model);
+            }
+
+            // 2. Kiểm tra Số điện thoại đã tồn tại trong hệ thống chưa
+            // Kiểm tra ở cả bảng UngVien và NhaTuyenDung để đảm bảo tính duy nhất
+            var phoneExistsInUngVien = await _context.UngViens.AnyAsync(uv => uv.SoDienThoai == model.SoDienThoai);
+            var phoneExistsInNhaTuyenDung = await _context.NhaTuyenDungs.AnyAsync(ntd => ntd.SoDienThoai == model.SoDienThoai);
+            
+            if (phoneExistsInUngVien || phoneExistsInNhaTuyenDung)
+            {
+                ModelState.AddModelError("SoDienThoai", "Số điện thoại này đã được sử dụng bởi một tài khoản khác.");
+                ViewBag.Roles = await _context.VaiTros.Where(r => r.TenVaiTro != "Admin").ToListAsync();
+                return View(model);
+            }
+
+            // 3. Lấy mã vai trò từ tên vai trò
+            var role = await _context.VaiTros.FirstOrDefaultAsync(r => r.TenVaiTro == model.VaiTro);
+            if (role == null)
+            {
+                ModelState.AddModelError("", "Vai trò không hợp lệ.");
+                ViewBag.Roles = await _context.VaiTros.Where(r => r.TenVaiTro != "Admin").ToListAsync();
+                return View(model);
+            }
+
+            // Sử dụng Transaction (Giao dịch) để đảm bảo tính toàn vẹn dữ liệu:
+            // Nếu việc tạo bản ghi ở bảng con (UngVien/NhaTuyenDung) thất bại, 
+            // tài khoản ở bảng TaiKhoan cũng sẽ không được tạo.
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 3. Khởi tạo đối tượng TaiKhoan mới
+                var newAccount = new TaiKhoan
+                {
+                    Email = model.Email,
+                    // Sử dụng AuthService để băm mật khẩu bảo mật trước khi lưu vào DB
+                    MatKhauHash = _authService.HashPassword(model.Password), 
+                    MaVaiTro = role.MaVaiTro,
+                    TrangThaiHoatDong = true, // Mặc định tài khoản mới sẽ được hoạt động ngay
+                    NgayTao = DateTime.Now,
+                    NgayCapNhat = DateTime.Now
+                };
+
+                _context.TaiKhoans.Add(newAccount);
+                // Lưu để lấy MaTaiKhoan (Identity) dùng làm khóa ngoại cho bảng con
+                await _context.SaveChangesAsync();
+
+                // 4. Dựa vào vai trò người dùng chọn để tạo thông tin chi tiết tương ứng
+                if (model.VaiTro == "UngVien")
+                {
+                    // Tạo bản ghi cho bảng Ứng viên
+                    var ungVien = new UngVien
+                    {
+                        MaUngVien = newAccount.MaTaiKhoan, // PK-FK 1:1 với bảng TaiKhoan
+                        HoTen = model.HoTen,
+                        SoDienThoai = model.SoDienThoai
+                    };
+                    _context.UngViens.Add(ungVien);
+                }
+                else if (model.VaiTro == "NhaTuyenDung")
+                {
+                    // Tạo bản ghi cho bảng Nhà tuyển dụng
+                    var nhaTuyenDung = new NhaTuyenDung
+                    {
+                        MaNhaTuyenDung = newAccount.MaTaiKhoan, // PK-FK 1:1 với bảng TaiKhoan
+                        HoTen = model.HoTen,
+                        TenCongTy = model.TenCongTy,
+                        SoDienThoai = model.SoDienThoai
+                    };
+                    _context.NhaTuyenDungs.Add(nhaTuyenDung);
+                }
+
+                // Lưu các thay đổi ở bảng con
+                await _context.SaveChangesAsync();
+
+                // Xác nhận hoàn tất giao dịch thành công
+                await transaction.CommitAsync();
+
+                // 5. Thông báo cho người dùng và chuyển hướng về trang đăng nhập
+                TempData["SuccessMessage"] = "Đăng ký tài khoản thành công! Bây giờ bạn có thể đăng nhập.";
+                return RedirectToAction("Login");
+            }
+            catch (Exception ex)
+            {
+                // Nếu có bất kỳ lỗi nào, hủy bỏ toàn bộ các thay đổi trong Database
+                await transaction.RollbackAsync();
+                
+                // Ghi log lỗi nếu cần thiết (ở đây ta hiển thị thông báo chung)
+                ModelState.AddModelError("", "Hệ thống đang bận, vui lòng thử lại sau.");
+                
+                // Load lại danh sách vai trò để hiển thị lại View
+                ViewBag.Roles = await _context.VaiTros.Where(r => r.TenVaiTro != "Admin").ToListAsync();
+                return View(model);
+            }
         }
     }
 }
