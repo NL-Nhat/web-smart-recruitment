@@ -1,6 +1,9 @@
+@using web_smart_recruitment.Models.ViewModels.Auth
+@model LoginViewModel
 @{
-    ViewData["Title"] = "Đăng nhập";
+    ViewData["Title"] = "Đăng nhập người dùng";
     Layout = "_Layout";
+    var roles = ViewBag.Roles as List<web_smart_recruitment.Models.VaiTro>;
 }
 
 @section Styles {
@@ -42,6 +45,7 @@
             top: -100px;
             left: -100px;
         }
+        .text-danger { color: #dc3545; font-size: 13px; margin-top: 4px; display: block; }
     </style>
 }
 
@@ -64,25 +68,43 @@
             <h2 class="el-card-heading" style="margin-bottom: 8px;">Chào mừng trở lại</h2>
             <p class="el-text-muted" style="margin-bottom: 32px; font-size: 15px;">Vui lòng nhập thông tin để truy cập hệ thống.</p>
 
-            <div id="sr-login-alert"></div>
+            <form asp-action="Login" method="post">
+                <div asp-validation-summary="ModelOnly" class="sr-alert sr-alert--error" style="margin-bottom: 20px;"></div>
 
-            <form id="form-login" novalidate>
                 <div class="el-form-group">
-                    <label class="el-label" for="vaiTro">Bạn tham gia với vai trò</label>
-                    <select class="el-select" id="vaiTro" required>
+                    <label class="el-label" asp-for="VaiTro">Bạn tham gia với vai trò</label>
+                    <select class="el-select" asp-for="VaiTro" required>
                         <option value="">— Chọn vai trò —</option>
-                        <option value="UngVien">Ứng viên tài năng</option>
-                        <option value="NhaTuyenDung">Nhà tuyển dụng chuyên nghiệp</option>
+                        @if (roles != null)
+                        {
+                            foreach (var role in roles)
+                            {
+                                // Logic hiển thị tên vai trò có dấu dựa trên mã trong DB
+                                string displayName = role.TenVaiTro switch
+                                {
+                                    "UngVien" => "Ứng viên",
+                                    "NhaTuyenDung" => "Nhà tuyển dụng",
+                                    _ => role.TenVaiTro
+                                };
+                                <option value="@role.TenVaiTro">@displayName</option>
+                            }
+                        }
                     </select>
+                    <span asp-validation-for="VaiTro" class="text-danger"></span>
                 </div>
+
                 <div class="el-form-group">
-                    <label class="el-label" for="email">Email đăng nhập</label>
-                    <input class="el-input" type="email" id="email" placeholder="name@company.com" required />
+                    <label class="el-label" asp-for="Email">Email đăng nhập</label>
+                    <input class="el-input" type="email" asp-for="Email" placeholder="name@company.com" required />
+                    <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
+
                 <div class="el-form-group">
-                    <label class="el-label" for="password">Mật khẩu</label>
-                    <input class="el-input" type="password" id="password" placeholder="••••••••" required />
+                    <label class="el-label" asp-for="Password">Mật khẩu</label>
+                    <input class="el-input" type="password" asp-for="Password" placeholder="••••••••" required />
+                    <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
+
                 <button type="submit" class="el-btn-primary" style="width: 100%; height: 48px; justify-content: center; margin-top: 12px;">Đăng nhập ngay</button>
             </form>
 
@@ -94,28 +116,5 @@
 </div>
 
 @section Scripts {
-    <script>
-        (function () {
-            var form = document.getElementById("form-login");
-            var alertEl = document.getElementById("sr-login-alert");
-            function show(msg, kind) {
-                alertEl.innerHTML = '<div class="sr-alert sr-alert--' + (kind || "error") + '" style="margin-bottom: 20px;">' + SR_UI.escapeHtml(msg) + '</div>';
-            }
-            form.addEventListener("submit", function (e) {
-                e.preventDefault();
-                var email = document.getElementById("email").value;
-                var password = document.getElementById("password").value;
-                var vaiTro = document.getElementById("vaiTro").value;
-                if (!vaiTro) { show("Vui lòng chọn vai trò."); return; }
-
-                var r = SR_AUTH.login(email, password, vaiTro);
-                if (!r.ok) { show(r.message); return; }
-
-                show("Đăng nhập thành công. Đang chuyển hướng...", "success");
-                var s = SR_AUTH.getSession();
-                var target = s.vaiTro === "UngVien" ? '@Url.Action("Jobs", "Candidate")' : '@Url.Action("Dashboard", "Hr")';
-                setTimeout(function () { location.href = target; }, 800);
-            });
-        })();
-    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
