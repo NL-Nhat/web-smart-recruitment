@@ -1,5 +1,6 @@
 @{
     ViewData["Title"] = "Hệ thống Quản trị";
+    Layout = "_AdminLayout";
 }
 
 @section Styles {
@@ -17,9 +18,6 @@
             padding: 32px 20px;
             display: flex;
             flex-direction: column;
-            position: fixed;
-            width: 280px;
-            height: 100vh;
         }
         .sidebar-brand {
             font-weight: 800;
@@ -58,7 +56,7 @@
         }
         .admin-content {
             padding: 40px;
-            margin-left: 280px;
+            overflow-y: auto;
         }
         .admin-header {
             display: flex;
