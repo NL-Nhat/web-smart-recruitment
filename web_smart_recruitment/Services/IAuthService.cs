@@ -14,6 +14,7 @@ namespace web_smart_recruitment.Services
         string GenerateAccessToken(TaiKhoan account, string roleName);
         string GenerateRefreshToken(TaiKhoan account);
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
+        string HashPassword(string password); // Thêm hàm băm mật khẩu
         bool VerifyPassword(string password, string hashedPassword);
     }
 }
