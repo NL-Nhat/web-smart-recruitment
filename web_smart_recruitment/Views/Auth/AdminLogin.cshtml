@@ -1,0 +1,77 @@
+@using web_smart_recruitment.Models.ViewModels.Auth
+@model AdminLoginViewModel
+@{
+    ViewData["Title"] = "Quản trị hệ thống";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        /* Giao diện Admin chuyên nghiệp với tone màu tối (Dark Mode) */
+        body { margin: 0; background: #0f172a; color: white; }
+        .admin-login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+        .admin-box {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+        }
+        .el-label { color: #94a3b8; }
+        .el-input { background: #0f172a; border-color: #334155; color: white; }
+        .el-input:focus { border-color: #38bdf8; outline: none; }
+        .text-danger { color: #f87171; font-size: 13px; margin-top: 4px; display: block; }
+    </style>
+}
+
+<div class="admin-login-container">
+    <div class="admin-box">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <div style="font-size: 32px; font-weight: 800; color: #38bdf8; margin-bottom: 8px;">
+                SR <span style="color: white;">ADMIN</span>
+            </div>
+            <p style="color: #64748b;">Vui lòng đăng nhập để quản lý hệ thống</p>
+        </div>
+
+        <form asp-action="AdminLogin" method="post">
+            @* Hiển thị các lỗi tổng quát từ Server *@
+            <div asp-validation-summary="ModelOnly" style="margin-bottom: 20px; padding: 12px; border-radius: 8px; background: #7f1d1d; color: #fecaca; font-size: 14px;"></div>
+
+            <div class="el-form-group">
+                <label class="el-label" asp-for="Email">Email quản trị</label>
+                <input class="el-input" type="email" asp-for="Email" placeholder="admin@smartrecruit.vn" required autocomplete="email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="el-form-group">
+                <label class="el-label" asp-for="Password">Mật khẩu bảo mật</label>
+                <input class="el-input" type="password" asp-for="Password" placeholder="••••••••" required autocomplete="current-password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="el-btn-primary" style="width: 100%; height: 48px; justify-content: center; margin-top: 20px; background: #0ea5e9; border: none; font-weight: 600;">
+                Đăng nhập hệ thống
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 32px;">
+            <a asp-controller="Home" asp-action="Index" style="color: #64748b; font-size: 14px; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#64748b'">
+                &larr; Quay lại trang chủ
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Thêm validation phía Client để tăng trải nghiệm người dùng *@
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
