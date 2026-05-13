@@ -86,8 +86,25 @@ namespace web_smart_recruitment.Middlewares
 
                 if (account != null)
                 {
+                    // Lấy Họ tên tương ứng
+                    string fullName = "Người dùng";
+                    if (account.MaVaiTroNavigation.TenVaiTro == "UngVien")
+                    {
+                        var uv = await dbContext.UngViens.FirstOrDefaultAsync(u => u.MaUngVien == account.MaTaiKhoan);
+                        fullName = uv?.HoTen ?? account.Email;
+                    }
+                    else if (account.MaVaiTroNavigation.TenVaiTro == "NhaTuyenDung")
+                    {
+                        var ntd = await dbContext.NhaTuyenDungs.FirstOrDefaultAsync(n => n.MaNhaTuyenDung == account.MaTaiKhoan);
+                        fullName = ntd?.HoTen ?? account.Email;
+                    }
+                    else if (account.MaVaiTroNavigation.TenVaiTro == "Admin")
+                    {
+                        fullName = "Quản trị viên";
+                    }
+
                     // Tạo bộ đôi Token mới
-                    var newAccessToken = authService.GenerateAccessToken(account, account.MaVaiTroNavigation.TenVaiTro);
+                    var newAccessToken = authService.GenerateAccessToken(account, account.MaVaiTroNavigation.TenVaiTro, fullName);
                     var newRefreshToken = authService.GenerateRefreshToken(account);
 
                     // Thiết lập Cookie bảo mật (HttpOnly)

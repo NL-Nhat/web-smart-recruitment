@@ -35,8 +35,28 @@
         <nav class="nav-links">
             <a asp-controller="Home" asp-action="About">Giới thiệu</a>
             <a asp-controller="Candidate" asp-action="Jobs">Việc làm</a>
-            <a asp-controller="Auth" asp-action="Login">Đăng nhập</a>
-            <a class="el-btn-primary" asp-controller="Auth" asp-action="Register" style="color: white; background: var(--el-black);">Bắt đầu ngay</a>
+            @if (User.Identity.IsAuthenticated)
+            {
+                var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                if (role == "Admin")
+                {
+                    <a asp-controller="Admin" asp-action="Dashboard" class="el-btn-primary" style="color: white; background: var(--el-black);">Vào Admin Portal</a>
+                }
+                else if (role == "NhaTuyenDung")
+                {
+                    <a asp-controller="Hr" asp-action="Dashboard" class="el-btn-primary" style="color: white; background: var(--el-black);">Vào HR Portal</a>
+                }
+                else
+                {
+                    <a asp-controller="Candidate" asp-action="Jobs" class="el-btn-primary" style="color: white; background: var(--el-black);">Trang cá nhân</a>
+                }
+                <a asp-controller="Auth" asp-action="Logout" class="el-btn-white" style="border: 1px solid var(--el-border);">Đăng xuất</a>
+            }
+            else
+            {
+                <a asp-controller="Auth" asp-action="Login">Đăng nhập</a>
+                <a class="el-btn-primary" asp-controller="Auth" asp-action="Register" style="color: white; background: var(--el-black);">Bắt đầu ngay</a>
+            }
         </nav>
     </div>
 </header>

@@ -140,11 +140,10 @@
 @section Scripts {
     <script>
         (function() {
-            const s = SR_AUTH.requireAuth("NhaTuyenDung", '@Url.Action("Login", "Auth")');
-            if (!s) return;
-            SR_AUTH.updateNavPlaceholders();
-
-            const myJobs = SR_DEMO.tinTuyenDung.filter(t => t.maNhaTuyenDung === s.maTaiKhoan);
+            // Xóa bỏ phần kiểm tra auth bằng JS vì đã có Authorize ở Controller
+            
+            // Dữ liệu demo vẫn giữ lại để hiển thị giao diện cho đẹp
+            const myJobs = SR_DEMO.tinTuyenDung.filter(t => t.maNhaTuyenDung === 3); // Lấy tạm ID = 3 cho demo
             const myApps = SR_DEMO.donUngTuyen.filter(d => myJobs.some(j => j.maTin === d.maTin));
 
             document.getElementById("stat-jobs").textContent = myJobs.filter(j => j.trangThai === "DangMo").length;

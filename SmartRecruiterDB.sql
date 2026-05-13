@@ -24,7 +24,8 @@ GO
 -- 1. VAI TRÒ
 CREATE TABLE VaiTro (
     MaVaiTro INT IDENTITY(1,1) PRIMARY KEY,
-    TenVaiTro VARCHAR(50) NOT NULL UNIQUE
+    TenVaiTro VARCHAR(50) NOT NULL UNIQUE,
+    MoTa NVARCHAR(100)
 );
 
 -- 2. TÀI KHOẢN (Dùng chung cho Authentication)
@@ -211,18 +212,18 @@ SET IDENTITY_INSERT VaiTro OFF;
 SET IDENTITY_INSERT TaiKhoan ON;
 INSERT INTO TaiKhoan (MaTaiKhoan, Email, MatKhauHash, MaVaiTro, TrangThaiHoatDong, NgayTao, NgayCapNhat) VALUES 
 -- Admins (ID: 1-2)
-(1, 'admin1@smartrecruit.vn', 'hash_admin1', 1, 1, '2023-01-01 08:00', '2023-01-01 08:00'),
-(2, 'admin2@smartrecruit.vn', 'hash_admin2', 1, 1, '2023-01-02 08:00', '2023-01-02 08:00'),
+(1, 'admin1@smartrecruit.vn', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 1, 1, '2023-01-01 08:00', '2023-01-01 08:00'),
+(2, 'admin2@smartrecruit.vn', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 1, 1, '2023-01-02 08:00', '2023-01-02 08:00'),
 -- HRs (ID: 3-6)
-(3, 'tuyendung@fpt.com.vn', 'hash_hr1', 2, 1, '2023-05-10 09:00', '2023-05-10 09:00'),
-(4, 'hr.vng@vng.com.vn', 'hash_hr2', 2, 1, '2023-06-15 10:00', '2023-06-15 10:00'),
-(5, 'recruitment@viettel.vn', 'hash_hr3', 2, 1, '2023-07-20 08:30', '2023-07-20 08:30'),
-(6, 'hr@momo.vn', 'hash_hr4', 2, 1, '2023-08-05 14:00', '2023-08-05 14:00'),
+(3, 'tuyendung@fpt.com.vn', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 2, 1, '2023-05-10 09:00', '2023-05-10 09:00'),
+(4, 'hr.vng@vng.com.vn', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 2, 1, '2023-06-15 10:00', '2023-06-15 10:00'),
+(5, 'recruitment@viettel.vn', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 2, 1, '2023-07-20 08:30', '2023-07-20 08:30'),
+(6, 'hr@momo.vn', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 2, 1, '2023-08-05 14:00', '2023-08-05 14:00'),
 -- Candidates (ID: 7-14)
-(7, 'nguyenvana@gmail.com', 'hash_uv1', 3, 1, '2024-01-10 09:15', '2024-01-10 09:15'),
-(8, 'tranthingoc@gmail.com', 'hash_uv2', 3, 1, '2024-01-12 10:20', '2024-01-12 10:20'),
-(9, 'lehoanghai.dev@gmail.com', 'hash_uv3', 3, 1, '2024-02-05 14:00', '2024-02-05 14:00'),
-(10, 'phamminhtuan@gmail.com', 'hash_uv4', 3, 1, '2024-02-20 16:45', '2024-02-20 16:45'),
+(7, 'nguyenvana@gmail.com', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 3, 1, '2024-01-10 09:15', '2024-01-10 09:15'),
+(8, 'tranthingoc@gmail.com', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 3, 1, '2024-01-12 10:20', '2024-01-12 10:20'),
+(9, 'lehoanghai.dev@gmail.com', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 3, 1, '2024-02-05 14:00', '2024-02-05 14:00'),
+(10, 'phamminhtuan@gmail.com', '$2a$11$DFsfGKhBLo8Ez7W33DxuX.GGO/QGv1R48f16zqjgSSwrnRWRUgPl2', 3, 1, '2024-02-20 16:45', '2024-02-20 16:45'),
 (11, 'hoangthanhmai@gmail.com', 'hash_uv5', 3, 1, '2024-03-01 08:30', '2024-03-01 08:30'),
 (12, 'vuminhduc.ai@gmail.com', 'hash_uv6', 3, 1, '2024-03-15 11:11', '2024-03-15 11:11'),
 (13, 'doanvanhau.it@gmail.com', 'hash_uv7', 3, 1, '2024-03-20 09:00', '2024-03-20 09:00'),
@@ -611,3 +612,9 @@ INSERT INTO LichHenPhongVan (MaDon, ThoiGian, DiaDiem, HinhThuc, GhiChu, TrangTh
 (8, '2024-06-15 10:00', N'Văn phòng Shopee, Liễu Giai', 'Offline', N'Gặp mặt trực tiếp Bộ phận Nhân sự', 'DaXacNhan'),
 (12, '2024-06-20 15:30', 'https://meet.google.com/abc-xyz', 'Online', N'Phỏng vấn với Project Manager', 'ChoXacNhan'),
 (10, '2024-06-25 09:00', N'Văn phòng VNPay, Láng Hạ', 'Offline', N'Phỏng vấn chuyên sâu kỹ thuật', 'ChoXacNhan');
+
+
+select *from TaiKhoan
+select *from UngVien
+select *from NhaTuyenDung
+select *from DonUngTuyen

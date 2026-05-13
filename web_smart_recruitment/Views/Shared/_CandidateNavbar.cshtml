@@ -5,7 +5,12 @@
             <a asp-controller="Candidate" asp-action="Jobs" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Jobs" ? "is-active" : "")'>Tìm việc làm</a>
             <a asp-controller="Candidate" asp-action="Applications" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Applications" ? "is-active" : "")'>Đơn ứng tuyển</a>
             <a asp-controller="Candidate" asp-action="Interviews" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Interviews" ? "is-active" : "")'>Lịch phỏng vấn</a>
-            <span id="sr-user-slot" data-logout-href='@Url.Action("Index", "Home")'></span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <a asp-controller="Candidate" asp-action="Profile" style="text-decoration: none; color: var(--el-black); font-weight: 600; font-size: 14px;">
+                    @User.Identity?.Name
+                </a>
+                <a asp-controller="Auth" asp-action="Logout" class="el-btn-white" style="font-size: 12px; padding: 6px 12px; border: 1px solid var(--el-border); text-decoration: none;">Đăng xuất</a>
+            </div>
         </nav>
     </div>
 </header>
