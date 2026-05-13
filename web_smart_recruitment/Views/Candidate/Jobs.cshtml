@@ -1,3 +1,4 @@
+@model IEnumerable<web_smart_recruitment.Models.TinTuyenDung>
 @{
     ViewData["Title"] = "Khám phá cơ hội";
 }
@@ -58,77 +59,67 @@
         <p class="el-text-muted">Tìm kiếm vị trí phù hợp với năng lực và định hướng của bạn qua hệ thống AI.</p>
     </div>
 
-    <div class="search-bar">
+    <form method="get" asp-action="Jobs" class="search-bar">
         <div class="el-form-group" style="flex: 2; margin-bottom: 0;">
             <label class="el-label">Từ khóa</label>
-            <input class="el-input" id="q" type="search" placeholder="Vị trí, kỹ năng, công ty..." />
+            <input class="el-input" name="q" id="q" type="search" placeholder="Vị trí, kỹ năng, công ty..." value="@Context.Request.Query["q"]" />
         </div>
         <div class="el-form-group" style="flex: 1; margin-bottom: 0;">
             <label class="el-label">Địa điểm</label>
-            <select class="el-select" id="loc">
+            <select class="el-select" name="loc" id="loc">
                 <option value="">Tất cả địa điểm</option>
-                <option value="Hà Nội">Hà Nội</option>
-                <option value="TP.HCM">TP.HCM</option>
-                <option value="Đà Nẵng">Đà Nẵng</option>
+                <!option value="Hà Nội" @(Context.Request.Query["loc"] == "Hà Nội" ? "selected" : "")>Hà Nội</!option>
+                <!option value="TP.HCM" @(Context.Request.Query["loc"] == "TP.HCM" ? "selected" : "")>TP.HCM</!option>
+                <!option value="Đà Nẵng" @(Context.Request.Query["loc"] == "Đà Nẵng" ? "selected" : "")>Đà Nẵng</!option>
             </select>
         </div>
-        <button class="el-btn-primary" style="height: 48px;" id="btn-search">Tìm kiếm</button>
-    </div>
+        <button type="submit" class="el-btn-primary" style="height: 48px;">Tìm kiếm</button>
+    </form>
 
-    <div id="job-list" class="el-grid el-grid--3"></div>
-</main>
-
-@section Scripts {
-    <script>
-        (function() {
-            const listEl = document.getElementById("job-list");
-
-            function render() {
-                const q = document.getElementById("q").value.toLowerCase();
-                const loc = document.getElementById("loc").value.toLowerCase();
-
-                const jobs = SR_DEMO.tinTuyenDung.filter(t => t.trangThai === "DangMo");
-                let html = "";
-
-                jobs.forEach(t => {
-                    const company = SR_DEMO.tenCongTy(t.maNhaTuyenDung);
-                    const blob = (t.tieuDe + " " + company + " " + t.moTaCongViec).toLowerCase();
-
-                    if (q && !blob.includes(q)) return;
-                    if (loc && !t.diaDiem.toLowerCase().includes(loc)) return;
-
-                    html += `
-                        <a href='@Url.Action("JobDetail", "Candidate")?maTin=${t.maTin}' class="job-card">
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                                    <span style="font-size: 13px; font-weight: 600; color: var(--el-warm-gray);">${SR_UI.escapeHtml(company)}</span>
-                                    <span class="el-status el-status--info" style="font-size: 10px;">${t.hinhThucLamViec}</span>
-                                </div>
-                                <h3 style="font-size: 18px; margin: 0 0 8px; font-weight: 600;">${SR_UI.escapeHtml(t.tieuDe)}</h3>
-                                <p class="el-text-muted" style="font-size: 14px; margin-bottom: 16px;">${SR_UI.escapeHtml(t.moTaCongViec.slice(0, 100))}...</p>
-                            </div>
-                            <div>
-                                <div style="display: flex; gap: 12px; font-size: 13px; margin-bottom: 12px;">
-                                    <span class="el-text-warm">📍 ${SR_UI.escapeHtml(t.diaDiem)}</span>
-                                    <span style="font-weight: 600; color: var(--el-black);">${SR_UI.formatVnd(t.mucLuongToiThieu)} - ${SR_UI.formatVnd(t.mucLuongToiDa)}</span>
-                                </div>
-                                <div class="job-tags">
-                                    ${SR_DEMO.skillsForTin(t.maTin).slice(0, 3).map(s => `<span class="job-tag">${s.tenKyNang}</span>`).join("")}
-                                    ${SR_DEMO.skillsForTin(t.maTin).length > 3 ? `<span class="job-tag">+${SR_DEMO.skillsForTin(t.maTin).length - 3}</span>` : ""}
-                                </div>
-                            </div>
-                        </a>
-                    `;
-                });
-
-                listEl.innerHTML = html || '<div style="grid-column: 1/-1; text-align: center; padding: 3rem;"><p class="el-text-muted">Không tìm thấy công việc phù hợp.</p></div>';
+    <div id="job-list" class="el-grid el-grid--3">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var t in Model)
+            {
+                <a href='@Url.Action("JobDetail", "Candidate", new { maTin = t.MaTin })' class="job-card">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <span style="font-size: 13px; font-weight: 600; color: var(--el-warm-gray);">
+                                @(t.MaNhaTuyenDungNavigation?.TenCongTy ?? "Công ty ẩn danh")
+                            </span>
+                            <span class="el-status el-status--info" style="font-size: 10px;">@t.HinhThucLamViec</span>
+                        </div>
+                        <h3 style="font-size: 18px; margin: 0 0 8px; font-weight: 600;">@t.TieuDe</h3>
+                        <p class="el-text-muted" style="font-size: 14px; margin-bottom: 16px;">
+                            @(t.MoTaCongViec?.Length > 100 ? t.MoTaCongViec.Substring(0, 100) + "..." : t.MoTaCongViec)
+                        </p>
+                    </div>
+                    <div>
+                        <div style="display: flex; gap: 12px; font-size: 13px; margin-bottom: 12px;">
+                            <span class="el-text-warm">📍 @t.DiaDiem</span>
+                            <span style="font-weight: 600; color: var(--el-black);">
+                                @(t.MucLuongToiThieu?.ToString("N0")) - @(t.MucLuongToiDa?.ToString("N0")) VNĐ
+                            </span>
+                        </div>
+                        <div class="job-tags">
+                            @foreach (var skill in t.ChiTietKyNangTinTuyenDungs.Take(3))
+                            {
+                                <span class="job-tag">@skill.MaKyNangNavigation?.TenKyNang</span>
+                            }
+                            @if (t.ChiTietKyNangTinTuyenDungs.Count > 3)
+                            {
+                                <span class="job-tag">+@(t.ChiTietKyNangTinTuyenDungs.Count - 3)</span>
+                            }
+                        </div>
+                    </div>
+                </a>
             }
-
-            document.getElementById("q").addEventListener("input", render);
-            document.getElementById("loc").addEventListener("change", render);
-            document.getElementById("btn-search").addEventListener("click", render);
-
-            render();
-        })();
-    </script>
-}
+        }
+        else
+        {
+            <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                <p class="el-text-muted">Không tìm thấy công việc phù hợp.</p>
+            </div>
+        }
+    </div>
+</main>
