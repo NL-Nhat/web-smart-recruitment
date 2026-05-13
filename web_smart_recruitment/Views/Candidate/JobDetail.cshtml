@@ -205,18 +205,31 @@
 
             <div class="sticky-sidebar-container">
                 <div class="detail-card" style="border: 2px solid var(--el-black); margin-bottom: 0;">
-                    <h3 style="font-size: 20px; margin-top: 0; margin-bottom: 12px;">Nộp hồ sơ ngay</h3>
-                    <p class="el-text-muted" style="font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
-                        Ứng tuyển bằng AI: Hệ thống sẽ tự động phân tích CV của bạn để đánh giá mức độ phù hợp.
-                    </p>
-                    <div id="apply-msg"></div>
-                    <div style="margin-bottom: 20px;">
-                        <label class="sr-label" style="margin-bottom: 8px;">Tải lên CV (PDF/DOCX)</label>
-                        <input type="file" id="cv-file" accept=".pdf,.doc,.docx" style="font-size: 13px; width: 100%; border: 1px dashed var(--el-border); padding: 12px; border-radius: 8px;" />
-                    </div>
-                    <button class="el-btn-primary" id="btn-apply" style="width: 100%; height: 52px; justify-content: center; font-size: 16px;">
-                        Ứng tuyển ngay
-                    </button>
+                    @if (ViewBag.HasApplied == true)
+                    {
+                        <h3 style="font-size: 20px; margin-top: 0; margin-bottom: 12px;">Trạng thái ứng tuyển</h3>
+                        <div class="sr-alert sr-alert--success" style="margin-bottom: 20px; font-size: 13px;">
+                            Bạn đã nộp đơn cho công việc này. Hồ sơ của bạn đang được xử lý.
+                        </div>
+                        <a asp-action="Applications" class="el-btn-primary" style="width: 100%; height: 52px; justify-content: center; font-size: 16px; text-decoration: none; display: flex; align-items: center;">
+                            Xem đơn ứng tuyển
+                        </a>
+                    }
+                    else
+                    {
+                        <h3 style="font-size: 20px; margin-top: 0; margin-bottom: 12px;">Nộp hồ sơ ngay</h3>
+                        <p class="el-text-muted" style="font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
+                            Ứng tuyển bằng AI: Hệ thống sẽ tự động phân tích CV của bạn để đánh giá mức độ phù hợp.
+                        </p>
+                        <div id="apply-msg"></div>
+                        <div style="margin-bottom: 20px;">
+                            <label class="sr-label" style="margin-bottom: 8px;">Tải lên CV (PDF/DOCX)</label>
+                            <input type="file" id="cv-file" accept=".pdf,.doc,.docx" style="font-size: 13px; width: 100%; border: 1px dashed var(--el-border); padding: 12px; border-radius: 8px;" />
+                        </div>
+                        <button class="el-btn-primary" id="btn-apply" style="width: 100%; height: 52px; justify-content: center; font-size: 16px;">
+                            Ứng tuyển ngay
+                        </button>
+                    }
                 </div>
 
                 <div class="company-preview-card">
@@ -245,25 +258,85 @@
 
 @section Scripts {
     <script>
-        (function() {
-            SR_AUTH.updateNavPlaceholders();
-            
-            document.getElementById("btn-apply").addEventListener("click", function () {
-                var msg = document.getElementById("apply-msg");
-                var s = SR_AUTH.getSession();
-                if (!s || s.vaiTro !== "UngVien") {
-                    msg.innerHTML = '<div class="sr-alert sr-alert--info" style="font-size: 13px;">Vui lòng <a href="@Url.Action("Login", "Auth")" style="font-weight: 700;">đăng nhập</a> để nộp đơn.</div>';
-                    return;
-                }
-                var f = document.getElementById("cv-file").files[0];
-                if (!f) {
-                    msg.innerHTML = '<div class="sr-alert sr-alert--error" style="font-size: 13px;">Vui lòng chọn file CV của bạn.</div>';
-                    return;
-                }
-                msg.innerHTML = '<div class="sr-alert sr-alert--success" style="font-size: 13px;"><b>Thành công!</b> Đơn đã được gửi và AI đang phân tích.</div>';
-                document.getElementById("btn-apply").disabled = true;
-                document.getElementById("btn-apply").style.opacity = "0.5";
-            });
-        })();
+            // Kiểm tra trạng thái đăng nhập từ Server bằng Razor
+            const isLogged = @(User.Identity.IsAuthenticated ? "true" : "false");
+            const userRole = "@(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "")";
+
+            // Xử lý sự kiện khi nhấn nút Ứng tuyển
+            const applyBtn = document.getElementById("btn-apply");
+            if (applyBtn) {
+                applyBtn.addEventListener("click", function () {
+                    const msg = document.getElementById("apply-msg");
+                    const fileInput = document.getElementById("cv-file");
+                    const file = fileInput.files[0];
+
+                    // 1. Kiểm tra đăng nhập và vai trò trực tiếp từ phía client
+                    if (!isLogged || userRole !== "UngVien") {
+                        msg.innerHTML = '<div class="sr-alert sr-alert--info" style="font-size: 13px;">Vui lòng <a href="@Url.Action("Login", "Auth")" style="font-weight: 700;">đăng nhập</a> với tài khoản Ứng viên để nộp đơn.</div>';
+                        return;
+                    }
+                    
+                    // 2. Kiểm tra xem người dùng đã chọn file chưa
+                    if (!file) {
+                        msg.innerHTML = '<div class="sr-alert sr-alert--error" style="font-size: 13px;">Vui lòng chọn file CV của bạn trước khi ứng tuyển.</div>';
+                        return;
+                    }
+
+                    // 3. Chuẩn bị dữ liệu gửi lên Server (Mã tin và File)
+                    const formData = new FormData();
+                    formData.append("maTin", "@Model.MaTin");
+                    formData.append("cvFile", file);
+
+                    // 4. Hiển thị trạng thái đang xử lý trên nút
+                    const btn = this;
+                    btn.disabled = true;
+                    btn.style.opacity = "0.5";
+                    const originalText = btn.innerText;
+                    btn.innerText = "Đang gửi hồ sơ...";
+
+                    // 5. Gửi yêu cầu đến Server bằng Fetch API
+                    fetch('@Url.Action("Apply", "Candidate")', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(async response => {
+                        // Nếu Server trả về lỗi chưa đăng nhập hoặc không có quyền (401/403)
+                        if (response.status === 401 || response.status === 403) {
+                            throw new Error("Phiên đăng nhập đã hết hạn hoặc bạn không có quyền thực hiện.");
+                        }
+                        if (!response.ok) {
+                            throw new Error("Lỗi hệ thống khi gửi đơn ứng tuyển.");
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Nộp đơn thành công: Hiển thị thông báo và khóa nút
+                            msg.innerHTML = `<div class="sr-alert sr-alert--success" style="font-size: 13px;"><b>Thành công!</b> ${data.message}</div>`;
+                            fileInput.value = ""; // Reset input file
+                            btn.innerText = "Đã nộp đơn";
+                            // Tải lại trang để cập nhật giao diện "Xem đơn ứng tuyển" sau khi nộp thành công
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            // Server trả về lỗi logic
+                            msg.innerHTML = `<div class="sr-alert sr-alert--error" style="font-size: 13px;">${data.message}</div>`;
+                            resetButton(btn, originalText);
+                        }
+                    })
+                    .catch(error => {
+                        // Xử lý các lỗi mạng hoặc lỗi throw ở trên
+                        console.error("Apply Error:", error);
+                        msg.innerHTML = `<div class="sr-alert sr-alert--error" style="font-size: 13px;">${error.message || "Có lỗi xảy ra, vui lòng thử lại sau."}</div>`;
+                        resetButton(btn, originalText);
+                    });
+                });
+            }
+
+            // Hàm reset lại trạng thái nút bấm khi có lỗi
+            function resetButton(btn, text) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.innerText = text;
+            }
     </script>
 }
