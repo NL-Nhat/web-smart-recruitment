@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace web_smart_recruitment.Controllers
 {
+    [Authorize(Roles = "UngVien")]
     public class CandidateController : Controller
     {
         public IActionResult Jobs() => View();

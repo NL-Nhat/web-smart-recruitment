@@ -11,7 +11,7 @@ namespace web_smart_recruitment.Services
     /// </summary>
     public interface IAuthService
     {
-        string GenerateAccessToken(TaiKhoan account, string roleName);
+        string GenerateAccessToken(TaiKhoan account, string roleName, string fullName);
         string GenerateRefreshToken(TaiKhoan account);
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
         string HashPassword(string password); // Thêm hàm băm mật khẩu

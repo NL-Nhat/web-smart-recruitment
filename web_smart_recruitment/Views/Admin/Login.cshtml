@@ -1,3 +1,4 @@
+@model web_smart_recruitment.Models.ViewModels.Auth.AdminLoginViewModel
 @{
     Layout = null;
 }
@@ -39,6 +40,7 @@
             border-radius: 99px;
             margin-bottom: 1rem;
         }
+        .text-danger { color: #dc2626; font-size: 13px; margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
@@ -50,15 +52,23 @@
         </div>
 
         <div class="el-card">
-            <div id="sr-login-alert"></div>
-            <form id="form-login" novalidate>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="sr-alert sr-alert--error" style="margin-bottom: 1rem;">
+                    @Html.ValidationSummary(true, "")
+                </div>
+            }
+            
+            <form asp-controller="Auth" asp-action="AdminLogin" method="post" novalidate>
                 <div class="sr-form-group">
-                    <label class="sr-label" for="email">Email quản trị</label>
-                    <input class="sr-input" type="email" id="email" value="admin1@smartrecruit.vn" required />
+                    <label class="sr-label" asp-for="Email">Email quản trị</label>
+                    <input class="sr-input" type="email" asp-for="Email" value="admin1@smartrecruit.vn" required />
+                    <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
                 <div class="sr-form-group">
-                    <label class="sr-label" for="password">Mật khẩu</label>
-                    <input class="sr-input" type="password" id="password" placeholder="••••••••" required />
+                    <label class="sr-label" asp-for="Password">Mật khẩu</label>
+                    <input class="sr-input" type="password" asp-for="Password" placeholder="••••••••" required />
+                    <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
                 <button type="submit" class="sr-btn sr-btn--primary" style="width: 100%; margin-top: 1rem;">
                     Đăng nhập hệ thống
@@ -72,30 +82,5 @@
     </div>
 
     <script src="~/js/ui-helpers.js" asp-append-version="true"></script>
-    <script src="~/js/demo-data.js" asp-append-version="true"></script>
-    <script src="~/js/auth.js" asp-append-version="true"></script>
-    <script>
-        (function () {
-            var form = document.getElementById("form-login");
-            var alertEl = document.getElementById("sr-login-alert");
-            function show(msg, kind) {
-                alertEl.innerHTML = '<div class="sr-alert sr-alert--' + (kind || "error") + '">' + SR_UI.escapeHtml(msg) + '</div>';
-            }
-            form.addEventListener("submit", function (e) {
-                e.preventDefault();
-                var email = document.getElementById("email").value;
-                var password = document.getElementById("password").value;
-                var r = SR_AUTH.login(email, password, "Admin");
-                if (!r.ok) {
-                    show(r.message);
-                    return;
-                }
-                show("Xác thực thành công. Đang chuyển hướng...", "success");
-                setTimeout(function () {
-                    location.href = '@Url.Action("Dashboard", "Admin")';
-                }, 800);
-            });
-        })();
-    </script>
 </body>
 </html>

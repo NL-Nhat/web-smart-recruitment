@@ -66,8 +66,20 @@ namespace web_smart_recruitment.Controllers
                 return View(model);
             }
 
-            // Đăng nhập thành công -> Cấp Token vào Cookie
-            SetAuthCookies(account, account.MaVaiTroNavigation.TenVaiTro);
+            // Đăng nhập thành công -> Lấy Họ tên để hiển thị lên Navbar
+            string fullName = "Người dùng";
+            if (account.MaVaiTroNavigation.TenVaiTro == "UngVien")
+            {
+                var uv = await _context.UngViens.FirstOrDefaultAsync(u => u.MaUngVien == account.MaTaiKhoan);
+                fullName = uv?.HoTen ?? account.Email;
+            }
+            else if (account.MaVaiTroNavigation.TenVaiTro == "NhaTuyenDung")
+            {
+                var ntd = await _context.NhaTuyenDungs.FirstOrDefaultAsync(n => n.MaNhaTuyenDung == account.MaTaiKhoan);
+                fullName = ntd?.HoTen ?? account.Email;
+            }
+
+            SetAuthCookies(account, account.MaVaiTroNavigation.TenVaiTro, fullName);
 
             // Điều hướng người dùng về trang chủ của từng vai trò
             if (account.MaVaiTroNavigation.TenVaiTro == "UngVien")
@@ -103,7 +115,7 @@ namespace web_smart_recruitment.Controllers
                 return View(model);
             }
 
-            SetAuthCookies(account, "Admin");
+            SetAuthCookies(account, "Admin", "Quản trị viên");
             return RedirectToAction("Dashboard", "Admin");
         }
 
@@ -111,9 +123,9 @@ namespace web_smart_recruitment.Controllers
         /// Hàm nội bộ để lưu trữ Token vào HttpOnly Cookie.
         /// Cookie này không thể bị truy cập bởi JavaScript, giúp chống lại tấn công XSS.
         /// </summary>
-        private void SetAuthCookies(TaiKhoan account, string roleName)
+        private void SetAuthCookies(TaiKhoan account, string roleName, string fullName)
         {
-            var accessToken = _authService.GenerateAccessToken(account, roleName);
+            var accessToken = _authService.GenerateAccessToken(account, roleName, fullName);
             var refreshToken = _authService.GenerateRefreshToken(account);
 
             var cookieOptions = new CookieOptions
@@ -256,6 +268,17 @@ namespace web_smart_recruitment.Controllers
                 ViewBag.Roles = await _context.VaiTros.Where(r => r.TenVaiTro != "Admin").ToListAsync();
                 return View(model);
             }
+        }
+        /// <summary>
+        /// Đăng xuất khỏi hệ thống.
+        /// Xóa bỏ các Cookies chứa Token để kết thúc phiên làm việc.
+        /// </summary>
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("AccessToken");
+            Response.Cookies.Delete("RefreshToken");
+            return RedirectToAction("Index", "Home");
         }
     }
 }

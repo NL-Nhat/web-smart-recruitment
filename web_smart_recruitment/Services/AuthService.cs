@@ -19,7 +19,7 @@ namespace web_smart_recruitment.Services
         /// Tạo Access Token (JWT) có thời hạn ngắn (mặc định 15 phút).
         /// Token này chứa Role để phân quyền người dùng trong hệ thống.
         /// </summary>
-        public string GenerateAccessToken(TaiKhoan account, string roleName)
+        public string GenerateAccessToken(TaiKhoan account, string roleName, string fullName)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
@@ -28,6 +28,7 @@ namespace web_smart_recruitment.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, account.MaTaiKhoan.ToString()),
+                new Claim(ClaimTypes.Name, fullName), // Thêm Họ tên vào Claim Name
                 new Claim(ClaimTypes.Email, account.Email),
                 new Claim(ClaimTypes.Role, roleName),
                 new Claim("TokenType", "Access") // Phân biệt đây là Access Token

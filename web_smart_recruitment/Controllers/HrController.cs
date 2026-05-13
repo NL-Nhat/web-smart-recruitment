@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace web_smart_recruitment.Controllers
 {
+    [Authorize(Roles = "NhaTuyenDung")]
     public class HrController : Controller
     {
         public IActionResult Dashboard() => View();

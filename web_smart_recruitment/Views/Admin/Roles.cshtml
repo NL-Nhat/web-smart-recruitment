@@ -1,0 +1,163 @@
+@{
+    ViewData["Title"] = "Quản lý Vai trò";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <style>
+        :root { --el-font-display: "Inter", sans-serif; }
+        
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            place-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+}
+
+<div class="admin-layout">
+    <partial name="_AdminSidebar" />
+
+    <main class="admin-content">
+        <header class="admin-header">
+            <div>
+                <h1 style="font-size: 32px; font-weight: 800; margin: 0; color: var(--el-black);">Quản lý Vai trò</h1>
+                <p class="el-text-muted">Định nghĩa các nhóm quyền hạn và vai trò người dùng trong hệ thống.</p>
+            </div>
+            <button class="el-btn-primary" id="btn-add-role">+ Thêm vai trò mới</button>
+        </header>
+
+        <div class="el-card" style="padding: 0; overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: #F8FAFC; border-bottom: 1px solid var(--el-border-subtle);">
+                        <th style="padding: 16px 24px; font-size: 12px; font-weight: 700; color: var(--el-warm-gray); width: 80px;">ID</th>
+                        <th style="padding: 16px 24px; font-size: 12px; font-weight: 700; color: var(--el-warm-gray);">TÊN VAI TRÒ</th>
+                        <th style="padding: 16px 24px; font-size: 12px; font-weight: 700; color: var(--el-warm-gray);">MÔ TẢ QUYỀN HẠN</th>
+                        <th style="padding: 16px 24px; font-size: 12px; font-weight: 700; color: var(--el-warm-gray); width: 120px; text-align: right;">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody id="role-table-body">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<div class="modal-overlay" id="modal-role">
+    <div class="modal-content">
+        <h2 style="font-size: 24px; font-weight: 800; margin-top: 0; margin-bottom: 32px;" id="modal-title">Thêm Vai trò mới</h2>
+        <form id="f-role">
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+                <div class="el-form-group">
+                    <label class="el-label">Tên vai trò</label>
+                    <input type="text" class="el-input" id="role-name" placeholder="Ví dụ: Moderator, Content Creator..." required>
+                </div>
+                <div class="el-form-group">
+                    <label class="el-label">Mô tả quyền hạn</label>
+                    <textarea class="el-input" id="role-desc" rows="4" placeholder="Mô tả tóm tắt các quyền mà vai trò này sở hữu..." style="padding-top: 12px;"></textarea>
+                </div>
+            </div>
+            <div style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 16px;">
+                <button type="button" class="el-btn-white" onclick="closeModal()">Hủy bỏ</button>
+                <button type="submit" class="el-btn-primary">Lưu thông tin</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const modal = document.getElementById("modal-role");
+        const form = document.getElementById("f-role");
+        const tableBody = document.getElementById("role-table-body");
+        let editingId = null;
+
+        function renderRoles() {
+            // Giả sử SR_DEMO.vaiTro đã có dữ liệu
+            const roles = SR_DEMO.vaiTro || [];
+            tableBody.innerHTML = roles.map(r => `
+                <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                    <td style="padding: 16px 24px; font-weight: 600;">#${r.id}</td>
+                    <td style="padding: 16px 24px;">
+                        <span style="font-weight: 700; color: var(--el-black);">${SR_UI.escapeHtml(r.ten)}</span>
+                    </td>
+                    <td style="padding: 16px 24px; color: var(--el-warm-gray); font-size: 13px;">${SR_UI.escapeHtml(r.moTa)}</td>
+                    <td style="padding: 16px 24px; text-align: right;">
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <button class="el-icon-btn" onclick="editRole(${r.id})">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="el-icon-btn el-icon-btn--danger" onclick="deleteRole(${r.id})">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join("");
+        }
+
+        function openModal(id = null) {
+            editingId = id;
+            if (id) {
+                const role = SR_DEMO.vaiTro.find(r => r.id === id);
+                document.getElementById("modal-title").textContent = "Chỉnh sửa vai trò";
+                document.getElementById("role-name").value = role.ten;
+                document.getElementById("role-desc").value = role.moTa;
+            } else {
+                document.getElementById("modal-title").textContent = "Thêm Vai trò mới";
+                form.reset();
+            }
+            modal.style.display = "grid";
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        window.editRole = openModal;
+        window.deleteRole = (id) => {
+            if (confirm("Bạn có chắc chắn muốn xóa vai trò này?")) {
+                SR_DEMO.vaiTro = SR_DEMO.vaiTro.filter(r => r.id !== id);
+                renderRoles();
+            }
+        };
+
+        document.getElementById("btn-add-role").onclick = () => openModal();
+
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            const name = document.getElementById("role-name").value;
+            const desc = document.getElementById("role-desc").value;
+
+            if (editingId) {
+                const role = SR_DEMO.vaiTro.find(r => r.id === editingId);
+                role.ten = name;
+                role.moTa = desc;
+            } else {
+                const newId = SR_DEMO.vaiTro.length ? Math.max(...SR_DEMO.vaiTro.map(r => r.id)) + 1 : 1;
+                SR_DEMO.vaiTro.push({ id: newId, ten: name, moTa: desc });
+            }
+
+            renderRoles();
+            closeModal();
+        };
+
+        renderRoles();
+    </script>
+}

@@ -6,187 +6,125 @@
 @section Styles {
     <style>
         :root { --el-font-display: "Inter", sans-serif; }
-        body { background: #F8FAFC; }
-        .admin-layout {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            min-height: 100vh;
-        }
-        .admin-sidebar {
-            background: var(--el-black);
-            color: white;
-            padding: 32px 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        .sidebar-brand {
-            font-weight: 800;
-            font-size: 20px;
-            margin-bottom: 48px;
-            display: flex;
-            align-items: center; gap: 12px;
-        }
-        .sidebar-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1;
-        }
-        .admin-nav-link {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.2s;
-        }
-        .admin-nav-link:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
-        .admin-nav-link.is-active {
-            background: white !important;
-            color: black !important;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .admin-content {
-            padding: 40px;
-            overflow-y: auto;
-        }
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
-        .stat-grid-admin {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 24px;
-            margin-bottom: 40px;
-        }
-        .stat-card-admin {
-            background: white;
-            padding: 24px;
-            border-radius: 20px;
-            border: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-        .chart-placeholder {
-            background: white;
-            border-radius: 24px;
-            padding: 32px;
-            border: 1px solid rgba(0,0,0,0.05);
-            height: 400px;
-            display: grid;
-            place-items: center;
-        }
     </style>
 }
 
 <div class="admin-layout">
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
-        <div class="sidebar-brand">
-            <div style="width:32px; height:32px; background:white; border-radius:8px; display:grid; place-items:center; color:black; font-weight:900;">SR</div>
-            Smart Recruiter
-        </div>
-        <nav class="sidebar-nav">
-            <a asp-action="Dashboard" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "is-active" : "")'>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                Tổng quan
-            </a>
-            <a asp-action="Users" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Users" ? "is-active" : "")'>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                Quản lý người dùng
-            </a>
-            <a asp-action="Skills" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Skills" ? "is-active" : "")'>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path><path d="M16.24 16.24l2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path><path d="M4.93 19.07l2.83-2.83"></path><path d="M16.24 7.76l2.83-2.83"></path></svg>
-                Quản lý kỹ năng
-            </a>
-            <a asp-action="Reports" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Reports" ? "is-active" : "")'>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                Báo cáo dữ liệu
-            </a>
-            <div style="margin-top: 32px; padding: 0 16px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase;">Hệ thống</div>
-            <a asp-action="Profile" class='admin-nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "is-active" : "")'>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                Hồ sơ Admin
-            </a>
-            <a href="#" id="admin-logout" class="admin-nav-link" style="color: #ef4444; margin-top: 8px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                Đăng xuất
-            </a>
-        </nav>
-    </aside>
+    <partial name="_AdminSidebar" />
 
     <!-- Main Content -->
     <main class="admin-content">
         <header class="admin-header">
             <div>
-                <h1 style="font-size: 28px; font-weight: 800; margin: 0; color: var(--el-black);">Hệ thống Quản trị</h1>
-                <p class="el-text-muted">Chào mừng trở lại, quản trị viên hệ thống.</p>
+                <h1 style="font-size: 32px; font-weight: 800; margin: 0; color: var(--el-black);">Hệ thống Quản trị</h1>
+                <p class="el-text-muted">Chào mừng trở lại, quản trị viên hệ thống. Đây là tóm tắt hoạt động hôm nay.</p>
             </div>
             <div style="display: flex; gap: 12px;">
+                <button class="el-btn-white">Cài đặt hệ thống</button>
                 <button class="el-btn-primary">Xuất báo cáo tổng hợp</button>
             </div>
         </header>
 
         <div class="stat-grid-admin">
             <div class="stat-card-admin">
-                <div class="el-text-muted" style="font-size: 13px; font-weight: 600;">TỔNG NGƯỜI DÙNG</div>
-                <div style="font-size: 28px; font-weight: 800; margin-top: 8px;" id="count-users">0</div>
-                <div style="font-size: 12px; color: var(--el-success); margin-top: 4px;">+12.5% so với tháng trước</div>
+                <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Tổng người dùng</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-users">0</div>
+                <div style="font-size: 12px; color: var(--el-success); margin-top: 8px; font-weight: 600;">↑ 12.5% <span style="color: #94A3B8; font-weight: 400;">so với tháng trước</span></div>
             </div>
             <div class="stat-card-admin">
-                <div class="el-text-muted" style="font-size: 13px; font-weight: 600;">NHÀ TUYỂN DỤNG</div>
-                <div style="font-size: 28px; font-weight: 800; margin-top: 8px;" id="count-hr">0</div>
-                <div style="font-size: 12px; color: var(--el-success); margin-top: 4px;">+4 công ty mới tuần này</div>
+                <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Nhà tuyển dụng</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-hr">0</div>
+                <div style="font-size: 12px; color: var(--el-success); margin-top: 8px; font-weight: 600;">+4 <span style="color: #94A3B8; font-weight: 400;">công ty mới tuần này</span></div>
             </div>
             <div class="stat-card-admin">
-                <div class="el-text-muted" style="font-size: 13px; font-weight: 600;">TIN TUYỂN DỤNG</div>
-                <div style="font-size: 28px; font-weight: 800; margin-top: 8px;" id="count-jobs">0</div>
-                <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px;">12 tin sắp hết hạn</div>
+                <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Tin tuyển dụng</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-jobs">0</div>
+                <div style="font-size: 12px; color: var(--el-warning); margin-top: 8px; font-weight: 600;">12 <span style="color: #94A3B8; font-weight: 400;">tin sắp hết hạn</span></div>
             </div>
             <div class="stat-card-admin">
-                <div class="el-text-muted" style="font-size: 13px; font-weight: 600;">LƯỢT ỨNG TUYỂN</div>
-                <div style="font-size: 28px; font-weight: 800; margin-top: 8px;" id="count-apps">0</div>
-                <div style="font-size: 12px; color: var(--el-success); margin-top: 4px;">+85 hồ sơ mới hôm nay</div>
+                <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Lượt ứng tuyển</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-apps">0</div>
+                <div style="font-size: 12px; color: var(--el-success); margin-top: 8px; font-weight: 600;">+85 <span style="color: #94A3B8; font-weight: 400;">hồ sơ mới hôm nay</span></div>
             </div>
         </div>
 
-        <div class="sr-grid" style="grid-template-columns: 2fr 1fr; gap: 32px;">
-            <div>
-                <div class="chart-placeholder">
-                    <div style="text-align: center;">
-                        <div style="font-size: 14px; color: var(--el-warm-gray); margin-bottom: 20px;">BIỂU ĐỒ TĂNG TRƯỞNG NGƯỜI DÙNG (DEMO)</div>
-                        <div style="display: flex; align-items: flex-end; gap: 24px; height: 200px;">
-                            <div style="width: 40px; height: 60%; background: var(--el-black); border-radius: 4px;"></div>
-                            <div style="width: 40px; height: 80%; background: var(--el-black); border-radius: 4px;"></div>
-                            <div style="width: 40px; height: 40%; background: var(--el-black); border-radius: 4px;"></div>
-                            <div style="width: 40px; height: 90%; background: var(--el-black); border-radius: 4px;"></div>
-                            <div style="width: 40px; height: 75%; background: var(--el-black); border-radius: 4px;"></div>
-                        </div>
+        <div class="el-grid el-grid--2" style="grid-template-columns: 1.6fr 1fr; align-items: stretch;">
+            <div class="chart-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 700;">Tăng trưởng người dùng</h3>
+                    <select class="el-select" style="width: auto; padding: 6px 12px; font-size: 12px;">
+                        <option>7 ngày qua</option>
+                        <option>30 ngày qua</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: flex-end; justify-content: space-between; height: 240px; padding-bottom: 20px; border-bottom: 1px solid #F1F5F9;">
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="width: 70%; height: 120px; background: #E2E8F0; border-radius: 6px 6px 0 0;"></div>
+                        <span style="font-size: 11px; color: #94A3B8;">T2</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="width: 70%; height: 160px; background: #E2E8F0; border-radius: 6px 6px 0 0;"></div>
+                        <span style="font-size: 11px; color: #94A3B8;">T3</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="width: 70%; height: 140px; background: #E2E8F0; border-radius: 6px 6px 0 0;"></div>
+                        <span style="font-size: 11px; color: #94A3B8;">T4</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="width: 70%; height: 200px; background: var(--el-black); border-radius: 6px 6px 0 0;"></div>
+                        <span style="font-size: 11px; color: #94A3B8; font-weight: 700; color: black;">T5</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="width: 70%; height: 180px; background: #E2E8F0; border-radius: 6px 6px 0 0;"></div>
+                        <span style="font-size: 11px; color: #94A3B8;">T6</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="width: 70%; height: 90px; background: #E2E8F0; border-radius: 6px 6px 0 0;"></div>
+                        <span style="font-size: 11px; color: #94A3B8;">T7</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <div style="width: 70%; height: 110px; background: #E2E8F0; border-radius: 6px 6px 0 0;"></div>
+                        <span style="font-size: 11px; color: #94A3B8;">CN</span>
                     </div>
                 </div>
             </div>
-            <div>
-                <div class="el-card" style="height: 100%;">
-                    <h3 style="font-size: 18px; font-weight: 700; margin-top: 0; margin-bottom: 24px;">Thông báo hệ thống</h3>
-                    <div style="display: flex; flex-direction: column; gap: 16px;">
-                        <div style="padding: 12px; background: #FFF7ED; border-radius: 12px; border: 1px solid #FFEDD5; color: #9A3412; font-size: 13px;">
-                            <strong>Bảo trì server:</strong> Hệ thống sẽ bảo trì vào 0h ngày mai.
+
+            <div class="el-card">
+                <h3 style="margin: 0 0 24px 0; font-size: 18px; font-weight: 700;">Hoạt động gần đây</h3>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: #ECFDF5; color: #059669;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         </div>
-                        <div style="padding: 12px; background: #F0FDF4; border-radius: 12px; border: 1px solid #DCFCE7; color: #166534; font-size: 13px;">
-                            <strong>AI Updated:</strong> Model phân tích CV vừa được cập nhật phiên bản 2.1.
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600;">Người dùng mới đăng ký</div>
+                            <div style="font-size: 12px; color: #94A3B8;">lethanh.ba@gmail.com vừa tạo tài khoản</div>
+                            <div style="font-size: 11px; color: #CBD5E1; margin-top: 4px;">2 phút trước</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: #EFF6FF; color: #2563EB;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600;">Tin tuyển dụng mới</div>
+                            <div style="font-size: 12px; color: #94A3B8;">FPT Software vừa đăng tin: Senior .NET</div>
+                            <div style="font-size: 11px; color: #CBD5E1; margin-top: 4px;">45 phút trước</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: #FFF7ED; color: #EA580C;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600;">Cảnh báo hệ thống</div>
+                            <div style="font-size: 12px; color: #94A3B8;">Phát hiện truy cập bất thường từ IP: 1.2.3.4</div>
+                            <div style="font-size: 11px; color: #CBD5E1; margin-top: 4px;">2 giờ trước</div>
                         </div>
                     </div>
                 </div>
+                <button class="el-btn-white" style="width: 100%; margin-top: 24px; font-size: 13px;">Xem tất cả hoạt động</button>
             </div>
         </div>
     </main>
@@ -195,18 +133,11 @@
 @section Scripts {
     <script>
         (function() {
-            const s = SR_AUTH.requireAuth("Admin", '@Url.Action("Login", "Admin")');
-            if (!s) return;
-            
+            // Dữ liệu demo
             document.getElementById("count-users").textContent = SR_DEMO.taiKhoan.length;
             document.getElementById("count-hr").textContent = SR_DEMO.nhaTuyenDung.length;
             document.getElementById("count-jobs").textContent = SR_DEMO.tinTuyenDung.length;
             document.getElementById("count-apps").textContent = SR_DEMO.donUngTuyen.length;
-
-            document.getElementById("admin-logout").onclick = function() {
-                SR_AUTH.logout();
-                location.href = '@Url.Action("Login", "Admin")';
-            };
         })();
     </script>
 }
