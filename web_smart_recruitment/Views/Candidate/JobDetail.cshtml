@@ -1,5 +1,6 @@
+@model web_smart_recruitment.Models.TinTuyenDung
 @{
-    ViewData["Title"] = "Chi tiết công việc";
+    ViewData["Title"] = Model?.TieuDe ?? "Chi tiết công việc";
 }
 
 @section Styles {
@@ -103,150 +104,150 @@
             Quay lại danh sách
         </a>
     </div>
-    <div id="content"></div>
+
+    @if (Model != null)
+    {
+        <div class="job-header-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <span class="el-status el-status--success" style="font-size: 11px;">@Model.TrangThai</span>
+                        <span class="el-text-muted" style="font-size: 13px;">Đăng ngày: @Model.NgayTao?.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    <h1 style="font-size: 40px; font-weight: 700; margin: 0; color: var(--el-black); line-height: 1.2;">
+                        @Model.TieuDe
+                    </h1>
+                    <p style="font-size: 18px; color: var(--el-dark-gray); margin-top: 8px; font-weight: 500;">
+                        @(Model.MaNhaTuyenDungNavigation?.TenCongTy ?? "Công ty ẩn danh")
+                    </p>
+                </div>
+                <img src="@(string.IsNullOrEmpty(Model.MaNhaTuyenDungNavigation?.Logo) ? "https://via.placeholder.com/100" : Model.MaNhaTuyenDungNavigation.Logo)" alt="Logo" style="width: 80px; height: 80px; object-fit: contain; border: 1px solid var(--el-border-subtle); border-radius: 16px; padding: 8px;">
+            </div>
+
+            <div class="key-info-grid">
+                <div class="info-item">
+                    <div class="info-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22m5-18H8.5a4.5 4.5 0 0 0 0 9h7a4.5 4.5 0 0 1 0 9H7"></path></svg>
+                    </div>
+                    <div>
+                        <div class="info-label">Mức lương</div>
+                        <div class="info-value" style="color: var(--el-success);">
+                            @(Model.MucLuongToiThieu?.ToString("N0")) – @(Model.MucLuongToiDa?.ToString("N0")) VNĐ
+                        </div>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    </div>
+                    <div>
+                        <div class="info-label">Địa điểm</div>
+                        <div class="info-value">@Model.DiaDiem</div>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    </div>
+                    <div>
+                        <div class="info-label">Hình thức</div>
+                        <div class="info-value">@Model.HinhThucLamViec</div>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <div>
+                        <div class="info-label">Hạn nộp</div>
+                        <div class="info-value">@Model.HanNopCv?.ToString("dd/MM/yyyy")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sr-grid" style="grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
+            <div>
+                <div class="detail-card">
+                    <h2>Mô tả công việc</h2>
+                    <div style="line-height: 1.8; color: var(--el-dark-gray); white-space: pre-line;">@Model.MoTaCongViec</div>
+                </div>
+
+                <div class="detail-card">
+                    <h2>Yêu cầu ứng viên</h2>
+                    <div style="line-height: 1.8; color: var(--el-dark-gray); white-space: pre-line;">@Model.YeuCauCongViec</div>
+                </div>
+
+                <div class="detail-card">
+                    <h2>Quyền lợi</h2>
+                    <div style="line-height: 1.8; color: var(--el-dark-gray); white-space: pre-line;">@(Model.QuyenLoi ?? "Trao đổi trực tiếp khi phỏng vấn.")</div>
+                </div>
+
+                <div class="detail-card">
+                    <h2>Kỹ năng ưu tiên</h2>
+                    <div class="sr-chips" style="gap: 12px; margin-top: 8px;">
+                        @if (Model.ChiTietKyNangTinTuyenDungs.Any())
+                        {
+                            foreach (var skill in Model.ChiTietKyNangTinTuyenDungs)
+                            {
+                                <span class="el-status el-status--info" style="font-size: 13px; padding: 6px 14px; border-radius: 8px;">
+                                    @skill.MaKyNangNavigation?.TenKyNang
+                                </span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="el-text-muted">Liên hệ để biết thêm chi tiết.</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="sticky-sidebar-container">
+                <div class="detail-card" style="border: 2px solid var(--el-black); margin-bottom: 0;">
+                    <h3 style="font-size: 20px; margin-top: 0; margin-bottom: 12px;">Nộp hồ sơ ngay</h3>
+                    <p class="el-text-muted" style="font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
+                        Ứng tuyển bằng AI: Hệ thống sẽ tự động phân tích CV của bạn để đánh giá mức độ phù hợp.
+                    </p>
+                    <div id="apply-msg"></div>
+                    <div style="margin-bottom: 20px;">
+                        <label class="sr-label" style="margin-bottom: 8px;">Tải lên CV (PDF/DOCX)</label>
+                        <input type="file" id="cv-file" accept=".pdf,.doc,.docx" style="font-size: 13px; width: 100%; border: 1px dashed var(--el-border); padding: 12px; border-radius: 8px;" />
+                    </div>
+                    <button class="el-btn-primary" id="btn-apply" style="width: 100%; height: 52px; justify-content: center; font-size: 16px;">
+                        Ứng tuyển ngay
+                    </button>
+                </div>
+
+                <div class="company-preview-card">
+                    <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
+                        <img src="@(string.IsNullOrEmpty(Model.MaNhaTuyenDungNavigation?.Logo) ? "https://via.placeholder.com/60" : Model.MaNhaTuyenDungNavigation.Logo)" class="co-logo-sm" alt="Logo">
+                        <div style="overflow: hidden;">
+                            <h4 style="margin: 0; font-size: 16px; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">@(Model.MaNhaTuyenDungNavigation?.TenCongTy ?? "N/A")</h4>
+                            <span class="el-text-muted" style="font-size: 13px;">@(Model.MaNhaTuyenDungNavigation?.SoDienThoai ?? "N/A")</span>
+                        </div>
+                    </div>
+                    <p class="el-text-muted" style="font-size: 13px; line-height: 1.6; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                        @(Model.MaNhaTuyenDungNavigation?.DiaChi ?? "Địa chỉ đang cập nhật...")
+                    </p>
+                    <a href='@Url.Action("CompanyDetail", "Candidate", new { maNhaTuyenDung = Model.MaNhaTuyenDung })' style="display: block; text-align: center; font-size: 14px; font-weight: 700; text-decoration: none; color: var(--el-black); padding: 12px; border: 1px solid var(--el-black); border-radius: 12px;">
+                        Xem trang công ty
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="sr-alert sr-alert--error">Không tìm thấy tin tuyển dụng.</div>
+    }
 </main>
 
 @section Scripts {
     <script>
         (function() {
             SR_AUTH.updateNavPlaceholders();
-            var params = new URLSearchParams(location.search);
-            var maTin = parseInt(params.get("maTin") || "0", 10);
-            var t = SR_DEMO.getTin(maTin);
-            var el = document.getElementById("content");
-
-            if (!t) {
-                el.innerHTML = '<div class="sr-alert sr-alert--error">Không tìm thấy tin tuyển dụng.</div>';
-                return;
-            }
-
-            var co = SR_DEMO.nhaTuyenDung.find(n => n.maNhaTuyenDung === t.maNhaTuyenDung);
-            var coName = co ? co.tenCongTy : "Công ty ẩn danh";
-            var skills = SR_DEMO.skillsForTin(maTin);
-            var chips = skills.map(s => `
-                <span class="el-status el-status--info" style="font-size: 13px; padding: 6px 14px; border-radius: 8px;">
-                    ${SR_UI.escapeHtml(s.tenKyNang)}
-                </span>
-            `).join("");
-
-            el.innerHTML = `
-                <div class="job-header-card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div style="flex: 1;">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                                <span class="el-status el-status--success" style="font-size: 11px;">ĐANG MỞ</span>
-                                <span class="el-text-muted" style="font-size: 13px;">Đăng ngày: ${SR_UI.escapeHtml(t.ngayTao || "Gần đây")}</span>
-                            </div>
-                            <h1 style="font-size: 40px; font-weight: 700; margin: 0; color: var(--el-black); line-height: 1.2;">
-                                ${SR_UI.escapeHtml(t.tieuDe)}
-                            </h1>
-                            <p style="font-size: 18px; color: var(--el-dark-gray); margin-top: 8px; font-weight: 500;">
-                                ${SR_UI.escapeHtml(coName)}
-                            </p>
-                        </div>
-                        <img src="${co && co.logo ? co.logo : 'https://via.placeholder.com/100'}" alt="Logo" style="width: 80px; height: 80px; object-fit: contain; border: 1px solid var(--el-border-subtle); border-radius: 16px; padding: 8px;">
-                    </div>
-
-                    <div class="key-info-grid">
-                        <div class="info-item">
-                            <div class="info-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22m5-18H8.5a4.5 4.5 0 0 0 0 9h7a4.5 4.5 0 0 1 0 9H7"></path></svg>
-                            </div>
-                            <div>
-                                <div class="info-label">Mức lương</div>
-                                <div class="info-value" style="color: var(--el-success);">${SR_UI.formatVnd(t.mucLuongToiThieu)} – ${SR_UI.formatVnd(t.mucLuongToiDa)}</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                            </div>
-                            <div>
-                                <div class="info-label">Địa điểm</div>
-                                <div class="info-value">${SR_UI.escapeHtml(t.diaDiem)}</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                            </div>
-                            <div>
-                                <div class="info-label">Hình thức</div>
-                                <div class="info-value">${SR_UI.hinhThucLabel(t.hinhThucLamViec)}</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            </div>
-                            <div>
-                                <div class="info-label">Hạn nộp</div>
-                                <div class="info-value">${SR_UI.escapeHtml(t.hanNopCV || "—")}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sr-grid" style="grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
-                    <div>
-                        <div class="detail-card">
-                            <h2>Mô tả công việc</h2>
-                            <div style="line-height: 1.8; color: var(--el-dark-gray); white-space: pre-line;">${SR_UI.escapeHtml(t.moTaCongViec)}</div>
-                        </div>
-
-                        <div class="detail-card">
-                            <h2>Yêu cầu ứng viên</h2>
-                            <div style="line-height: 1.8; color: var(--el-dark-gray); white-space: pre-line;">${SR_UI.escapeHtml(t.yeuCauCongViec)}</div>
-                        </div>
-
-                        <div class="detail-card">
-                            <h2>Quyền lợi</h2>
-                            <div style="line-height: 1.8; color: var(--el-dark-gray); white-space: pre-line;">${SR_UI.escapeHtml(t.quyenLoi || "Trao đổi trực tiếp khi phỏng vấn.")}</div>
-                        </div>
-
-                        <div class="detail-card">
-                            <h2>Kỹ năng ưu tiên</h2>
-                            <div class="sr-chips" style="gap: 12px; margin-top: 8px;">
-                                ${chips || '<span class="el-text-muted">Liên hệ để biết thêm chi tiết.</span>'}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="sticky-sidebar-container">
-                        <div class="detail-card" style="border: 2px solid var(--el-black); margin-bottom: 0;">
-                            <h3 style="font-size: 20px; margin-top: 0; margin-bottom: 12px;">Nộp hồ sơ ngay</h3>
-                            <p class="el-text-muted" style="font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
-                                Ứng tuyển bằng AI: Hệ thống sẽ tự động phân tích CV của bạn để đánh giá mức độ phù hợp.
-                            </p>
-                            <div id="apply-msg"></div>
-                            <div style="margin-bottom: 20px;">
-                                <label class="sr-label" style="margin-bottom: 8px;">Tải lên CV (PDF/DOCX)</label>
-                                <input type="file" id="cv-file" accept=".pdf,.doc,.docx" style="font-size: 13px; width: 100%; border: 1px dashed var(--el-border); padding: 12px; border-radius: 8px;" />
-                            </div>
-                            <button class="el-btn-primary" id="btn-apply" style="width: 100%; height: 52px; justify-content: center; font-size: 16px;">
-                                Ứng tuyển ngay
-                            </button>
-                        </div>
-
-                        <div class="company-preview-card">
-                            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
-                                <img src="${co && co.logo ? co.logo : 'https://via.placeholder.com/60'}" class="co-logo-sm" alt="Logo">
-                                <div style="overflow: hidden;">
-                                    <h4 style="margin: 0; font-size: 16px; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">${SR_UI.escapeHtml(coName)}</h4>
-                                    <span class="el-text-muted" style="font-size: 13px;">${SR_UI.escapeHtml(co ? co.quyMo : "N/A")}</span>
-                                </div>
-                            </div>
-                            <p class="el-text-muted" style="font-size: 13px; line-height: 1.6; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                                ${SR_UI.escapeHtml(co ? co.moTa : "Công ty công nghệ hàng đầu với môi trường làm việc năng động và chuyên nghiệp.")}
-                            </p>
-                            <a href='@Url.Action("CompanyDetail", "Candidate")?maNhaTuyenDung=${t.maNhaTuyenDung}' style="display: block; text-align: center; font-size: 14px; font-weight: 700; text-decoration: none; color: var(--el-black); padding: 12px; border: 1px solid var(--el-black); border-radius: 12px;">
-                                Xem trang công ty
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-
+            
             document.getElementById("btn-apply").addEventListener("click", function () {
                 var msg = document.getElementById("apply-msg");
                 var s = SR_AUTH.getSession();
