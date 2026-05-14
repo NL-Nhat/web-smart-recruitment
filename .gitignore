@@ -27,7 +27,6 @@ Thumbs.db
 
 ## Node (nếu có frontend)
 node_modules/
-dist/
 build/
 
 ## Publish
