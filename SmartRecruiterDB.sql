@@ -618,3 +618,4 @@ select *from TaiKhoan
 select *from UngVien
 select *from NhaTuyenDung
 select *from DonUngTuyen
+select *from HoSoCV
