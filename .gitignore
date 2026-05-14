@@ -31,7 +31,6 @@ build/
 
 ## Publish
 publish/
-wwwroot/dist/
 
 ## Secrets
 secrets.json
