@@ -122,7 +122,25 @@
                 <div class="form-section">
                     <h2 class="form-section-title">Thiết lập AI Matcher</h2>
                     <p class="el-text-muted" style="font-size: 14px; margin-bottom: 20px;">Chọn các kỹ năng cốt lõi để AI chấm điểm mức độ phù hợp của ứng viên.</p>
-                    <div id="skill-rows"></div>
+                    <div id="skill-rows">
+                        <!-- Dữ liệu mẫu (Static) -->
+                        <div class="skill-row">
+                            <div class="el-form-group" style="margin-bottom:0">
+                                <label class="el-label">Kỹ năng</label>
+                                <select class="el-select sk-id">
+                                    <option value="1">ASP.NET Core</option>
+                                    <option value="2">SQL Server</option>
+                                </select>
+                            </div>
+                            <div class="el-form-group" style="margin-bottom:0">
+                                <label class="el-label">Mức độ yêu cầu</label>
+                                <select class="el-select sk-cap">
+                                    <option value="BatBuoc" selected>Bắt buộc (Must-have)</option>
+                                    <option value="UuTien">Ưu tiên (Nice-to-have)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                     <button type="button" class="el-btn-warm" id="add-skill" style="padding: 8px 16px; font-size: 13px;">+ Thêm kỹ năng</button>
                 </div>
 
@@ -136,58 +154,6 @@
 
 @section Scripts {
     <script>
-        (function() {
-            const s = SR_AUTH.requireAuth("NhaTuyenDung", '@Url.Action("Login", "Auth")');
-            if (!s) return;
-            SR_AUTH.updateNavPlaceholders();
-
-            function createSkillRow() {
-                const opts = '<option value="">— Chọn kỹ năng —</option>' +
-                    SR_DEMO.danhMucKyNang.map(k => `<option value="${k.maKyNang}">${SR_UI.escapeHtml(k.tenKyNang)}</option>`).join("");
-
-                const row = document.createElement('div');
-                row.className = 'skill-row';
-                row.innerHTML = `
-                    <div class="el-form-group" style="margin-bottom:0">
-                        <label class="el-label">Kỹ năng</label>
-                        <select class="el-select sk-id">${opts}</select>
-                    </div>
-                    <div class="el-form-group" style="margin-bottom:0">
-                        <label class="el-label">Mức độ yêu cầu</label>
-                        <select class="el-select sk-cap">
-                            <option value="BatBuoc">Bắt buộc (Must-have)</option>
-                            <option value="UuTien">Ưu tiên (Nice-to-have)</option>
-                            <option value="KhongBatBuoc">Không bắt buộc</option>
-                        </select>
-                    </div>
-                    <button type="button" class="el-icon-btn el-icon-btn--danger rm" style="margin-bottom: 8px;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
-                `;
-                return row;
-            }
-
-            const box = document.getElementById("skill-rows");
-            box.appendChild(createSkillRow());
-            box.appendChild(createSkillRow());
-
-            box.addEventListener("click", function(e) {
-                const btn = e.target.closest(".rm");
-                if (btn) {
-                    const row = btn.closest(".skill-row");
-                    if (box.querySelectorAll(".skill-row").length > 1) row.remove();
-                }
-            });
-
-            document.getElementById("add-skill").addEventListener("click", function() {
-                box.appendChild(createSkillRow());
-            });
-
-            document.getElementById("f-job").addEventListener("submit", function(e) {
-                e.preventDefault();
-                document.getElementById("msg").innerHTML = '<div class="sr-alert sr-alert--success">Đã lưu tin tuyển dụng thành công (Demo).</div>';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        })();
+        // Chức năng tạo/sửa tin tuyển dụng hiện đang hiển thị dữ liệu tĩnh.
     </script>
 }

@@ -177,17 +177,23 @@ CREATE INDEX IX_TaiKhoan_VaiTro ON TaiKhoan(MaVaiTro);
 CREATE TABLE LichHenPhongVan (
     MaLichHen INT IDENTITY(1,1) PRIMARY KEY,
     MaDon INT FOREIGN KEY REFERENCES DonUngTuyen(MaDon),
-    ThoiGian DATETIME NOT NULL,
+    NgayPhuongVan DATE NOT NULL,
+    GioPhuongVan TIME NOT NULL,
     DiaDiem NVARCHAR(255),
+    LinkHop NVARCHAR(500),
     HinhThuc VARCHAR(50) DEFAULT 'Online', -- 'Online', 'Offline'
     GhiChu NVARCHAR(MAX),
     TrangThai VARCHAR(50) DEFAULT 'ChoXacNhan', 
     NgayTao DATETIME DEFAULT GETDATE(),
     CONSTRAINT CHK_LichHen_HinhThuc CHECK (HinhThuc IN ('Online', 'Offline')),
-    CONSTRAINT CHK_LichHen_TrangThai CHECK (TrangThai IN ('ChoXacNhan', 'DaXacNhan', 'DaHuy', 'HoanThanh'))
+    CONSTRAINT CHK_LichHen_TrangThai CHECK (TrangThai IN ('ChoXacNhan', 'DaXacNhan', 'DaHuy', 'HoanThanh')),
+    CONSTRAINT CHK_LichHen_DiaDiem_LinkHop CHECK (
+        (HinhThuc = 'Online' AND LinkHop IS NOT NULL AND DiaDiem IS NULL) OR 
+        (HinhThuc = 'Offline' AND DiaDiem IS NOT NULL AND LinkHop IS NULL)
+    )
 );
 CREATE INDEX IX_LichHen_MaDon ON LichHenPhongVan(MaDon);
-CREATE INDEX IX_LichHen_ThoiGian ON LichHenPhongVan(ThoiGian);
+CREATE INDEX IX_LichHen_Ngay ON LichHenPhongVan(NgayPhuongVan);
 
 
 
@@ -605,13 +611,12 @@ SET IDENTITY_INSERT KetQua_AI OFF;
 
 -- ---------------------------------------------------------
 -- 11. MOCK LỊCH HẸN PHỎNG VẤN
--- ---------------------------------------------------------
-INSERT INTO LichHenPhongVan (MaDon, ThoiGian, DiaDiem, HinhThuc, GhiChu, TrangThai) VALUES 
-(1, '2024-04-12 09:00', N'Văn phòng FPT, Duy Tân', 'Offline', N'Phỏng vấn vòng 1 với Tech Lead', 'HoanThanh'),
-(5, '2024-04-18 14:00', 'https://zoom.us/j/123456789', 'Online', N'Phỏng vấn kỹ thuật trực tuyến', 'HoanThanh'),
-(8, '2024-06-15 10:00', N'Văn phòng Shopee, Liễu Giai', 'Offline', N'Gặp mặt trực tiếp Bộ phận Nhân sự', 'DaXacNhan'),
-(12, '2024-06-20 15:30', 'https://meet.google.com/abc-xyz', 'Online', N'Phỏng vấn với Project Manager', 'ChoXacNhan'),
-(10, '2024-06-25 09:00', N'Văn phòng VNPay, Láng Hạ', 'Offline', N'Phỏng vấn chuyên sâu kỹ thuật', 'ChoXacNhan');
+INSERT INTO LichHenPhongVan (MaDon, NgayPhuongVan, GioPhuongVan, DiaDiem, LinkHop, HinhThuc, GhiChu, TrangThai) VALUES 
+(1, '2024-04-12', '09:00', N'Văn phòng FPT, Duy Tân', NULL, 'Offline', N'Phỏng vấn vòng 1 với Tech Lead', 'HoanThanh'),
+(5, '2024-04-18', '14:00', NULL, 'https://zoom.us/j/123456789', 'Online', N'Phỏng vấn kỹ thuật trực tuyến', 'HoanThanh'),
+(8, '2024-06-15', '10:00', N'Văn phòng Shopee, Liễu Giai', NULL, 'Offline', N'Gặp mặt trực tiếp Bộ phận Nhân sự', 'DaXacNhan'),
+(12, '2024-06-20', '15:30', NULL, 'https://meet.google.com/abc-xyz', 'Online', N'Phỏng vấn với Project Manager', 'ChoXacNhan'),
+(10, '2024-06-25', '09:00', N'Văn phòng VNPay, Láng Hạ', NULL, 'Offline', N'Phỏng vấn chuyên sâu kỹ thuật', 'ChoXacNhan');
 
 
 select *from TaiKhoan

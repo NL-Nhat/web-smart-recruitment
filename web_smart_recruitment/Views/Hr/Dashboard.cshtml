@@ -68,14 +68,14 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
             </div>
             <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Tin đang mở</div>
-            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;" id="stat-jobs">0</div>
+            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;" id="stat-jobs">5</div>
         </div>
         <div class="stat-card-premium">
             <div class="stat-icon" style="background: #DCFCE7; color: #15803D;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
             <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Tổng ứng viên</div>
-            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;" id="stat-apps">0</div>
+            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;" id="stat-apps">128</div>
         </div>
         <div class="stat-card-premium">
             <div class="stat-icon" style="background: #FEF3C7; color: #B45309;">
@@ -100,7 +100,31 @@
                     <h2 style="font-size: 20px; margin: 0; font-weight: 700;">Tin tuyển dụng gần đây</h2>
                     <a asp-action="Jobs" style="font-size: 14px; font-weight: 600; color: var(--el-black);">Tất cả →</a>
                 </div>
-                <div id="job-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                <div id="job-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Dữ liệu mẫu (Static) -->
+                    <div class="el-bordered-item" style="padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 15px;">Senior .NET Developer</div>
+                                <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px;">
+                                    Hạn nộp: 30/06/2024 · 45 ứng viên
+                                </div>
+                            </div>
+                            <div class="el-status el-status--success" style="font-size: 10px;">ĐANG MỞ</div>
+                        </div>
+                    </div>
+                    <div class="el-bordered-item" style="padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 15px;">Frontend ReactJS Engineer</div>
+                                <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px;">
+                                    Hạn nộp: 15/06/2024 · 28 ứng viên
+                                </div>
+                            </div>
+                            <div class="el-status el-status--success" style="font-size: 10px;">ĐANG MỞ</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -125,46 +149,12 @@
                     </div>
                 </div>
             </div>
-
-            <div class="el-card" style="background: var(--el-black); color: white; border: none;">
-                <h3 style="font-size: 18px; margin: 0 0 12px; font-weight: 700;">Mẹo từ Smart Recruiter</h3>
-                <p style="font-size: 14px; opacity: 0.8; line-height: 1.6; margin-bottom: 20px;">
-                    Hãy sử dụng tính năng AI Filter để tự động loại bỏ các hồ sơ không phù hợp, giúp bạn tiết kiệm 80% thời gian sàng lọc.
-                </p>
-                <a href="#" style="color: white; font-weight: 700; font-size: 14px; text-decoration: none;">Tìm hiểu thêm →</a>
-            </div>
         </div>
     </div>
 </main>
 
 @section Scripts {
     <script>
-        (function() {
-            // Xóa bỏ phần kiểm tra auth bằng JS vì đã có Authorize ở Controller
-            
-            // Dữ liệu demo vẫn giữ lại để hiển thị giao diện cho đẹp
-            const myJobs = SR_DEMO.tinTuyenDung.filter(t => t.maNhaTuyenDung === 3); // Lấy tạm ID = 3 cho demo
-            const myApps = SR_DEMO.donUngTuyen.filter(d => myJobs.some(j => j.maTin === d.maTin));
-
-            document.getElementById("stat-jobs").textContent = myJobs.filter(j => j.trangThai === "DangMo").length;
-            document.getElementById("stat-apps").textContent = myApps.length;
-
-            const listEl = document.getElementById("job-list");
-            listEl.innerHTML = myJobs.slice(0, 3).map(j => `
-                <div class="el-bordered-item" style="padding: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-weight: 600; font-size: 15px;">${SR_UI.escapeHtml(j.tieuDe)}</div>
-                            <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px;">
-                                Hạn nộp: ${j.hanNopCV} · ${SR_DEMO.donUngTuyen.filter(d => d.maTin === j.maTin).length} ứng viên
-                            </div>
-                        </div>
-                        <div class="el-status el-status--${j.trangThai === 'DangMo' ? 'success' : 'danger'}" style="font-size: 10px;">
-                            ${j.trangThai === 'DangMo' ? 'ĐANG MỞ' : 'ĐÃ ĐÓNG'}
-                        </div>
-                    </div>
-                </div>
-            `).join("") || '<p class="el-text-muted">Chưa có tin tuyển dụng nào.</p>';
-        })();
+        // Bảng điều khiển HR hiện đang hiển thị dữ liệu tĩnh mẫu.
     </script>
 }

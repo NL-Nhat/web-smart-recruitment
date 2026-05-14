@@ -51,31 +51,74 @@
                     </tr>
                 </thead>
                 <tbody id="role-table-body">
-                    <!-- Data will be loaded here -->
+                    <!-- Dữ liệu mẫu (Static) -->
+                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                        <td style="padding: 16px 24px; font-weight: 600;">#1</td>
+                        <td style="padding: 16px 24px;">
+                            <span style="font-weight: 700; color: var(--el-black);">Admin</span>
+                        </td>
+                        <td style="padding: 16px 24px; color: var(--el-warm-gray); font-size: 13px;">Quản trị viên toàn hệ thống, có quyền quản lý người dùng và cấu hình.</td>
+                        <td style="padding: 16px 24px; text-align: right;">
+                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                <button class="el-icon-btn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                        <td style="padding: 16px 24px; font-weight: 600;">#2</td>
+                        <td style="padding: 16px 24px;">
+                            <span style="font-weight: 700; color: var(--el-black);">NhaTuyenDung</span>
+                        </td>
+                        <td style="padding: 16px 24px; color: var(--el-warm-gray); font-size: 13px;">Tài khoản doanh nghiệp, đăng tin tuyển dụng và quản lý ứng viên.</td>
+                        <td style="padding: 16px 24px; text-align: right;">
+                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                <button class="el-icon-btn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                        <td style="padding: 16px 24px; font-weight: 600;">#3</td>
+                        <td style="padding: 16px 24px;">
+                            <span style="font-weight: 700; color: var(--el-black);">UngVien</span>
+                        </td>
+                        <td style="padding: 16px 24px; color: var(--el-warm-gray); font-size: 13px;">Tài khoản người tìm việc, nộp đơn ứng tuyển và quản lý hồ sơ cá nhân.</td>
+                        <td style="padding: 16px 24px; text-align: right;">
+                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                <button class="el-icon-btn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </main>
 </div>
 
-<!-- Modal Thêm/Sửa -->
+<!-- Modal Role -->
 <div class="modal-overlay" id="modal-role">
     <div class="modal-content">
-        <h2 style="font-size: 24px; font-weight: 800; margin-top: 0; margin-bottom: 32px;" id="modal-title">Thêm Vai trò mới</h2>
+        <h2 style="font-size: 24px; font-weight: 800; margin-top: 0; margin-bottom: 8px;" id="modal-title">Thêm vai trò mới</h2>
+        <p class="el-text-muted" style="margin-bottom: 32px;">Thiết lập tên và mô tả quyền hạn cho vai trò này.</p>
+        
         <form id="f-role">
-            <div style="display: flex; flex-direction: column; gap: 24px;">
-                <div class="el-form-group">
-                    <label class="el-label">Tên vai trò</label>
-                    <input type="text" class="el-input" id="role-name" placeholder="Ví dụ: Moderator, Content Creator..." required>
-                </div>
-                <div class="el-form-group">
-                    <label class="el-label">Mô tả quyền hạn</label>
-                    <textarea class="el-input" id="role-desc" rows="4" placeholder="Mô tả tóm tắt các quyền mà vai trò này sở hữu..." style="padding-top: 12px;"></textarea>
-                </div>
+            <div class="el-form-group">
+                <label class="el-label">Tên vai trò</label>
+                <input type="text" class="el-input" id="role-name" placeholder="VD: NhaTuyenDung" required>
             </div>
-            <div style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 16px;">
-                <button type="button" class="el-btn-white" onclick="closeModal()">Hủy bỏ</button>
-                <button type="submit" class="el-btn-primary">Lưu thông tin</button>
+            <div class="el-form-group">
+                <label class="el-label">Mô tả quyền hạn</label>
+                <textarea class="el-input" id="role-desc" style="height: 100px; padding: 12px;" placeholder="Mô tả ngắn gọn về quyền của vai trò này..."></textarea>
+            </div>
+
+            <div style="margin-top: 40px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="el-btn-white" id="btn-close-role">Hủy bỏ</button>
+                <button type="submit" class="el-btn-primary" style="padding: 0 32px;">Lưu thay đổi</button>
             </div>
         </form>
     </div>
@@ -83,81 +126,36 @@
 
 @section Scripts {
     <script>
-        const modal = document.getElementById("modal-role");
-        const form = document.getElementById("f-role");
-        const tableBody = document.getElementById("role-table-body");
-        let editingId = null;
+        (function() {
+            const modal = document.getElementById("modal-role");
+            const btnAdd = document.getElementById("btn-add-role");
+            const btnClose = document.getElementById("btn-close-role");
+            const title = document.getElementById("modal-title");
 
-        function renderRoles() {
-            // Giả sử SR_DEMO.vaiTro đã có dữ liệu
-            const roles = SR_DEMO.vaiTro || [];
-            tableBody.innerHTML = roles.map(r => `
-                <tr style="border-bottom: 1px solid var(--el-border-subtle);">
-                    <td style="padding: 16px 24px; font-weight: 600;">#${r.id}</td>
-                    <td style="padding: 16px 24px;">
-                        <span style="font-weight: 700; color: var(--el-black);">${SR_UI.escapeHtml(r.ten)}</span>
-                    </td>
-                    <td style="padding: 16px 24px; color: var(--el-warm-gray); font-size: 13px;">${SR_UI.escapeHtml(r.moTa)}</td>
-                    <td style="padding: 16px 24px; text-align: right;">
-                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                            <button class="el-icon-btn" onclick="editRole(${r.id})">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            </button>
-                            <button class="el-icon-btn el-icon-btn--danger" onclick="deleteRole(${r.id})">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join("");
-        }
+            btnAdd.onclick = () => {
+                title.innerText = "Thêm vai trò mới";
+                modal.style.display = "grid";
+            };
 
-        function openModal(id = null) {
-            editingId = id;
-            if (id) {
-                const role = SR_DEMO.vaiTro.find(r => r.id === id);
-                document.getElementById("modal-title").textContent = "Chỉnh sửa vai trò";
-                document.getElementById("role-name").value = role.ten;
-                document.getElementById("role-desc").value = role.moTa;
-            } else {
-                document.getElementById("modal-title").textContent = "Thêm Vai trò mới";
-                form.reset();
-            }
-            modal.style.display = "grid";
-        }
+            const editBtns = document.querySelectorAll('.el-icon-btn');
+            editBtns.forEach(btn => {
+                btn.onclick = () => {
+                    title.innerText = "Chỉnh sửa vai trò";
+                    modal.style.display = "grid";
+                };
+            });
 
-        function closeModal() {
-            modal.style.display = "none";
-        }
+            btnClose.onclick = () => modal.style.display = "none";
 
-        window.editRole = openModal;
-        window.deleteRole = (id) => {
-            if (confirm("Bạn có chắc chắn muốn xóa vai trò này?")) {
-                SR_DEMO.vaiTro = SR_DEMO.vaiTro.filter(r => r.id !== id);
-                renderRoles();
-            }
-        };
+            document.getElementById("f-role").onsubmit = (e) => {
+                e.preventDefault();
+                alert("Đã lưu thay đổi vai trò (Demo)");
+                modal.style.display = "none";
+            };
 
-        document.getElementById("btn-add-role").onclick = () => openModal();
-
-        form.onsubmit = (e) => {
-            e.preventDefault();
-            const name = document.getElementById("role-name").value;
-            const desc = document.getElementById("role-desc").value;
-
-            if (editingId) {
-                const role = SR_DEMO.vaiTro.find(r => r.id === editingId);
-                role.ten = name;
-                role.moTa = desc;
-            } else {
-                const newId = SR_DEMO.vaiTro.length ? Math.max(...SR_DEMO.vaiTro.map(r => r.id)) + 1 : 1;
-                SR_DEMO.vaiTro.push({ id: newId, ten: name, moTa: desc });
-            }
-
-            renderRoles();
-            closeModal();
-        };
-
-        renderRoles();
+            window.onclick = (e) => {
+                if (e.target == modal) modal.style.display = "none";
+            };
+        })();
     </script>
 }

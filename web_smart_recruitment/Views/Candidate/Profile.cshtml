@@ -39,25 +39,25 @@
             <form id="f-profile">
                 <div class="el-form-group">
                     <label class="el-label" for="hoTen">Họ và tên</label>
-                    <input class="el-input" id="hoTen" placeholder="Nguyễn Văn A" required />
+                    <input class="el-input" id="hoTen" placeholder="Nguyễn Văn A" value="Nguyễn Văn A" required />
                 </div>
                 <div class="el-grid el-grid--2">
                     <div class="el-form-group">
                         <label class="el-label" for="sdt">Số điện thoại</label>
-                        <input class="el-input" id="sdt" placeholder="090..." />
+                        <input class="el-input" id="sdt" placeholder="090..." value="0901234567" />
                     </div>
                     <div class="el-form-group">
                         <label class="el-label" for="namKn">Số năm kinh nghiệm</label>
-                        <input class="el-input" id="namKn" type="number" min="0" placeholder="0" />
+                        <input class="el-input" id="namKn" type="number" min="0" placeholder="0" value="3" />
                     </div>
                 </div>
                 <div class="el-form-group">
                     <label class="el-label" for="linkedin">Link LinkedIn</label>
-                    <input class="el-input" id="linkedin" placeholder="linkedin.com/in/..." />
+                    <input class="el-input" id="linkedin" placeholder="linkedin.com/in/..." value="linkedin.com/in/nguyenvana" />
                 </div>
                 <div class="el-form-group">
                     <label class="el-label" for="chucDanh">Chức danh hiện tại</label>
-                    <input class="el-input" id="chucDanh" placeholder="Software Engineer, Designer..." />
+                    <input class="el-input" id="chucDanh" placeholder="Software Engineer, Designer..." value="Frontend Developer" />
                 </div>
                 <button type="submit" class="el-btn-primary" style="width: 100%; height: 48px; justify-content: center; margin-top: 1rem;">Lưu hồ sơ cá nhân</button>
             </form>
@@ -73,7 +73,19 @@
                     <button type="button" class="el-btn-warm" style="padding: 4px 10px; font-size: 11px;" id="btn-add-skill">+ Thêm</button>
                 </div>
                 <div class="sr-chips" id="my-skills" style="margin-top: 12px;">
-                    <!-- Skills will be rendered here -->
+                    <!-- Dữ liệu mẫu (Static) -->
+                    <span class="el-status el-status--success" style="font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                        ReactJS
+                        <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;">&times;</span>
+                    </span>
+                    <span class="el-status el-status--success" style="font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                        TypeScript
+                        <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;">&times;</span>
+                    </span>
+                    <span class="el-status el-status--success" style="font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                        UI Design
+                        <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;">&times;</span>
+                    </span>
                 </div>
             </div>
 
@@ -96,85 +108,36 @@
 @section Scripts {
     <script>
         (function() {
-            const s = SR_AUTH.requireAuth("UngVien", '@Url.Action("Login", "Auth")');
-            if (!s) return;
-            SR_AUTH.updateNavPlaceholders();
-            
-            const uv = SR_DEMO.getUngVien(s.maTaiKhoan);
-            if (uv) {
-                document.getElementById("hoTen").value = uv.hoTen || s.tenHienThi || "";
-                document.getElementById("sdt").value = uv.soDienThoai || "";
-                document.getElementById("linkedin").value = uv.linkLinkedIn || "";
-                document.getElementById("chucDanh").value = uv.chucDanhHienTai || "";
-                document.getElementById("namKn").value = uv.soNamKinhNghiem != null ? uv.soNamKinhNghiem : "";
-            }
-
-            const mySkills = ["ReactJS", "TypeScript", "UI Design"];
-            const skillsEl = document.getElementById("my-skills");
-            const availableSkills = SR_DEMO.danhMucKyNang;
-
-            function renderSkills() {
-                skillsEl.innerHTML = mySkills.map(s => `
-                    <span class="el-status el-status--success" style="font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
-                        ${SR_UI.escapeHtml(s)}
-                        <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;" onclick="removeSkill('${s}')">&times;</span>
-                    </span>
-                `).join("") || '<span class="el-text-muted" style="font-size: 13px;">Chưa có kỹ năng nào được thêm.</span>';
-            }
-
-            window.removeSkill = function(name) {
-                const idx = mySkills.indexOf(name);
-                if (idx > -1) {
-                    mySkills.splice(idx, 1);
-                    renderSkills();
-                }
-            };
-
-            const btnAdd = document.getElementById("btn-add-skill");
+            const btn = document.getElementById("btn-add-skill");
             const picker = document.getElementById("skill-picker");
-            const skSearch = document.getElementById("sk-search");
             const skList = document.getElementById("sk-list");
 
-            btnAdd.addEventListener("click", (e) => {
+            // Danh sách kỹ năng mẫu (Static)
+            const demoSkills = ["Angular", "VueJS", "Node.js", "Python", "Docker", "AWS", "Figma"];
+
+            btn.onclick = (e) => {
                 e.stopPropagation();
-                const rect = btnAdd.getBoundingClientRect();
+                const rect = btn.getBoundingClientRect();
                 picker.style.top = (rect.bottom + window.scrollY) + "px";
                 picker.style.left = (rect.left + window.scrollX - 240) + "px";
                 picker.style.display = picker.style.display === "none" ? "block" : "none";
-                if (picker.style.display === "block") skSearch.focus();
-                renderAvailable("");
-            });
-
-            skSearch.addEventListener("input", (e) => renderAvailable(e.target.value));
-
-            function renderAvailable(q) {
-                const filtered = availableSkills.filter(s => 
-                    s.tenKyNang.toLowerCase().includes(q.toLowerCase()) && !mySkills.includes(s.tenKyNang)
-                ).slice(0, 10);
-
-                skList.innerHTML = filtered.map(s => `
-                    <div class="sk-opt" style="padding:8px 12px; cursor:pointer; border-radius:6px; font-size:13px;" onclick="addSkill('${s.tenKyNang}')">
-                        ${SR_UI.escapeHtml(s.tenKyNang)} <span style="font-size:10px; color:var(--el-warm-gray); float:right;">${s.phanLoai}</span>
+                
+                // Render list
+                skList.innerHTML = demoSkills.map(s => `
+                    <div class="sk-opt" style="padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px;" onclick="alert('Đã thêm kỹ năng: ${s}')">
+                        ${s}
                     </div>
-                `).join("") || '<div style="font-size:12px; color:var(--el-warm-gray); text-align:center; padding:8px;">Không tìm thấy</div>';
-            }
-
-            window.addSkill = function(name) {
-                mySkills.push(name);
-                renderSkills();
-                picker.style.display = "none";
+                `).join("");
             };
 
-            document.addEventListener("click", () => picker.style.display = "none");
-            picker.addEventListener("click", (e) => e.stopPropagation());
+            document.onclick = (e) => {
+                if (!picker.contains(e.target)) picker.style.display = "none";
+            };
 
-            renderSkills();
-
-            document.getElementById("f-profile").addEventListener("submit", function (e) {
+            document.getElementById("f-profile").onsubmit = (e) => {
                 e.preventDefault();
-                document.getElementById("msg").innerHTML = '<div class="sr-alert sr-alert--success" style="margin-bottom: 20px;">Đã lưu hồ sơ thành công (Demo).</div>';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
+                alert("Đã lưu thông tin cá nhân!");
+            };
         })();
     </script>
 }
