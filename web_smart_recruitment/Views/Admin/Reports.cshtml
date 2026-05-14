@@ -121,14 +121,6 @@
 
 @section Scripts {
     <script>
-        (function() {
-            const s = SR_AUTH.requireAuth("Admin", '@Url.Action("Login", "Admin")');
-            if (!s) return;
-
-            document.getElementById("admin-logout").onclick = function() {
-                SR_AUTH.logout();
-                location.href = '@Url.Action("Login", "Admin")';
-            };
-        })();
+        // Chức năng báo cáo hiện đang hiển thị dữ liệu tĩnh.
     </script>
 }

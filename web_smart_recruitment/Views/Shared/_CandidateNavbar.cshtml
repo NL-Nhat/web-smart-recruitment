@@ -6,10 +6,18 @@
             <a asp-controller="Candidate" asp-action="Applications" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Applications" ? "is-active" : "")'>Đơn ứng tuyển</a>
             <a asp-controller="Candidate" asp-action="Interviews" class='@(ViewContext.RouteData.Values["Action"]?.ToString() == "Interviews" ? "is-active" : "")'>Lịch phỏng vấn</a>
             <div style="display: flex; align-items: center; gap: 15px;">
-                <a asp-controller="Candidate" asp-action="Profile" style="text-decoration: none; color: var(--el-black); font-weight: 600; font-size: 14px;">
-                    @User.Identity?.Name
-                </a>
-                <a asp-controller="Auth" asp-action="Logout" class="el-btn-white" style="font-size: 12px; padding: 6px 12px; border: 1px solid var(--el-border); text-decoration: none;">Đăng xuất</a>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Candidate" asp-action="Profile" style="text-decoration: none; color: var(--el-black); font-weight: 600; font-size: 14px;">
+                        @User.Identity?.Name
+                    </a>
+                    <a asp-controller="Auth" asp-action="Logout" class="el-btn-white" style="font-size: 12px; padding: 6px 12px; border: 1px solid var(--el-border); text-decoration: none;">Đăng xuất</a>
+                }
+                else
+                {
+                    <a asp-controller="Auth" asp-action="Login" class="el-btn-white" style="font-size: 12px; padding: 6px 16px; border: 1px solid var(--el-border); text-decoration: none;">Đăng nhập</a>
+                    <a asp-controller="Auth" asp-action="Register" class="el-btn-primary" style="font-size: 12px; padding: 6px 16px; text-decoration: none;">Đăng ký</a>
+                }
             </div>
         </nav>
     </div>

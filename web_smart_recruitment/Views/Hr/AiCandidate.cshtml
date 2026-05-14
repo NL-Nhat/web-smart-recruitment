@@ -89,192 +89,108 @@
             Quay lại danh sách
         </a>
     </div>
-    <div id="content"></div>
-</main>
-
-<div id="interview-modal" class="modal-backdrop">
-    <div class="modal-container">
-        <h2 style="margin-top: 0; font-size: 24px; font-weight: 700;">Hẹn lịch phỏng vấn</h2>
-        <p class="el-text-muted" style="font-size: 14px; margin-bottom: 24px;">Thiết lập thời gian và địa điểm gặp mặt ứng viên.</p>
-
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-            <div class="el-form-group">
-                <label class="el-label">Thời gian</label>
-                <input type="datetime-local" class="el-input" id="m-time" />
-            </div>
-            <div class="el-form-group">
-                <label class="el-label">Hình thức</label>
-                <select class="el-input" id="m-type">
-                    <option value="Online">Online (Google Meet/Zoom)</option>
-                    <option value="Offline">Offline (Tại văn phòng)</option>
-                </select>
-            </div>
-            <div class="el-form-group">
-                <label class="el-label">Địa điểm / Link họp</label>
-                <input type="text" class="el-input" id="m-loc" placeholder="Nhập địa chỉ hoặc link..." />
-            </div>
-            <div class="el-form-group">
-                <label class="el-label">Ghi chú cho ứng viên</label>
-                <textarea class="el-input" id="m-note" style="height: 80px;" placeholder="Dặn dò ứng viên..."></textarea>
+    <div id="content">
+        <!-- Dữ liệu mẫu (Static) -->
+        <div class="el-card" style="padding: 40px; margin-bottom: 32px; background: var(--el-bg-light); border: none;">
+            <div style="display: flex; gap: 48px; align-items: center;">
+                <div class="ai-score-ring" style="--score: 92%">
+                    <div class="ai-score-inner">
+                        <div style="font-size: 36px; font-weight: 700; color: var(--el-black);">92%</div>
+                        <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; letter-spacing: 1px;">Match Score</div>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h1 style="font-size: 32px; font-weight: 700; margin: 0;">Nguyễn Văn A</h1>
+                            <p style="font-size: 16px; color: var(--el-dark-gray); margin-top: 4px;">Ứng tuyển: <strong>Senior .NET Developer</strong></p>
+                        </div>
+                        <span class="el-status el-status--success" style="background: #D1FAE5;">Tuyển nhanh</span>
+                    </div>
+                    <div style="margin-top: 24px; display: flex; gap: 12px;">
+                        <a href="#" class="el-btn-primary" style="height: 40px; padding: 0 20px; font-size: 14px;">Xem CV gốc</a>
+                        <button class="el-btn-white" style="height: 40px; padding: 0 20px; font-size: 14px;">Tải báo cáo PDF</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div style="margin-top: 32px; display: flex; gap: 12px;">
-            <button class="el-btn-white" style="flex: 1; justify-content: center;" onclick="closeModal()">Hủy</button>
-            <button class="el-btn-primary" style="flex: 1; justify-content: center;" onclick="saveInterview()">Xác nhận lịch</button>
+        <div class="sr-grid" style="grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
+            <div>
+                <section class="analysis-section">
+                    <div class="section-header-premium">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        Tóm tắt đánh giá của AI
+                    </div>
+                    <div class="insight-box" style="font-size: 16px; line-height: 1.8; color: var(--el-dark-gray);">
+                        Ứng viên có nền tảng kỹ thuật vững chắc với hơn 5 năm kinh nghiệm làm việc với .NET Core và Microservices. Có kỹ năng giải quyết vấn đề tốt và kinh nghiệm dẫn dắt đội ngũ kỹ thuật nhỏ. Rất phù hợp với văn hóa công ty.
+                    </div>
+                </section>
+
+                <div class="sr-grid sr-grid--2" style="gap: 24px;">
+                    <section class="analysis-section">
+                        <div class="section-header-premium" style="color: #15803D; border-color: #DCFCE7;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Điểm mạnh cốt lõi
+                        </div>
+                        <div class="insight-box" style="background: #F0FDF4; border-color: #DCFCE7;">
+                            <ul class="strength-list" style="padding-left: 20px; margin: 0;">
+                                <li>Thành thạo ASP.NET Core, Entity Framework</li>
+                                <li>Kinh nghiệm triển khai Docker & Kubernetes</li>
+                                <li>Tư duy hệ thống và thiết kế Database tốt</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section class="analysis-section">
+                        <div class="section-header-premium" style="color: #B91C1C; border-color: #FEE2E2;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            Điểm cần lưu ý
+                        </div>
+                        <div class="insight-box" style="background: #FEF2F2; border-color: #FEE2E2;">
+                            <ul class="weakness-list" style="padding-left: 20px; margin: 0;">
+                                <li>Kỹ năng tiếng Anh giao tiếp ở mức trung bình</li>
+                                <li>Chưa có nhiều kinh nghiệm với Cloud (AWS/Azure)</li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <aside>
+                <section class="analysis-section">
+                    <div class="section-header-premium">Kỹ năng đạt yêu cầu</div>
+                    <div class="sr-chips" style="gap: 8px;">
+                        <span class="skill-tag-ai" style="background: #DCFCE7; color: #15803D;">.NET Core</span>
+                        <span class="skill-tag-ai" style="background: #DCFCE7; color: #15803D;">SQL Server</span>
+                        <span class="skill-tag-ai" style="background: #DCFCE7; color: #15803D;">Microservices</span>
+                    </div>
+                </section>
+
+                <section class="analysis-section" style="margin-top: 32px;">
+                    <div class="section-header-premium">Kỹ năng còn thiếu</div>
+                    <div class="sr-chips" style="gap: 8px;">
+                        <span class="skill-tag-ai" style="background: #FEE2E2; color: #B91C1C;">AWS Lambda</span>
+                        <span class="skill-tag-ai" style="background: #FEE2E2; color: #B91C1C;">Terraform</span>
+                    </div>
+                </section>
+
+                <div class="el-card" style="margin-top: 40px; border: 2px solid var(--el-black);">
+                    <h3 style="margin-top: 0; font-size: 18px; font-weight: 700;">Hành động</h3>
+                    <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">Cập nhật trạng thái đơn ứng tuyển của ứng viên này.</p>
+                    <div id="action-buttons" style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="el-btn-primary" style="background: #15803D; justify-content: center;">Chấp nhận hồ sơ</button>
+                        <button class="el-btn-primary" style="background: #B91C1C; justify-content: center;">Từ chối hồ sơ</button>
+                        <button class="el-btn-white" style="justify-content: center;" onclick="openModal()">Hẹn lịch phỏng vấn</button>
+                    </div>
+                </div>
+            </aside>
         </div>
     </div>
-</div>
+</main>
 
 @section Scripts {
     <script>
-        (function() {
-            var s = SR_AUTH.requireAuth("NhaTuyenDung", '@Url.Action("Login", "Auth")');
-            if (!s) return;
-            SR_AUTH.updateNavPlaceholders();
-
-            var params = new URLSearchParams(location.search);
-            var maDon = parseInt(params.get("maDon") || "0", 10);
-            var don = SR_DEMO.donUngTuyen.find(d => d.maDon === maDon);
-            var tin = don ? SR_DEMO.getTin(don.maTin) : null;
-            var el = document.getElementById("content");
-
-            if (!don || !tin || tin.maNhaTuyenDung !== s.maTaiKhoan) {
-                el.innerHTML = '<div class="sr-alert sr-alert--error">Không tìm thấy đơn ứng tuyển.</div>';
-                return;
-            }
-
-            document.getElementById("back-link").href = '@Url.Action("Applications", "Hr")?maTin=' + don.maTin;
-            var kq = SR_DEMO.getKetQuaByDon(maDon);
-            var uv = SR_DEMO.getUngVien(don.maUngVien);
-            var score = (kq && kq.diemPhuHop) || 0;
-
-            function renderList(text, className) {
-                if (!text || text === "—") return '<p class="el-text-muted">Không có dữ liệu.</p>';
-                var items = text.split(';').map(i => i.trim()).filter(i => i);
-                return `<ul class="${className}" style="padding-left: 20px; margin: 0;">${items.map(i => `<li>${SR_UI.escapeHtml(i)}</li>`).join("")}</ul>`;
-            }
-
-            function parseSkills(json) {
-                try { return JSON.parse(json || "[]"); } catch { return []; }
-            }
-
-            var matched = parseSkills(kq && kq.kyNangPhuHopJson);
-            var missing = parseSkills(kq && kq.kyNangThieuJson);
-
-            el.innerHTML = `
-                <div class="el-card" style="padding: 40px; margin-bottom: 32px; background: var(--el-bg-light); border: none;">
-                    <div style="display: flex; gap: 48px; align-items: center;">
-                        <div class="ai-score-ring" style="--score: ${score}%">
-                            <div class="ai-score-inner">
-                                <div style="font-size: 36px; font-weight: 700; color: var(--el-black);">${score}%</div>
-                                <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; letter-spacing: 1px;">Match Score</div>
-                            </div>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <h1 style="font-size: 32px; font-weight: 700; margin: 0;">${SR_UI.escapeHtml(uv ? uv.hoTen : "Ứng viên ẩn danh")}</h1>
-                                    <p style="font-size: 16px; color: var(--el-dark-gray); margin-top: 4px;">Ứng tuyển: <strong>${SR_UI.escapeHtml(tin.tieuDe)}</strong></p>
-                                </div>
-                                ${kq && kq.deXuat ? SR_UI.aiDeXuatBadge(kq.deXuat) : ""}
-                            </div>
-                            <div style="margin-top: 24px; display: flex; gap: 12px;">
-                                <a href="#" class="el-btn-primary" style="height: 40px; padding: 0 20px; font-size: 14px;">Xem CV gốc</a>
-                                <button class="el-btn-white" style="height: 40px; padding: 0 20px; font-size: 14px;">Tải báo cáo PDF</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sr-grid" style="grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
-                    <div>
-                        <section class="analysis-section">
-                            <div class="section-header-premium">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                                Tóm tắt đánh giá của AI
-                            </div>
-                            <div class="insight-box" style="font-size: 16px; line-height: 1.8; color: var(--el-dark-gray);">
-                                ${SR_UI.escapeHtml(kq ? kq.tomTatUngVien : "Đang chờ AI phân tích...")}
-                            </div>
-                        </section>
-
-                        <div class="sr-grid sr-grid--2" style="gap: 24px;">
-                            <section class="analysis-section">
-                                <div class="section-header-premium" style="color: #15803D; border-color: #DCFCE7;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                    Điểm mạnh cốt lõi
-                                </div>
-                                <div class="insight-box" style="background: #F0FDF4; border-color: #DCFCE7;">
-                                    ${renderList(kq && kq.diemManh, 'strength-list')}
-                                </div>
-                            </section>
-
-                            <section class="analysis-section">
-                                <div class="section-header-premium" style="color: #B91C1C; border-color: #FEE2E2;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                                    Điểm cần lưu ý
-                                </div>
-                                <div class="insight-box" style="background: #FEF2F2; border-color: #FEE2E2;">
-                                    ${renderList(kq && kq.diemYeu, 'weakness-list')}
-                                </div>
-                            </section>
-                        </div>
-                    </div>
-
-                    <aside>
-                        <section class="analysis-section">
-                            <div class="section-header-premium">Kỹ năng đạt yêu cầu</div>
-                            <div class="sr-chips" style="gap: 8px;">
-                                ${matched.map(k => `<span class="skill-tag-ai" style="background: #DCFCE7; color: #15803D;">${SR_UI.escapeHtml(k)}</span>`).join("") || '<span class="el-text-muted">Không tìm thấy</span>'}
-                            </div>
-                        </section>
-
-                        <section class="analysis-section" style="margin-top: 32px;">
-                            <div class="section-header-premium">Kỹ năng còn thiếu</div>
-                            <div class="sr-chips" style="gap: 8px;">
-                                ${missing.map(k => `<span class="skill-tag-ai" style="background: #FEE2E2; color: #B91C1C;">${SR_UI.escapeHtml(k)}</span>`).join("") || '<span class="el-text-muted">Không có</span>'}
-                            </div>
-                        </section>
-
-                        <div class="el-card" style="margin-top: 40px; border: 2px solid var(--el-black);">
-                            <h3 style="margin-top: 0; font-size: 18px; font-weight: 700;">Hành động</h3>
-                            <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">Cập nhật trạng thái đơn ứng tuyển của ứng viên này.</p>
-                            <div id="action-buttons" style="display: flex; flex-direction: column; gap: 10px;">
-                                <button class="el-btn-primary" style="background: #15803D; justify-content: center;">Chấp nhận hồ sơ</button>
-                                <button class="el-btn-primary" style="background: #B91C1C; justify-content: center;">Từ chối hồ sơ</button>
-                                <button class="el-btn-white" style="justify-content: center;" onclick="openModal()">Hẹn lịch phỏng vấn</button>
-                            </div>
-                            <div id="scheduled-info" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--el-border); display: none;">
-                                <div style="font-size: 11px; font-weight: 700; color: #4F46E5; text-transform: uppercase; margin-bottom: 8px;">Lịch hẹn đã đặt</div>
-                                <div id="interview-detail" style="font-size: 13px; background: #EEF2FF; padding: 12px; border-radius: 8px; color: #1E1B4B;"></div>
-                            </div>
-                        </div>
-                    </aside>
-                </div>
-            `;
-
-            const modal = document.getElementById("interview-modal");
-            const existingLich = SR_DEMO.getLichHenByDon(maDon);
-            if (existingLich) {
-                document.getElementById("scheduled-info").style.display = "block";
-                const dt = new Date(existingLich.thoiGian);
-                document.getElementById("interview-detail").innerHTML = `
-                    <strong>${existingLich.hinhThuc}</strong>: ${existingLich.diaDiem}<br>
-                    📅 ${dt.toLocaleDateString('vi-VN')} lúc ${dt.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})}
-                `;
-            }
-            window.openModal = () => {
-                modal.style.display = "grid";
-                document.getElementById("m-time").value = "2024-06-25T09:00";
-                document.getElementById("m-loc").value = "Văn phòng " + tin.tenCongTy;
-            };
-            window.closeModal = () => modal.style.display = "none";
-            window.saveInterview = () => {
-                alert("Đã lưu lịch phỏng vấn và gửi thông báo cho ứng viên!");
-                closeModal();
-                location.href = '@Url.Action("Interviews", "Hr")';
-            };
-        })();
+        // Chức năng phân tích AI hiện đang hiển thị dữ liệu tĩnh.
     </script>
 }

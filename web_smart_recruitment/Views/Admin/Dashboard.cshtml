@@ -29,22 +29,22 @@
         <div class="stat-grid-admin">
             <div class="stat-card-admin">
                 <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Tổng người dùng</div>
-                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-users">0</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-users">1,248</div>
                 <div style="font-size: 12px; color: var(--el-success); margin-top: 8px; font-weight: 600;">↑ 12.5% <span style="color: #94A3B8; font-weight: 400;">so với tháng trước</span></div>
             </div>
             <div class="stat-card-admin">
                 <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Nhà tuyển dụng</div>
-                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-hr">0</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-hr">86</div>
                 <div style="font-size: 12px; color: var(--el-success); margin-top: 8px; font-weight: 600;">+4 <span style="color: #94A3B8; font-weight: 400;">công ty mới tuần này</span></div>
             </div>
             <div class="stat-card-admin">
                 <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Tin tuyển dụng</div>
-                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-jobs">0</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-jobs">312</div>
                 <div style="font-size: 12px; color: var(--el-warning); margin-top: 8px; font-weight: 600;">12 <span style="color: #94A3B8; font-weight: 400;">tin sắp hết hạn</span></div>
             </div>
             <div class="stat-card-admin">
                 <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Lượt ứng tuyển</div>
-                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-apps">0</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-apps">5,672</div>
                 <div style="font-size: 12px; color: var(--el-success); margin-top: 8px; font-weight: 600;">+85 <span style="color: #94A3B8; font-weight: 400;">hồ sơ mới hôm nay</span></div>
             </div>
         </div>
@@ -132,12 +132,6 @@
 
 @section Scripts {
     <script>
-        (function() {
-            // Dữ liệu demo
-            document.getElementById("count-users").textContent = SR_DEMO.taiKhoan.length;
-            document.getElementById("count-hr").textContent = SR_DEMO.nhaTuyenDung.length;
-            document.getElementById("count-jobs").textContent = SR_DEMO.tinTuyenDung.length;
-            document.getElementById("count-apps").textContent = SR_DEMO.donUngTuyen.length;
-        })();
+        // Bảng điều khiển Admin hiện đang hiển thị dữ liệu tĩnh mẫu.
     </script>
 }

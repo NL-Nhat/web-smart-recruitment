@@ -52,20 +52,6 @@
 
 @section Scripts {
     <script>
-        (function() {
-            const s = SR_AUTH.requireAuth("Admin", '@Url.Action("Login", "Admin")');
-            if (!s) return;
-
-            document.getElementById("admin-logout").onclick = function() {
-                SR_AUTH.logout();
-                location.href = '@Url.Action("Login", "Admin")';
-            };
-            
-            document.getElementById("f-profile").onsubmit = (e) => {
-                e.preventDefault();
-                document.getElementById("msg").innerHTML = '<div class="sr-alert sr-alert--success">Đã cập nhật hồ sơ quản trị thành công!</div>';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-        })();
+        // Chức năng hồ sơ admin hiện đang hiển thị dữ liệu tĩnh.
     </script>
 }

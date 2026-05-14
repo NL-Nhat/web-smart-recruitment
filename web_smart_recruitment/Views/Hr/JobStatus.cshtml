@@ -12,12 +12,14 @@
     </p>
     <div class="sr-card">
         <div id="msg"></div>
-        <p id="job-line" class="sr-text-sm"></p>
+        <p id="job-line" class="sr-text-sm">
+            <strong>Senior .NET Developer</strong> — hiện tại: <span class="el-status el-status--success">ĐANG MỞ</span>
+        </p>
         <form id="f-st">
             <div class="sr-form-group">
                 <label class="sr-label" for="trangThai">Trạng thái mới</label>
                 <select class="sr-select" id="trangThai">
-                    <option value="DangMo">DangMo — Đang mở nhận CV</option>
+                    <option value="DangMo" selected>DangMo — Đang mở nhận CV</option>
                     <option value="DaDong">DaDong — Đã đóng</option>
                     <option value="DaHuy">DaHuy — Đã hủy</option>
                 </select>
@@ -30,28 +32,6 @@
 
 @section Scripts {
     <script>
-        (function() {
-            var sess = SR_AUTH.requireAuth("NhaTuyenDung", '@Url.Action("Login", "Auth")');
-            if (!sess) return;
-            SR_AUTH.updateNavPlaceholders();
-            var maTin = parseInt(new URLSearchParams(location.search).get("maTin") || "0", 10);
-            var tin = SR_DEMO.getTin(maTin);
-            if (!tin || tin.maNhaTuyenDung !== sess.maTaiKhoan) {
-                document.getElementById("job-line").textContent = "Tin không hợp lệ.";
-            } else {
-                document.getElementById("job-line").innerHTML =
-                    "<strong>" +
-                    SR_UI.escapeHtml(tin.tieuDe) +
-                    "</strong> — hiện tại: " +
-                    SR_UI.tinBadge(tin.trangThai);
-                document.getElementById("trangThai").value = tin.trangThai;
-                document.getElementById("link-ats").href = '@Url.Action("Applications", "Hr")?maTin=' + maTin;
-            }
-            document.getElementById("f-st").addEventListener("submit", function (e) {
-                e.preventDefault();
-                document.getElementById("msg").innerHTML =
-                    '<div class="sr-alert sr-alert--success">Demo: cập nhật qua API vào <code>TinTuyenDung.TrangThai</code>.</div>';
-            });
-        })();
+        // Chức năng thay đổi trạng thái tin tuyển dụng hiện đang hiển thị dữ liệu tĩnh.
     </script>
 }

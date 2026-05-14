@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -188,7 +188,7 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => e.MaDon, "IX_LichHen_MaDon");
 
-            entity.HasIndex(e => e.ThoiGian, "IX_LichHen_ThoiGian");
+            entity.HasIndex(e => e.NgayPhuongVan, "IX_LichHen_Ngay");
 
             entity.Property(e => e.DiaDiem).HasMaxLength(255);
             entity.Property(e => e.HinhThuc)
@@ -198,7 +198,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.NgayTao)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.ThoiGian).HasColumnType("datetime");
+            entity.Property(e => e.NgayPhuongVan).HasColumnType("date");
+            entity.Property(e => e.GioPhuongVan).HasColumnType("time");
+            entity.Property(e => e.LinkHop).HasMaxLength(500);
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(50)
                 .IsUnicode(false)

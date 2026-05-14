@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace web_smart_recruitment.Models;
@@ -9,9 +9,13 @@ public partial class LichHenPhongVan
 
     public int? MaDon { get; set; }
 
-    public DateTime ThoiGian { get; set; }
+    public DateOnly NgayPhuongVan { get; set; }
+
+    public TimeOnly GioPhuongVan { get; set; }
 
     public string? DiaDiem { get; set; }
+
+    public string? LinkHop { get; set; }
 
     public string? HinhThuc { get; set; }
 

@@ -36,7 +36,48 @@
                         <th style="padding: 20px 24px; font-size: 13px; font-weight: 700; color: var(--el-warm-gray); text-align: right;">HÀNH ĐỘNG</th>
                     </tr>
                 </thead>
-                <tbody id="tb-users"></tbody>
+                <tbody id="tb-users">
+                    <!-- Dữ liệu mẫu (Static) -->
+                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                        <td style="padding: 20px 24px; font-weight: 600;">admin@recruiter.com</td>
+                        <td style="padding: 20px 24px;">Administrator</td>
+                        <td style="padding: 20px 24px;">
+                            <span class="el-status el-status--warning">Admin</span>
+                        </td>
+                        <td style="padding: 20px 24px;">
+                            <span class="el-status el-status--success">Hoạt động</span>
+                        </td>
+                        <td style="padding: 20px 24px; text-align: right;">
+                            <button class="el-btn-white" style="font-size: 12px; padding: 6px 16px; border: 1px solid #ef4444; color: #ef4444;">Khóa</button>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                        <td style="padding: 20px 24px; font-weight: 600;">hr@fpt.com.vn</td>
+                        <td style="padding: 20px 24px;">FPT Software</td>
+                        <td style="padding: 20px 24px;">
+                            <span class="el-status el-status--info">NhaTuyenDung</span>
+                        </td>
+                        <td style="padding: 20px 24px;">
+                            <span class="el-status el-status--success">Hoạt động</span>
+                        </td>
+                        <td style="padding: 20px 24px; text-align: right;">
+                            <button class="el-btn-white" style="font-size: 12px; padding: 6px 16px; border: 1px solid #ef4444; color: #ef4444;">Khóa</button>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                        <td style="padding: 20px 24px; font-weight: 600;">candidate@gmail.com</td>
+                        <td style="padding: 20px 24px;">Nguyễn Văn A</td>
+                        <td style="padding: 20px 24px;">
+                            <span class="el-status el-status--info">UngVien</span>
+                        </td>
+                        <td style="padding: 20px 24px;">
+                            <span class="el-status el-status--success">Hoạt động</span>
+                        </td>
+                        <td style="padding: 20px 24px; text-align: right;">
+                            <button class="el-btn-white" style="font-size: 12px; padding: 6px 16px; border: 1px solid #ef4444; color: #ef4444;">Khóa</button>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </main>
@@ -66,19 +107,39 @@
                 </select>
             </div>
 
-            <!-- Dynamic Fields -->
-            <div id="dynamic-fields" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--el-border-subtle);">
-                <div id="fields-uv">
-                    <div class="el-form-group">
-                        <label class="el-label">Họ và tên</label>
-                        <input type="text" class="el-input" id="uv-name">
-                    </div>
+            <!-- Dynamic Fields for Candidate -->
+            <div id="fields-candidate">
+                <div class="el-form-group">
+                    <label class="el-label">Họ và tên ứng viên</label>
+                    <input type="text" class="el-input" placeholder="Nguyễn Văn A">
                 </div>
-                <div id="fields-hr" style="display: none;">
-                    <div class="el-form-group">
-                        <label class="el-label">Tên công ty</label>
-                        <input type="text" class="el-input" id="hr-company">
-                    </div>
+                <div class="el-form-group">
+                    <label class="el-label">Số điện thoại</label>
+                    <input type="tel" class="el-input" placeholder="090...">
+                </div>
+            </div>
+
+            <!-- Dynamic Fields for Employer -->
+            <div id="fields-employer" style="display: none;">
+                <div class="el-form-group">
+                    <label class="el-label">Tên công ty</label>
+                    <input type="text" class="el-input" placeholder="FPT Software, ABC Tech...">
+                </div>
+                <div class="el-form-group">
+                    <label class="el-label">Số điện thoại</label>
+                    <input type="tel" class="el-input" placeholder="090...">
+                </div>
+                <div class="el-form-group">
+                    <label class="el-label">Địa chỉ trụ sở</label>
+                    <input type="text" class="el-input" placeholder="Số 123, Đường A, Quận B...">
+                </div>
+            </div>
+
+            <!-- Dynamic Fields for Admin -->
+            <div id="fields-admin" style="display: none;">
+                <div class="el-form-group">
+                    <label class="el-label">Tên quản trị viên</label>
+                    <input type="text" class="el-input" placeholder="Administrator">
                 </div>
             </div>
 
@@ -93,65 +154,33 @@
 @section Scripts {
     <script>
         (function() {
-            const s = SR_AUTH.requireAuth("Admin", '@Url.Action("Login", "Admin")');
-            if (!s) return;
-
-            document.getElementById("admin-logout").onclick = function() {
-                SR_AUTH.logout();
-                location.href = '@Url.Action("Login", "Admin")';
-            };
-            
-            const tb = document.getElementById("tb-users");
-            function renderTable() {
-                tb.innerHTML = SR_DEMO.taiKhoan.map(u => {
-                    let name = "—";
-                    if (u.vaiTro === "UngVien") {
-                        const uv = SR_DEMO.ungVien.find(x => x.maUngVien === u.maTaiKhoan);
-                        name = uv ? uv.hoTen : "Hồ sơ lỗi";
-                    } else if (u.vaiTro === "NhaTuyenDung") {
-                        const hr = SR_DEMO.nhaTuyenDung.find(x => x.maNhaTuyenDung === u.maTaiKhoan);
-                        name = hr ? hr.tenCongTy : "Hồ sơ lỗi";
-                    } else {
-                        name = "Administrator";
-                    }
-
-                    return `
-                        <tr style="border-bottom: 1px solid var(--el-border-subtle);">
-                            <td style="padding: 20px 24px; font-weight: 600;">${SR_UI.escapeHtml(u.email)}</td>
-                            <td style="padding: 20px 24px;">${SR_UI.escapeHtml(name)}</td>
-                            <td style="padding: 20px 24px;">
-                                <span class="el-status el-status--${u.vaiTro === 'Admin' ? 'warning' : 'info'}">${u.vaiTro}</span>
-                            </td>
-                            <td style="padding: 20px 24px;">
-                                <span class="el-status el-status--success">Hoạt động</span>
-                            </td>
-                            <td style="padding: 20px 24px; text-align: right;">
-                                <button class="el-btn-white" style="font-size: 12px; padding: 6px 16px; border: 1px solid #ef4444; color: #ef4444;" onclick="alert('Đã khóa tài khoản: ${u.email}')">Khóa</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join("");
-            }
-            renderTable();
-
-            // Modal Logic
             const modal = document.getElementById("modal-add");
-            const roleSel = document.getElementById("new-role");
-            const fUv = document.getElementById("fields-uv");
-            const fHr = document.getElementById("fields-hr");
+            const btnOpen = document.getElementById("btn-open-add");
+            const btnClose = document.getElementById("btn-close-add");
+            const roleSelect = document.getElementById("new-role");
+            
+            const fCandidate = document.getElementById("fields-candidate");
+            const fEmployer = document.getElementById("fields-employer");
+            const fAdmin = document.getElementById("fields-admin");
 
-            document.getElementById("btn-open-add").onclick = () => modal.style.display = "grid";
-            document.getElementById("btn-close-add").onclick = () => modal.style.display = "none";
+            btnOpen.onclick = () => modal.style.display = "grid";
+            btnClose.onclick = () => modal.style.display = "none";
 
-            roleSel.onchange = () => {
-                fUv.style.display = roleSel.value === "UngVien" ? "block" : "none";
-                fHr.style.display = roleSel.value === "NhaTuyenDung" ? "block" : "none";
+            roleSelect.onchange = () => {
+                const role = roleSelect.value;
+                fCandidate.style.display = role === "UngVien" ? "block" : "none";
+                fEmployer.style.display = role === "NhaTuyenDung" ? "block" : "none";
+                fAdmin.style.display = role === "Admin" ? "block" : "none";
             };
 
             document.getElementById("f-add-user").onsubmit = (e) => {
                 e.preventDefault();
                 alert("Đã thêm người dùng mới vào hệ thống (Demo)");
                 modal.style.display = "none";
+            };
+
+            window.onclick = (e) => {
+                if (e.target == modal) modal.style.display = "none";
             };
         })();
     </script>

@@ -20,6 +20,8 @@
             justify-content: space-between;
             align-items: center;
         }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; place-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; border-radius: 24px; width: 100%; max-width: 500px; padding: 40px; }
     </style>
 }
 
@@ -37,41 +39,91 @@
             <button class="el-btn-primary" id="btn-add-skill">+ Thêm kỹ năng mới</button>
         </header>
 
-        <div class="skill-grid" id="skill-list"></div>
+        <div class="skill-grid" id="skill-list">
+            <!-- Dữ liệu mẫu (Static) -->
+            <div class="skill-card">
+                <div>
+                    <div style="font-weight: 700; font-size: 16px;">ASP.NET Core</div>
+                    <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px; font-weight: 600; text-transform: uppercase;">BACKEND</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="el-icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                </div>
+            </div>
+            <div class="skill-card">
+                <div>
+                    <div style="font-weight: 700; font-size: 16px;">SQL Server</div>
+                    <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px; font-weight: 600; text-transform: uppercase;">DATABASE</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="el-icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                </div>
+            </div>
+        </div>
     </main>
+</div>
+
+<!-- Modal Skill -->
+<div class="modal-overlay" id="modal-skill">
+    <div class="modal-content">
+        <h2 style="font-size: 24px; font-weight: 800; margin-top: 0; margin-bottom: 8px;" id="sk-title">Thêm kỹ năng mới</h2>
+        <p class="el-text-muted" style="margin-bottom: 32px;">Kỹ năng này sẽ được dùng làm tiêu chí so khớp AI.</p>
+        
+        <form id="f-skill">
+            <div class="el-form-group">
+                <label class="el-label">Tên kỹ năng</label>
+                <input type="text" class="el-input" id="sk-name" required placeholder="VD: ReactJS">
+            </div>
+            <div class="el-form-group">
+                <label class="el-label">Phân loại</label>
+                <select class="el-select" id="sk-cat">
+                    <option value="BACKEND">Backend</option>
+                    <option value="FRONTEND">Frontend</option>
+                    <option value="DATABASE">Database</option>
+                    <option value="MOBILE">Mobile</option>
+                    <option value="OTHER">Khác</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 40px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="el-btn-white" id="btn-close-sk">Hủy bỏ</button>
+                <button type="submit" class="el-btn-primary" style="padding: 0 32px;">Lưu kỹ năng</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
     <script>
         (function() {
-            const s = SR_AUTH.requireAuth("Admin", '@Url.Action("Login", "Admin")');
-            if (!s) return;
+            const modal = document.getElementById("modal-skill");
+            const btnAdd = document.getElementById("btn-add-skill");
+            const btnClose = document.getElementById("btn-close-sk");
+            const title = document.getElementById("sk-title");
 
-            document.getElementById("admin-logout").onclick = function() {
-                SR_AUTH.logout();
-                location.href = '@Url.Action("Login", "Admin")';
+            btnAdd.onclick = () => {
+                title.innerText = "Thêm kỹ năng mới";
+                modal.style.display = "grid";
             };
-            
-            const list = document.getElementById("skill-list");
-            function render() {
-                list.innerHTML = SR_DEMO.danhMucKyNang.map(s => `
-                    <div class="skill-card">
-                        <div>
-                            <div style="font-weight: 700; font-size: 16px;">${SR_UI.escapeHtml(s.tenKyNang)}</div>
-                            <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px; font-weight: 600; text-transform: uppercase;">${SR_UI.escapeHtml(s.phanLoai)}</div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="el-icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                            <button class="el-icon-btn el-icon-btn--danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                        </div>
-                    </div>
-                `).join("");
-            }
-            render();
 
-            document.getElementById("btn-add-skill").onclick = () => {
-                const name = prompt("Nhập tên kỹ năng mới:");
-                if (name) alert("Đã thêm kỹ năng: " + name);
+            const editBtns = document.querySelectorAll('.el-icon-btn');
+            editBtns.forEach(btn => {
+                btn.onclick = () => {
+                    title.innerText = "Chỉnh sửa kỹ năng";
+                    modal.style.display = "grid";
+                };
+            });
+
+            btnClose.onclick = () => modal.style.display = "none";
+
+            document.getElementById("f-skill").onsubmit = (e) => {
+                e.preventDefault();
+                alert("Đã lưu kỹ năng (Demo)");
+                modal.style.display = "none";
+            };
+
+            window.onclick = (e) => {
+                if (e.target == modal) modal.style.display = "none";
             };
         })();
     </script>
