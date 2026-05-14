@@ -27,12 +27,10 @@ Thumbs.db
 
 ## Node (nếu có frontend)
 node_modules/
-dist/
 build/
 
 ## Publish
 publish/
-wwwroot/dist/
 
 ## Secrets
 secrets.json
