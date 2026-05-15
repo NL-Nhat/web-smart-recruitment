@@ -18,6 +18,34 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // 3. Đăng ký Dịch vụ Xác thực (Dependency Injection)
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// ============================================================================
+// 4. ĐĂNG KÝ CÁC DỊCH VỤ PHÂN TÍCH CV
+//
+// Sơ đồ luồng dữ liệu:
+// Controller --> CvAnalysisQueue (Singleton) --> CvAnalysisBackgroundService (Hosted)
+//                                                        |
+//                                                        v
+//                                              CvAnalysisService (Scoped)
+//                                                        |
+//                                              [PDF Extract + Gemini API + DB Save]
+// ============================================================================
+
+// 4a. Đăng ký HttpClient Factory - cần thiết để gọi Gemini API
+// IHttpClientFactory giúp quản lý connection pool hiệu quả, tránh socket exhaustion
+builder.Services.AddHttpClient();
+
+// 4b. CvAnalysisQueue là Singleton: Chỉ có 1 hàng đợi duy nhất dùng chung
+// cho toàn bộ ứng dụng (cả Controller và BackgroundService đều dùng chung queue này)
+builder.Services.AddSingleton<CvAnalysisQueue>();
+
+// 4c. CvAnalysisService là Scoped: Mỗi request/scope tạo 1 instance mới
+// (vì nó phụ thuộc vào AppDbContext cũng là Scoped)
+builder.Services.AddScoped<ICvAnalysisService, CvAnalysisService>();
+
+// 4d. CvAnalysisBackgroundService: Chạy ngầm suốt vòng đời ứng dụng
+// AddHostedService tự động start khi app khởi động và stop khi app tắt
+builder.Services.AddHostedService<CvAnalysisBackgroundService>();
+
 // 4. Cấu hình cơ chế xác thực JWT Bearer (Hỗ trợ cho các thuộc tính [Authorize])
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

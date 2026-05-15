@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using web_smart_recruitment.Models;
+using web_smart_recruitment.Services;
 using System.IO;
 
 namespace web_smart_recruitment.Controllers
@@ -11,11 +12,17 @@ namespace web_smart_recruitment.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        // Hàng đợi xử lý CV ngầm - inject từ DI Container
+        private readonly CvAnalysisQueue _cvQueue;
 
-        public CandidateController(AppDbContext context, IWebHostEnvironment webHostEnvironment)
+        public CandidateController(
+            AppDbContext context,
+            IWebHostEnvironment webHostEnvironment,
+            CvAnalysisQueue cvQueue)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _cvQueue = cvQueue;
         }
 
         // Chức năng nộp đơn ứng tuyển cho Ứng viên
@@ -75,6 +82,24 @@ namespace web_smart_recruitment.Controllers
                 };
                 _context.DonUngTuyens.Add(donUngTuyen);
                 await _context.SaveChangesAsync();
+
+                // ============================================================
+                // KÍCH HOẠT PHÂN TÍCH CV NGẦM (Background Processing)
+                //
+                // Bước 6a: Tạo bản ghi KetQua_AI với trạng thái "DangXuLy"
+                // để HR có thể thấy đơn đang được AI xử lý
+                // ============================================================
+                _context.KetQuaAis.Add(new KetQuaAi
+                {
+                    MaDon         = donUngTuyen.MaDon,
+                    TrangThaiXuLy = "DangXuLy",  // Trạng thái khởi tạo
+                    NgayPhanTich  = DateTime.Now
+                });
+                await _context.SaveChangesAsync();
+
+                // Bước 6b: Đẩy MaDon vào hàng đợi để Background Service xử lý ngầm
+                // Controller trả về response ngay, người dùng không cần chờ AI phân tích
+                await _cvQueue.EnqueueAsync(donUngTuyen.MaDon);
 
                 return Json(new { success = true, message = "Nộp đơn thành công! Nhà tuyển dụng sẽ nhận được hồ sơ của bạn." });
             }
