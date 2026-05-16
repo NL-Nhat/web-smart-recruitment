@@ -91,6 +91,56 @@ namespace web_smart_recruitment.Controllers
         public IActionResult JobStatus() => View();
         public IActionResult Company() => View();
         public IActionResult Profile() => View();
-        public IActionResult AiCandidate() => View();
+        // Chức năng Xem chi tiết đánh giá AI
+        public async Task<IActionResult> AiCandidate(int maDon)
+        {
+            // 1. Kiểm tra đăng nhập và lấy ID Nhà tuyển dụng
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+            int maNhaTuyenDung = userId;
+
+            // 2. Lấy thông tin đơn ứng tuyển kèm theo các bảng liên quan
+            // Sử dụng LINQ với Include để nạp dữ liệu từ các bảng: UngVien, TinTuyenDung, HoSoCv và KetQuaAi
+            var application = await _context.DonUngTuyens
+                .Include(d => d.MaUngVienNavigation)
+                .Include(d => d.MaTinNavigation)
+                .Include(d => d.MaCvNavigation)
+                .Include(d => d.KetQuaAis)
+                .FirstOrDefaultAsync(d => d.MaDon == maDon && d.MaTinNavigation.MaNhaTuyenDung == maNhaTuyenDung);
+
+            // 3. Nếu không tìm thấy đơn (hoặc đơn không thuộc về nhà tuyển dụng này), trả về lỗi 404
+            if (application == null)
+            {
+                return NotFound();
+            }
+
+            // 4. Truyền toàn bộ dữ liệu (Model) sang View để hiển thị
+            return View(application);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateApplicationStatus(int maDon, string newStatus)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var application = await _context.DonUngTuyens
+                .Include(d => d.MaTinNavigation)
+                .FirstOrDefaultAsync(d => d.MaDon == maDon && d.MaTinNavigation.MaNhaTuyenDung == userId);
+
+            if (application != null)
+            {
+                application.TrangThai = newStatus;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("AiCandidate", new { maDon = maDon });
+        }
     }
 }
