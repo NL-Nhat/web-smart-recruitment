@@ -105,7 +105,7 @@ CREATE TABLE TinTuyenDung (
     DaXoa BIT DEFAULT 0, 
     NgayTao DATETIME DEFAULT GETDATE(),
     NgayCapNhat DATETIME DEFAULT GETDATE(),
-    CONSTRAINT CHK_TinTuyenDung_TrangThai CHECK (TrangThai IN ('DangMo', 'DaDong', 'DaHuy')),
+    CONSTRAINT CHK_TinTuyenDung_TrangThai CHECK (TrangThai IN ('DangMo', 'DaDong')),
     CONSTRAINT CHK_TinTuyenDung_HinhThuc CHECK (HinhThucLamViec IN ('FullTime', 'PartTime', 'Online', 'Intern')),
     CONSTRAINT CHK_TinTuyenDung_Luong CHECK (MucLuongToiThieu >= 0 AND MucLuongToiDa >= MucLuongToiThieu)
 );
@@ -302,7 +302,7 @@ INSERT INTO TinTuyenDung (MaTin, MaNhaTuyenDung, TieuDe, PhongBan, DiaDiem, Hinh
 (3, 5, N'Java Backend Engineer', 'Viettel Digital', N'Hà Nội', 'FullTime', 25000000, 45000000, N'Xây dựng hệ thống High availability', N'Có kinh nghiệm Spring Boot, Microservices', N'Thưởng dự án', 'DangMo', '2024-10-15', 0, '2024-04-10 10:00', '2024-04-10 10:00'),
 (4, 6, N'AI / Machine Learning Engineer', 'Data Team', N'TP.HCM', 'FullTime', 40000000, 70000000, N'Xây dựng model recommend...', N'Thành thạo Python, Tensorflow/PyTorch', N'Cấp Macbook Pro', 'DangMo', '2024-12-01', 0, '2024-04-15 11:00', '2024-04-15 11:00'),
 (5, 3, N'Fresher .NET', 'FSU2', N'Đà Nẵng', 'Intern', 5000000, 10000000, N'Đào tạo từ đầu', N'Biết cơ bản C#', N'Được mentor kèm cặp', 'DaDong', '2024-03-30', 0, '2024-02-01 08:00', '2024-03-30 23:59'),
-(6, 4, N'Remote DevOps Engineer', 'Cloud Team', N'Toàn quốc', 'Online', 35000000, 55000000, N'Quản lý hệ thống AWS', N'Cứng Docker, K8s, AWS', N'Làm việc tại nhà', 'DaHuy', '2024-12-31', 1, '2024-04-20 08:00', '2024-04-22 09:00');
+(6, 4, N'Remote DevOps Engineer', 'Cloud Team', N'Toàn quốc', 'Online', 35000000, 55000000, N'Quản lý hệ thống AWS', N'Cứng Docker, K8s, AWS', N'Làm việc tại nhà', 'DaDong', '2024-12-31', 1, '2024-04-20 08:00', '2024-04-22 09:00');
 SET IDENTITY_INSERT TinTuyenDung OFF;
 
 -- ---------------------------------------------------------
@@ -525,7 +525,7 @@ INSERT INTO TinTuyenDung (MaTin, MaNhaTuyenDung, TieuDe, PhongBan, DiaDiem, Hinh
 (13, 15, N'UI/UX Designer', 'Design Team', N'TP.HCM', 'FullTime', 15000000, 25000000, N'Thiết kế giao diện App, Web', N'Thành thạo Figma, tư duy UX tốt', N'Cấp Mac Studio', 'DangMo', '2024-10-10'),
 (14, 16, N'VueJS Frontend Dev', 'Storefront', N'Toàn quốc', 'Online', 18000000, 30000000, N'Phát triển trang bán hàng', N'Kinh nghiệm VueJS 2 năm+', N'Remote linh hoạt', 'DangMo', '2024-11-11'),
 (15, 17, N'iOS Developer (Fresher)', 'Mobile App', N'Hà Nội', 'Intern', 5000000, 8000000, N'Học việc iOS', N'Nắm vững Swift cơ bản', N'Trợ cấp thực tập', 'DaDong', '2024-05-30'),
-(16, 18, N'System Administrator', 'IT Helpdesk', N'TP.HCM', 'FullTime', 20000000, 30000000, N'Quản trị server, mạng nội bộ', N'Linux, Windows Server, Network', N'Bảo hiểm PVI', 'DaHuy', '2024-06-01');
+(16, 18, N'System Administrator', 'IT Helpdesk', N'TP.HCM', 'FullTime', 20000000, 30000000, N'Quản trị server, mạng nội bộ', N'Linux, Windows Server, Network', N'Bảo hiểm PVI', 'DaDong', '2024-06-01');
 SET IDENTITY_INSERT TinTuyenDung OFF;
 
 -- ---------------------------------------------------------
@@ -622,5 +622,9 @@ INSERT INTO LichHenPhongVan (MaDon, NgayPhuongVan, GioPhuongVan, DiaDiem, LinkHo
 select *from TaiKhoan
 select *from UngVien
 select *from NhaTuyenDung
+select *from TinTuyenDung
+select *from ChiTietKyNang_TinTuyenDung
+select *from DanhMucKyNang
 select *from DonUngTuyen
 select *from HoSoCV
+select *from KetQua_AI

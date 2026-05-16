@@ -1,3 +1,4 @@
+@model IEnumerable<web_smart_recruitment.Models.TinTuyenDung>
 @{
     ViewData["Title"] = "Quản lý tuyển dụng";
 }
@@ -15,6 +16,11 @@
             display: flex;
             gap: 8px;
             justify-content: flex-end;
+        }
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: var(--el-warm-gray);
         }
     </style>
 }
@@ -39,51 +45,62 @@
             <div style="text-align: right;">Hành động</div>
         </div>
         <div id="job-list">
-            <!-- Dữ liệu mẫu (Static) -->
-            <div class="el-bordered-item job-row">
-                <div>
-                    <span style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 2px;">Senior .NET Developer</span>
-                    <span class="el-text-muted" style="font-size: 12px;">ID: #101 · Phòng Kỹ thuật</span>
+            @if (Model != null && Model.Any())
+            {
+                // Duyệt qua danh sách tin tuyển dụng lấy từ Database
+                foreach (var job in Model)
+                {
+                    <div class="el-bordered-item job-row">
+                        <div>
+                            <span style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 2px;">@job.TieuDe</span>
+                            <span class="el-text-muted" style="font-size: 12px;">@(string.IsNullOrEmpty(job.PhongBan) ? "" : $"{job.PhongBan}")</span>
+                        </div>
+                        <div class="el-text-warm" style="font-size: 14px;">📍 @job.DiaDiem</div>
+                        <div>
+                            @* Hiển thị trạng thái tương ứng *@
+                            @if (job.TrangThai == "DangMo")
+                            {
+                                <span class="el-status el-status--success">Đang mở</span>
+                            }
+                            else if (job.TrangThai == "DaDong")
+                            {
+                                <span class="el-status el-status--danger">Đã đóng</span>
+                            }
+                            else if (job.TrangThai == "ChoDuyet")
+                            {
+                                <span class="el-status el-status--warning">Chờ duyệt</span>
+                            }
+                            else
+                            {
+                                <span class="el-status">@job.TrangThai</span>
+                            }
+                        </div>
+                        <div class="el-text-muted" style="font-size: 14px;">
+                            @(job.HanNopCv.HasValue ? job.HanNopCv.Value.ToString("dd/MM/yyyy") : "Không thời hạn")
+                        </div>
+                        <div class="action-icons">
+                            @* Link đến trang quản lý ứng viên của tin này (ATS) *@
+                            <a href='@Url.Action("Applications", "Hr", new { maTin = job.MaTin })' class="el-icon-btn" title="Xem danh sách ứng viên (ATS)">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            </a>
+                            @* Link đến trang sửa tin *@
+                            <a href='@Url.Action("JobForm", "Hr", new { maTin = job.MaTin })' class="el-icon-btn" title="Sửa tin">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </a>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                // Hiển thị khi không có tin tuyển dụng nào
+                <div class="empty-state">
+                    Bạn chưa có tin tuyển dụng nào. Hãy tạo mới ngay!
                 </div>
-                <div class="el-text-warm" style="font-size: 14px;">📍 TP. Hồ Chí Minh</div>
-                <div>
-                    <span class="el-status el-status--success">Đang mở</span>
-                </div>
-                <div class="el-text-muted" style="font-size: 14px;">30/06/2024</div>
-                <div class="action-icons">
-                    <a href='@Url.Action("Applications", "Hr")' class="el-icon-btn" title="Xem danh sách ứng viên (ATS)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    </a>
-                    <a href='@Url.Action("JobForm", "Hr")?maTin=101' class="el-icon-btn" title="Sửa tin">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </a>
-                </div>
-            </div>
-            <div class="el-bordered-item job-row">
-                <div>
-                    <span style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 2px;">Frontend ReactJS Engineer</span>
-                    <span class="el-text-muted" style="font-size: 12px;">ID: #102 · Phòng Kỹ thuật</span>
-                </div>
-                <div class="el-text-warm" style="font-size: 14px;">📍 Hà Nội</div>
-                <div>
-                    <span class="el-status el-status--success">Đang mở</span>
-                </div>
-                <div class="el-text-muted" style="font-size: 14px;">15/06/2024</div>
-                <div class="action-icons">
-                    <a href='@Url.Action("Applications", "Hr")' class="el-icon-btn" title="Xem danh sách ứng viên (ATS)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    </a>
-                    <a href='@Url.Action("JobForm", "Hr")?maTin=102' class="el-icon-btn" title="Sửa tin">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </a>
-                </div>
-            </div>
+            }
         </div>
     </div>
 </main>
 
 @section Scripts {
-    <script>
-        // Chức năng quản lý tin tuyển dụng hiện đang hiển thị dữ liệu tĩnh.
-    </script>
 }
