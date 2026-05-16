@@ -1,3 +1,4 @@
+@model IEnumerable<web_smart_recruitment.Models.DonUngTuyen>
 @{
     ViewData["Title"] = "ATS Dashboard";
 }
@@ -17,6 +18,13 @@
             color: var(--el-black);
         }
         .score-box.high { color: var(--el-success); }
+        .score-box.medium { color: var(--el-warning); }
+        .score-box.low { color: var(--el-danger); }
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: var(--el-warm-gray);
+        }
     </style>
 }
 
@@ -24,7 +32,9 @@
 
 <main class="sr-main">
     <div style="margin-bottom: 3rem;">
-        <h1 class="el-display-hero" style="font-size: 40px; margin: 0;" id="title-job">ATS Dashboard</h1>
+        <h1 class="el-display-hero" style="font-size: 40px; margin: 0;" id="title-job">
+            @(ViewBag.JobTitle != null ? $"Ứng viên: {ViewBag.JobTitle}" : "Tất cả ứng viên")
+        </h1>
         <p class="el-text-muted">Danh sách ứng viên được xếp hạng tự động bởi AI dựa trên mức độ phù hợp với JD.</p>
     </div>
 
@@ -33,7 +43,7 @@
             SẮP XẾP THEO: <span style="color: var(--el-black);">ĐIỂM AI (GIẢM DẦN)</span>
         </div>
         <div class="el-text-muted" style="font-size: 13px;">
-            Đang hiển thị <span id="count-uv" style="font-weight: 600; color: var(--el-black);">0</span> ứng viên
+            Đang hiển thị <span id="count-uv" style="font-weight: 600; color: var(--el-black);">@(Model?.Count() ?? 0)</span> ứng viên
         </div>
     </div>
 
@@ -46,37 +56,87 @@
             <div style="text-align: right;">Hành động</div>
         </div>
         <div id="tb">
-            <!-- Dữ liệu mẫu (Static) -->
-            <div class="el-bordered-item ats-row">
-                <div>
-                    <span style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 2px;">Nguyễn Văn A</span>
-                    <span class="el-text-muted" style="font-size: 12px;">Nộp ngày: 12/05/2024</span>
+            @if (Model != null && Model.Any())
+            {
+                // Duyệt qua từng đơn ứng tuyển
+                foreach (var application in Model)
+                {
+                    // Lấy kết quả AI mới nhất của đơn này
+                    var latestAiResult = application.KetQuaAis.OrderByDescending(k => k.NgayPhanTich).FirstOrDefault();
+                    
+                    // Xác định CSS class cho điểm phù hợp
+                    string scoreClass = "score-box";
+                    if (latestAiResult?.DiemPhuHop >= 80) scoreClass += " high";
+                    else if (latestAiResult?.DiemPhuHop >= 50) scoreClass += " medium";
+                    else if (latestAiResult?.DiemPhuHop < 50) scoreClass += " low";
+
+                    <div class="el-bordered-item ats-row">
+                        <div>
+                            <span style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 2px;">
+                                @(application.MaUngVienNavigation?.HoTen ?? "Ứng viên ẩn danh")
+                            </span>
+                            <span class="el-text-muted" style="font-size: 12px;">Nộp ngày: @(application.NgayNop?.ToString("dd/MM/yyyy") ?? "N/A")</span>
+                            @if(ViewBag.JobTitle == null)
+                            {
+                                <span class="el-text-muted" style="font-size: 12px; display: block;">Vị trí: @application.MaTinNavigation?.TieuDe</span>
+                            }
+                        </div>
+                        
+                        <div class="@scoreClass">
+                            @(latestAiResult?.DiemPhuHop != null ? $"{latestAiResult.DiemPhuHop}%" : "N/A")
+                        </div>
+                        
+                        <div>
+                            @* Hiển thị đề xuất của AI *@
+                            @if (latestAiResult?.DeXuat == "TuyenNhanh")
+                            {
+                                <span class="el-status el-status--success" style="background: #D1FAE5;">Tuyển nhanh</span>
+                            }
+                            else if (latestAiResult?.DeXuat == "CoTheCanNhac")
+                            {
+                                <span class="el-status el-status--warning">Cân nhắc</span>
+                            }
+                            else if (latestAiResult?.DeXuat == "LoaiBo")
+                            {
+                                <span class="el-status el-status--danger">Loại bỏ</span>
+                            }
+                            else
+                            {
+                                <span class="el-status">Đang xử lý</span>
+                            }
+                        </div>
+                        
+                        <div>
+                            @* Hiển thị trạng thái của đơn *@
+                            @if (application.TrangThai == "DaNop")
+                            {
+                                <span class="el-status el-status--info">Mới nộp</span>
+                            }
+                            else if (application.TrangThai == "DangXuLy")
+                            {
+                                <span class="el-status el-status--warning">AI Đang lọc</span>
+                            }
+                            else
+                            {
+                                <span class="el-status">@application.TrangThai</span>
+                            }
+                        </div>
+                        
+                        <div style="text-align: right;">
+                            <a href='@Url.Action("AiCandidate", "Hr", new { maDon = application.MaDon })' class="el-btn-primary" style="padding: 6px 16px; font-size: 13px;">Chi tiết AI</a>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    Chưa có ứng viên nào nộp đơn vào vị trí này.
                 </div>
-                <div class="score-box high">92%</div>
-                <div><span class="el-status el-status--success" style="background: #D1FAE5;">Tuyển nhanh</span></div>
-                <div><span class="el-status el-status--info">Mới nộp</span></div>
-                <div style="text-align: right;">
-                    <a href='@Url.Action("AiCandidate", "Hr")?maUngVien=1' class="el-btn-primary" style="padding: 6px 16px; font-size: 13px;">Chi tiết AI</a>
-                </div>
-            </div>
-            <div class="el-bordered-item ats-row">
-                <div>
-                    <span style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 2px;">Trần Thị B</span>
-                    <span class="el-text-muted" style="font-size: 12px;">Nộp ngày: 10/05/2024</span>
-                </div>
-                <div class="score-box">78%</div>
-                <div><span class="el-status el-status--warning">Cân nhắc</span></div>
-                <div><span class="el-status el-status--warning">AI Đã lọc</span></div>
-                <div style="text-align: right;">
-                    <a href='@Url.Action("AiCandidate", "Hr")?maUngVien=2' class="el-btn-primary" style="padding: 6px 16px; font-size: 13px;">Chi tiết AI</a>
-                </div>
-            </div>
+            }
         </div>
     </div>
 </main>
 
 @section Scripts {
-    <script>
-        // Chức năng ATS Dashboard hiện đang hiển thị dữ liệu tĩnh.
-    </script>
 }
