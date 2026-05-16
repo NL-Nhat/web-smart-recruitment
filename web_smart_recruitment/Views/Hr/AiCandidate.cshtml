@@ -1,5 +1,29 @@
+@model web_smart_recruitment.Models.DonUngTuyen
+@using System.Text.Json
 @{
     ViewData["Title"] = "Phân tích AI Chi tiết";
+    
+    // Lấy kết quả AI mới nhất từ danh sách kết quả của đơn này
+    var aiResult = Model.KetQuaAis.OrderByDescending(k => k.NgayPhanTich).FirstOrDefault();
+    
+    // Gán các giá trị mặc định nếu chưa có kết quả AI
+    decimal score = aiResult?.DiemPhuHop ?? 0;
+    string summary = aiResult?.TomTatUngVien ?? "Chưa có tóm tắt.";
+    string strength = aiResult?.DiemManh ?? "Chưa có đánh giá điểm mạnh.";
+    string weakness = aiResult?.DiemYeu ?? "Chưa có đánh giá điểm yếu.";
+    
+    // Đọc danh sách kỹ năng từ JSON (do AI sinh ra theo mảng JSON)
+    List<string> kyNangPhuHop = new List<string>();
+    if (!string.IsNullOrEmpty(aiResult?.KyNangPhuHopJson))
+    {
+        try { kyNangPhuHop = JsonSerializer.Deserialize<List<string>>(aiResult.KyNangPhuHopJson); } catch { }
+    }
+    
+    List<string> kyNangThieu = new List<string>();
+    if (!string.IsNullOrEmpty(aiResult?.KyNangThieuJson))
+    {
+        try { kyNangThieu = JsonSerializer.Deserialize<List<string>>(aiResult.KyNangThieuJson); } catch { }
+    }
 }
 
 @section Styles {
@@ -9,7 +33,11 @@
             width: 140px;
             height: 140px;
             border-radius: 50%;
-            background: conic-gradient(var(--el-black) var(--score, 0%), #eee 0%);
+            /* Thay đổi màu sắc của vòng tròn dựa theo điểm */
+            background: conic-gradient(
+                @(score >= 80 ? "#15803D" : score >= 60 ? "#EA580C" : "#B91C1C") var(--score, 0%), 
+                #eee 0%
+            );
             display: grid;
             place-items: center;
             position: relative;
@@ -59,23 +87,7 @@
             padding: 6px 14px;
             border-radius: 8px;
             font-weight: 600;
-        }
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            display: none;
-            place-items: center;
-            z-index: 1000;
-        }
-        .modal-container {
-            background: white;
-            width: 100%;
-            max-width: 500px;
-            border-radius: 24px;
-            padding: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            display: inline-block;
         }
     </style>
 }
@@ -84,113 +96,183 @@
 
 <main class="sr-main">
     <div style="margin-bottom: 24px;">
-        <a href="#" id="back-link" class="el-btn-white" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 13px; text-decoration: none; color: var(--el-black);">
+        @* Nút quay lại trang danh sách ứng viên (giữ nguyên maTin đang xem) *@
+        <a href="@Url.Action("Applications", "Hr", new { maTin = Model.MaTin })" id="back-link" class="el-btn-white" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 13px; text-decoration: none; color: var(--el-black);">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             Quay lại danh sách
         </a>
     </div>
     <div id="content">
-        <!-- Dữ liệu mẫu (Static) -->
-        <div class="el-card" style="padding: 40px; margin-bottom: 32px; background: var(--el-bg-light); border: none;">
-            <div style="display: flex; gap: 48px; align-items: center;">
-                <div class="ai-score-ring" style="--score: 92%">
-                    <div class="ai-score-inner">
-                        <div style="font-size: 36px; font-weight: 700; color: var(--el-black);">92%</div>
-                        <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; letter-spacing: 1px;">Match Score</div>
-                    </div>
-                </div>
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <h1 style="font-size: 32px; font-weight: 700; margin: 0;">Nguyễn Văn A</h1>
-                            <p style="font-size: 16px; color: var(--el-dark-gray); margin-top: 4px;">Ứng tuyển: <strong>Senior .NET Developer</strong></p>
+        @if (aiResult == null || aiResult.TrangThaiXuLy == "DangXuLy")
+        {
+            <div class="el-card" style="padding: 40px; text-align: center;">
+                <h3>AI đang phân tích hồ sơ...</h3>
+                <p>Quá trình này có thể mất vài chục giây. Vui lòng tải lại trang sau một chút.</p>
+            </div>
+        }
+        else if (aiResult.TrangThaiXuLy == "Loi")
+        {
+            <div class="el-card" style="padding: 40px; text-align: center; border-color: red;">
+                <h3 style="color: red;">Phân tích thất bại</h3>
+                <p>Hệ thống không thể trích xuất dữ liệu từ CV này. Có thể file bị lỗi hoặc không đúng định dạng.</p>
+                <p style="color: gray; font-size: 12px;">Chi tiết lỗi: @aiResult.PhanHoiGocTuAi</p>
+            </div>
+        }
+        else
+        {
+            <div class="el-card" style="padding: 40px; margin-bottom: 32px; background: var(--el-bg-light); border: none;">
+                <div style="display: flex; gap: 48px; align-items: center;">
+                    <div class="ai-score-ring" style="--score: @((int)score)%">
+                        <div class="ai-score-inner">
+                            <div style="font-size: 32px; font-weight: 700; color: var(--el-black);">@((int)score)%</div>
+                            <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; letter-spacing: 1px;">Match Score</div>
                         </div>
-                        <span class="el-status el-status--success" style="background: #D1FAE5;">Tuyển nhanh</span>
                     </div>
-                    <div style="margin-top: 24px; display: flex; gap: 12px;">
-                        <a href="#" class="el-btn-primary" style="height: 40px; padding: 0 20px; font-size: 14px;">Xem CV gốc</a>
-                        <button class="el-btn-white" style="height: 40px; padding: 0 20px; font-size: 14px;">Tải báo cáo PDF</button>
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <h1 style="font-size: 32px; font-weight: 700; margin: 0;">@(Model.MaUngVienNavigation?.HoTen ?? "Ứng viên ẩn danh")</h1>
+                                <p style="font-size: 16px; color: var(--el-dark-gray); margin-top: 4px;">Ứng tuyển: <strong>@(Model.MaTinNavigation?.TieuDe ?? "Vị trí không xác định")</strong></p>
+                            </div>
+                            
+                            @* Hiển thị đề xuất AI bằng Label *@
+                            @if (aiResult.DeXuat == "TuyenNhanh")
+                            {
+                                <span class="el-status el-status--success" style="background: #D1FAE5;">Tuyển nhanh</span>
+                            }
+                            else if (aiResult.DeXuat == "CoTheCanNhac")
+                            {
+                                <span class="el-status el-status--warning">Cân nhắc</span>
+                            }
+                            else if (aiResult.DeXuat == "LoaiBo")
+                            {
+                                <span class="el-status el-status--danger">Loại bỏ</span>
+                            }
+                        </div>
+                        <div style="margin-top: 24px; display: flex; gap: 12px;">
+                            @if(Model.MaCvNavigation != null)
+                            {
+                                <a href="@Model.MaCvNavigation.DuongDanFile" target="_blank" class="el-btn-primary" style="height: 40px; padding: 0 20px; font-size: 14px;">Xem CV gốc</a>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="sr-grid" style="grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
-            <div>
-                <section class="analysis-section">
-                    <div class="section-header-premium">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                        Tóm tắt đánh giá của AI
-                    </div>
-                    <div class="insight-box" style="font-size: 16px; line-height: 1.8; color: var(--el-dark-gray);">
-                        Ứng viên có nền tảng kỹ thuật vững chắc với hơn 5 năm kinh nghiệm làm việc với .NET Core và Microservices. Có kỹ năng giải quyết vấn đề tốt và kinh nghiệm dẫn dắt đội ngũ kỹ thuật nhỏ. Rất phù hợp với văn hóa công ty.
-                    </div>
-                </section>
-
-                <div class="sr-grid sr-grid--2" style="gap: 24px;">
+            <div class="sr-grid" style="grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
+                <div>
                     <section class="analysis-section">
-                        <div class="section-header-premium" style="color: #15803D; border-color: #DCFCE7;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            Điểm mạnh cốt lõi
+                        <div class="section-header-premium">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                            Tóm tắt đánh giá của AI
                         </div>
-                        <div class="insight-box" style="background: #F0FDF4; border-color: #DCFCE7;">
-                            <ul class="strength-list" style="padding-left: 20px; margin: 0;">
-                                <li>Thành thạo ASP.NET Core, Entity Framework</li>
-                                <li>Kinh nghiệm triển khai Docker & Kubernetes</li>
-                                <li>Tư duy hệ thống và thiết kế Database tốt</li>
-                            </ul>
+                        <div class="insight-box" style="font-size: 16px; line-height: 1.8; color: var(--el-dark-gray);">
+                            @summary
                         </div>
                     </section>
 
-                    <section class="analysis-section">
-                        <div class="section-header-premium" style="color: #B91C1C; border-color: #FEE2E2;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                            Điểm cần lưu ý
-                        </div>
-                        <div class="insight-box" style="background: #FEF2F2; border-color: #FEE2E2;">
-                            <ul class="weakness-list" style="padding-left: 20px; margin: 0;">
-                                <li>Kỹ năng tiếng Anh giao tiếp ở mức trung bình</li>
-                                <li>Chưa có nhiều kinh nghiệm với Cloud (AWS/Azure)</li>
-                            </ul>
-                        </div>
-                    </section>
+                    <div class="sr-grid sr-grid--2" style="gap: 24px;">
+                        <section class="analysis-section">
+                            <div class="section-header-premium" style="color: #15803D; border-color: #DCFCE7;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Điểm mạnh cốt lõi
+                            </div>
+                            <div class="insight-box" style="background: #F0FDF4; border-color: #DCFCE7;">
+                                <div style="color: #15803D;">
+                                    @strength
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="analysis-section">
+                            <div class="section-header-premium" style="color: #B91C1C; border-color: #FEE2E2;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                Điểm cần lưu ý
+                            </div>
+                            <div class="insight-box" style="background: #FEF2F2; border-color: #FEE2E2;">
+                                <div style="color: #B91C1C;">
+                                    @weakness
+                                </div>
+                            </div>
+                        </section>
+                    </div>
                 </div>
+
+                <aside>
+                    <section class="analysis-section">
+                        <div class="section-header-premium">Kỹ năng đạt yêu cầu</div>
+                        <div class="sr-chips" style="gap: 8px; display: flex; flex-wrap: wrap;">
+                            @if (kyNangPhuHop.Any())
+                            {
+                                foreach (var kn in kyNangPhuHop)
+                                {
+                                    <span class="skill-tag-ai" style="background: #DCFCE7; color: #15803D;">@kn</span>
+                                }
+                            }
+                            else
+                            {
+                                <span style="font-size: 13px; color: var(--el-warm-gray);">Không tìm thấy thông tin kỹ năng phù hợp.</span>
+                            }
+                        </div>
+                    </section>
+
+                    <section class="analysis-section" style="margin-top: 32px;">
+                        <div class="section-header-premium">Kỹ năng còn thiếu</div>
+                        <div class="sr-chips" style="gap: 8px; display: flex; flex-wrap: wrap;">
+                            @if (kyNangThieu.Any())
+                            {
+                                foreach (var kn in kyNangThieu)
+                                {
+                                    <span class="skill-tag-ai" style="background: #FEE2E2; color: #B91C1C;">@kn</span>
+                                }
+                            }
+                            else
+                            {
+                                <span style="font-size: 13px; color: var(--el-warm-gray);">Chưa phát hiện kỹ năng nào thiếu hụt lớn.</span>
+                            }
+                        </div>
+                    </section>
+
+                    <div class="el-card" style="margin-top: 40px; border: 2px solid var(--el-black);">
+                        <h3 style="margin-top: 0; font-size: 18px; font-weight: 700;">Hành động</h3>
+                        @if (Model.TrangThai == "AIDaLoc")
+                        {
+                            <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">AI đã lọc xong. Bạn có thể chấp nhận hoặc từ chối hồ sơ này.</p>
+                            <form asp-action="UpdateApplicationStatus" method="post" style="display: flex; flex-direction: column; gap: 10px;">
+                                <input type="hidden" name="maDon" value="@Model.MaDon" />
+                                <button type="submit" name="newStatus" value="PhongVan" class="el-btn-primary" style="background: #15803D; justify-content: center; width: 100%;">Chấp nhận hồ sơ</button>
+                                <button type="submit" name="newStatus" value="TuChoi" class="el-btn-primary" style="background: #B91C1C; justify-content: center; width: 100%;">Từ chối hồ sơ</button>
+                            </form>
+                        }
+                        else if (Model.TrangThai == "PhongVan")
+                        {
+                            <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">Ứng viên đang ở vòng phỏng vấn.</p>
+                            <a href="#" class="el-btn-primary" style="justify-content: center; width: 100%;">Xem lịch hẹn phỏng vấn</a>
+                        }
+                        else
+                        {
+                            string statusText = Model.TrangThai switch {
+                                "TuChoi" => "Đã từ chối",
+                                "DaNop" => "Đã nộp",
+                                "TrungTuyen" => "Trúng tuyển",
+                                _ => Model.TrangThai
+                            };
+                            string statusColor = Model.TrangThai switch {
+                                "TuChoi" => "var(--el-danger)",
+                                "DaNop" => "var(--el-info)",
+                                "TrungTuyen" => "var(--el-success)",
+                                _ => "var(--el-warm-gray)"
+                            };
+                            <div style="color: @statusColor; font-weight: 600; text-align: center; padding: 10px; border: 1px solid currentColor; border-radius: 8px;">
+                                Trạng thái: @statusText
+                            </div>
+                        }
+                    </div>
+                </aside>
             </div>
-
-            <aside>
-                <section class="analysis-section">
-                    <div class="section-header-premium">Kỹ năng đạt yêu cầu</div>
-                    <div class="sr-chips" style="gap: 8px;">
-                        <span class="skill-tag-ai" style="background: #DCFCE7; color: #15803D;">.NET Core</span>
-                        <span class="skill-tag-ai" style="background: #DCFCE7; color: #15803D;">SQL Server</span>
-                        <span class="skill-tag-ai" style="background: #DCFCE7; color: #15803D;">Microservices</span>
-                    </div>
-                </section>
-
-                <section class="analysis-section" style="margin-top: 32px;">
-                    <div class="section-header-premium">Kỹ năng còn thiếu</div>
-                    <div class="sr-chips" style="gap: 8px;">
-                        <span class="skill-tag-ai" style="background: #FEE2E2; color: #B91C1C;">AWS Lambda</span>
-                        <span class="skill-tag-ai" style="background: #FEE2E2; color: #B91C1C;">Terraform</span>
-                    </div>
-                </section>
-
-                <div class="el-card" style="margin-top: 40px; border: 2px solid var(--el-black);">
-                    <h3 style="margin-top: 0; font-size: 18px; font-weight: 700;">Hành động</h3>
-                    <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">Cập nhật trạng thái đơn ứng tuyển của ứng viên này.</p>
-                    <div id="action-buttons" style="display: flex; flex-direction: column; gap: 10px;">
-                        <button class="el-btn-primary" style="background: #15803D; justify-content: center;">Chấp nhận hồ sơ</button>
-                        <button class="el-btn-primary" style="background: #B91C1C; justify-content: center;">Từ chối hồ sơ</button>
-                        <button class="el-btn-white" style="justify-content: center;" onclick="openModal()">Hẹn lịch phỏng vấn</button>
-                    </div>
-                </div>
-            </aside>
-        </div>
+        }
     </div>
 </main>
 
 @section Scripts {
-    <script>
-        // Chức năng phân tích AI hiện đang hiển thị dữ liệu tĩnh.
-    </script>
 }
