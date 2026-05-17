@@ -140,6 +140,13 @@ namespace web_smart_recruitment.Controllers
                 .Distinct()
                 .ToListAsync();
 
+            // Load dữ liệu Hình thức cho form Cập nhật (giống như form Đặt lịch)
+            ViewBag.HinhThucList = await _context.LichHenPhongVans
+                .Where(l => !string.IsNullOrEmpty(l.HinhThuc))
+                .Select(l => l.HinhThuc)
+                .Distinct()
+                .ToListAsync();
+
             // Truyền các biến cần thiết ra View
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
@@ -250,6 +257,48 @@ namespace web_smart_recruitment.Controllers
             }
 
             return RedirectToAction("AiCandidate", new { maDon = maDon });
+        }
+
+        // Chức năng Cập nhật Lịch hẹn phỏng vấn
+        [HttpPost]
+        public async Task<IActionResult> UpdateInterview(int maDon, DateOnly NgayPhuongVan, TimeOnly GioPhuongVan, string HinhThuc, string LinkHop, string DiaDiem, string GhiChu)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // Dùng LINQ kiểm tra quyền sở hữu và lấy lịch hẹn cần cập nhật
+            var lichHen = await _context.LichHenPhongVans
+                .Include(l => l.MaDonNavigation)
+                    .ThenInclude(d => d.MaTinNavigation)
+                .FirstOrDefaultAsync(l => l.MaDon == maDon && l.MaDonNavigation.MaTinNavigation.MaNhaTuyenDung == userId);
+
+            if (lichHen != null)
+            {
+                // Chỉ cập nhật nếu trạng thái là ChoXacNhan hoặc DaXacNhan (không cập nhật khi đã HoanThanh hoặc DaHuy)
+                if (lichHen.TrangThai == "ChoXacNhan" || lichHen.TrangThai == "DaXacNhan")
+                {
+                    lichHen.NgayPhuongVan = NgayPhuongVan;
+                    lichHen.GioPhuongVan = GioPhuongVan;
+                    lichHen.HinhThuc = HinhThuc;
+
+                    if(HinhThuc == "Online") {
+                        lichHen.LinkHop = string.IsNullOrWhiteSpace(LinkHop) ? null : LinkHop;
+                        lichHen.DiaDiem = null;
+                    } else {
+                        lichHen.LinkHop = null;
+                        lichHen.DiaDiem = string.IsNullOrWhiteSpace(DiaDiem) ? null : DiaDiem;
+                    }
+                    
+                    lichHen.GhiChu = string.IsNullOrWhiteSpace(GhiChu) ? null : GhiChu;
+
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return RedirectToAction("Interviews");
         }
     }
 }
