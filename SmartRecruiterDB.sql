@@ -142,7 +142,7 @@ CREATE TABLE DonUngTuyen (
     TrangThai VARCHAR(50) DEFAULT 'DaNop', 
     NgayNop DATETIME DEFAULT GETDATE(),
     NgayCapNhat DATETIME DEFAULT GETDATE(),
-    CONSTRAINT CHK_DonUngTuyen_TrangThai CHECK (TrangThai IN ('DaNop', 'AIDaLoc', 'PhongVan', 'TrungTuyen', 'TuChoi'))
+    CONSTRAINT CHK_DonUngTuyen_TrangThai CHECK (TrangThai IN ('DaNop', 'AIDaLoc', 'DaChapNhan', 'PhongVan', 'TrungTuyen', 'TuChoi'))
 );
 -- Ngăn 1 ứng viên apply 1 job nhiều lần tại cùng 1 thời điểm
 CREATE UNIQUE INDEX UQ_DonUngTuyen_Tin_UngVien ON DonUngTuyen(MaTin, MaUngVien);
@@ -183,7 +183,7 @@ CREATE TABLE LichHenPhongVan (
     LinkHop NVARCHAR(500),
     HinhThuc VARCHAR(50) DEFAULT 'Online', -- 'Online', 'Offline'
     GhiChu NVARCHAR(MAX),
-    TrangThai VARCHAR(50) DEFAULT 'ChoXacNhan', 
+    TrangThai VARCHAR(50) DEFAULT 'ChoXacNhan' not null, 
     NgayTao DATETIME DEFAULT GETDATE(),
     CONSTRAINT CHK_LichHen_HinhThuc CHECK (HinhThuc IN ('Online', 'Offline')),
     CONSTRAINT CHK_LichHen_TrangThai CHECK (TrangThai IN ('ChoXacNhan', 'DaXacNhan', 'DaHuy', 'HoanThanh')),
@@ -628,3 +628,4 @@ select *from DanhMucKyNang
 select *from DonUngTuyen
 select *from HoSoCV
 select *from KetQua_AI
+select *from LichHenPhongVan
