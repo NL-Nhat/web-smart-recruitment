@@ -118,6 +118,12 @@ namespace web_smart_recruitment.Controllers
             }
 
             // 4. Truyền toàn bộ dữ liệu (Model) sang View để hiển thị
+            ViewBag.HinhThucList = await _context.LichHenPhongVans
+                .Where(l => !string.IsNullOrEmpty(l.HinhThuc))
+                .Select(l => l.HinhThuc)
+                .Distinct()
+                .ToListAsync();
+
             return View(application);
         }
 
@@ -137,6 +143,47 @@ namespace web_smart_recruitment.Controllers
             if (application != null)
             {
                 application.TrangThai = newStatus;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("AiCandidate", new { maDon = maDon });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ScheduleInterview(int maDon, DateOnly NgayPhuongVan, TimeOnly GioPhuongVan, string HinhThuc, string LinkHop, string DiaDiem, string GhiChu)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // Kiểm tra quyền sở hữu đơn ứng tuyển
+            var application = await _context.DonUngTuyens
+                .Include(d => d.MaTinNavigation)
+                .FirstOrDefaultAsync(d => d.MaDon == maDon && d.MaTinNavigation.MaNhaTuyenDung == userId);
+
+            if (application != null)
+            {
+                // Tạo lịch hẹn mới
+                var lichHen = new LichHenPhongVan
+                {
+                    MaDon = maDon,
+                    NgayPhuongVan = NgayPhuongVan,
+                    GioPhuongVan = GioPhuongVan,
+                    HinhThuc = HinhThuc,
+                    LinkHop = string.IsNullOrWhiteSpace(LinkHop) ? null : LinkHop,
+                    DiaDiem = string.IsNullOrWhiteSpace(DiaDiem) ? null : DiaDiem,
+                    GhiChu = string.IsNullOrWhiteSpace(GhiChu) ? null : GhiChu,
+                    TrangThai = "ChoXacNhan",
+                    NgayTao = DateTime.Now
+                };
+
+                _context.LichHenPhongVans.Add(lichHen);
+
+                // Cập nhật trạng thái đơn ứng tuyển thành PhongVan
+                application.TrangThai = "PhongVan";
+                
                 await _context.SaveChangesAsync();
             }
 

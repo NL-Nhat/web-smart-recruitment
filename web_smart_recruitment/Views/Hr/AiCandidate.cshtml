@@ -89,6 +89,17 @@
             font-weight: 600;
             display: inline-block;
         }
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+            display: none; place-items: center; z-index: 1000;
+        }
+        .modal-container {
+            background: white; width: 100%; max-width: 500px; border-radius: 24px; padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--el-black); }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--el-border); border-radius: 8px; font-family: inherit; font-size: 14px; }
     </style>
 }
 
@@ -247,7 +258,7 @@
                         else if (Model.TrangThai == "DaChapNhan")
                         {
                             <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">Hồ sơ đã được chấp nhận. Vui lòng đặt lịch hẹn phỏng vấn.</p>
-                            <a href="#" class="el-btn-primary" style="justify-content: center; width: 100%;">Đặt lịch hẹn phỏng vấn</a>
+                            <button type="button" onclick="document.getElementById('interview-modal').style.display = 'grid'" class="el-btn-primary" style="justify-content: center; width: 100%;">Đặt lịch hẹn phỏng vấn</button>
                         }
                         else if (Model.TrangThai == "PhongVan")
                         {
@@ -282,4 +293,77 @@
 </main>
 
 @section Scripts {
+    <div id="interview-modal" class="modal-backdrop">
+        <div class="modal-container">
+            <h2 style="margin-top: 0; font-size: 24px; font-weight: 700;">Hẹn lịch phỏng vấn</h2>
+            <p class="el-text-muted" style="font-size: 14px; margin-bottom: 24px;">Thiết lập thời gian và hình thức phỏng vấn cho ứng viên.</p>
+            
+            <form asp-action="ScheduleInterview" method="post">
+                <input type="hidden" name="maDon" value="@Model.MaDon" />
+                
+                <div class="sr-grid sr-grid--2" style="gap: 16px;">
+                    <div class="form-group">
+                        <label>Ngày phỏng vấn</label>
+                        <input type="date" name="NgayPhuongVan" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Giờ phỏng vấn</label>
+                        <input type="time" name="GioPhuongVan" class="form-control" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Hình thức</label>
+                    <select name="HinhThuc" id="hinh-thuc-select" class="form-control" onchange="toggleHinhThuc()" required>
+                        @if (ViewBag.HinhThucList != null && ((IEnumerable<string>)ViewBag.HinhThucList).Any())
+                        {
+                            foreach(var ht in (IEnumerable<string>)ViewBag.HinhThucList)
+                            {
+                                string htVietHoa = ht == "Online" ? "Trực tuyến (Online)" : ht == "Offline" ? "Trực tiếp (Offline)" : ht;
+                                <option value="@ht">@htVietHoa</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="Online">Trực tuyến (Online)</option>
+                            <option value="Offline">Trực tiếp (Offline)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group" id="link-hop-group">
+                    <label>Link phòng họp (Google Meet, Zoom, ...)</label>
+                    <input type="url" name="LinkHop" class="form-control" placeholder="https://..." />
+                </div>
+
+                <div class="form-group" id="dia-diem-group" style="display: none;">
+                    <label>Địa điểm</label>
+                    <input type="text" name="DiaDiem" class="form-control" placeholder="Địa chỉ công ty..." />
+                </div>
+
+                <div class="form-group">
+                    <label>Ghi chú thêm</label>
+                    <textarea name="GhiChu" class="form-control" rows="3" placeholder="Ghi chú cho ứng viên..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 32px; justify-content: flex-end;">
+                    <button type="button" onclick="document.getElementById('interview-modal').style.display = 'none'" class="el-btn-white">Hủy</button>
+                    <button type="submit" class="el-btn-primary">Gửi lịch hẹn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleHinhThuc() {
+            var select = document.getElementById('hinh-thuc-select').value;
+            if (select === 'Online') {
+                document.getElementById('link-hop-group').style.display = 'block';
+                document.getElementById('dia-diem-group').style.display = 'none';
+            } else {
+                document.getElementById('link-hop-group').style.display = 'none';
+                document.getElementById('dia-diem-group').style.display = 'block';
+            }
+        }
+    </script>
 }
