@@ -86,7 +86,69 @@ namespace web_smart_recruitment.Controllers
 
             return View(sortedApplications);
         }
-        public IActionResult Interviews() => View();
+        // Chức năng Xem danh sách lịch hẹn phỏng vấn
+        public async Task<IActionResult> Interviews(int page = 1, int? jobId = null, string status = null, string viewMode = "list")
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // 1. Dùng LINQ Query lấy lịch hẹn của Nhà tuyển dụng này
+            var query = _context.LichHenPhongVans
+                .Include(l => l.MaDonNavigation)
+                    .ThenInclude(d => d.MaUngVienNavigation)
+                .Include(l => l.MaDonNavigation)
+                    .ThenInclude(d => d.MaTinNavigation)
+                .Where(l => l.MaDonNavigation.MaTinNavigation.MaNhaTuyenDung == userId);
+
+            // 2. Bộ lọc theo Tin tuyển dụng
+            if (jobId.HasValue)
+            {
+                query = query.Where(l => l.MaDonNavigation.MaTin == jobId);
+            }
+
+            // 3. Bộ lọc theo Trạng thái
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(l => l.TrangThai == status);
+            }
+
+            // 4. Phân trang
+            int pageSize = 10;
+            int totalRecords = await query.CountAsync();
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            // Lấy dữ liệu trang hiện tại, sắp xếp theo ngày phỏng vấn gần nhất
+            var interviews = await query
+                .OrderByDescending(l => l.NgayPhuongVan)
+                .ThenByDescending(l => l.GioPhuongVan)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // 5. Load dữ liệu cho bộ lọc Tin tuyển dụng
+            ViewBag.Jobs = await _context.TinTuyenDungs
+                .Where(t => t.MaNhaTuyenDung == userId && (t.DaXoa == false || t.DaXoa == null))
+                .ToListAsync();
+
+            // 6. Load dữ liệu cho bộ lọc Trạng thái (Distinct từ DB)
+            ViewBag.Statuses = await _context.LichHenPhongVans
+                .Where(l => !string.IsNullOrEmpty(l.TrangThai))
+                .Select(l => l.TrangThai)
+                .Distinct()
+                .ToListAsync();
+
+            // Truyền các biến cần thiết ra View
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.SelectedJobId = jobId;
+            ViewBag.SelectedStatus = status;
+            ViewBag.ViewMode = viewMode;
+
+            return View(interviews);
+        }
         public IActionResult JobForm() => View();
         public IActionResult JobStatus() => View();
         public IActionResult Company() => View();

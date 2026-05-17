@@ -1,5 +1,25 @@
+@model IEnumerable<web_smart_recruitment.Models.LichHenPhongVan>
 @{
     ViewData["Title"] = "Lịch phỏng vấn";
+    string currentViewMode = ViewBag.ViewMode as string ?? "list";
+    int currentPage = ViewBag.CurrentPage != null ? (int)ViewBag.CurrentPage : 1;
+    int totalPages = ViewBag.TotalPages != null ? (int)ViewBag.TotalPages : 1;
+    int? selectedJobId = ViewBag.SelectedJobId as int?;
+    string selectedStatus = ViewBag.SelectedStatus as string;
+
+    // Helper function to map Status to Vietnamese and CSS class
+    (string Text, string CssClass) GetStatusInfo(string status)
+    {
+        if (string.IsNullOrEmpty(status)) return ("Không rõ", "hr-iv-status--choxacnhan");
+        return status switch
+        {
+            "ChoXacNhan" => ("Chờ xác nhận", "hr-iv-status--choxacnhan"),
+            "DaXacNhan" => ("Đã xác nhận", "hr-iv-status--daxacnhan"),
+            "DaHuy" => ("Đã hủy", "hr-iv-status--dahuy"),
+            "HoanThanh" => ("Hoàn thành", "hr-iv-status--hoanthanh"),
+            _ => (status, "hr-iv-status--choxacnhan")
+        };
+    }
 }
 
 @section Styles {
@@ -40,6 +60,17 @@
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; place-items: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; border-radius: 24px; width: 100%; max-width: 550px; padding: 40px; max-height: 90vh; overflow-y: auto; }
+        
+        .pagination { display: flex; gap: 8px; justify-content: center; margin-top: 40px; }
+        .pagination a { padding: 8px 16px; border-radius: 8px; background: var(--el-bg-light); color: var(--el-black); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .pagination a.active { background: var(--el-primary); color: white; }
+        .pagination a:hover:not(.active) { background: #e5e7eb; }
+
+        .calendar-group-title {
+            font-size: 20px; font-weight: 700; margin-top: 32px; margin-bottom: 16px;
+            padding-bottom: 8px; border-bottom: 2px solid var(--el-border);
+            color: var(--el-primary);
+        }
     </style>
 }
 
@@ -52,162 +83,195 @@
             <p class="el-text-muted">Theo dõi và sắp xếp các buổi phỏng vấn với ứng viên tiềm năng.</p>
         </div>
         <div style="display: flex; gap: 12px;">
-            <button class="el-btn-white" style="gap: 8px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                Xem theo lịch
-            </button>
+            @{
+                string toggleView = currentViewMode == "list" ? "calendar" : "list";
+                string viewText = currentViewMode == "list" ? "Xem theo lịch" : "Xem dạng danh sách";
+            }
+            <a href="?viewMode=@toggleView&jobId=@selectedJobId&status=@selectedStatus" class="el-btn-white" style="gap: 8px; text-decoration: none; display: flex; align-items: center;">
+                @if (currentViewMode == "list")
+                {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                }
+                else
+                {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                }
+                @viewText
+            </a>
         </div>
     </div>
 
-    <div class="sr-grid" style="grid-template-columns: 1fr 3fr; gap: 32px;">
+    <form method="get" class="sr-grid" style="grid-template-columns: 1fr 3fr; gap: 32px;">
+        <input type="hidden" name="viewMode" value="@currentViewMode" />
         <aside>
             <div class="el-card" style="padding: 24px;">
                 <h3 style="margin-top: 0; font-size: 16px; font-weight: 700; margin-bottom: 20px;">Bộ lọc</h3>
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--el-warm-gray); margin-bottom: 8px;">Trạng thái</label>
-                        <select class="el-input" style="width: 100%;">
-                            <option>Tất cả trạng thái</option>
-                            <option>Chờ xác nhận</option>
-                            <option>Đã xác nhận</option>
-                            <option>Hoàn thành</option>
+                        <label style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--el-warm-gray); margin-bottom: 8px;">Tin tuyển dụng</label>
+                        <select name="jobId" class="el-input" style="width: 100%;" onchange="this.form.submit()">
+                            <option value="">Tất cả tin tuyển dụng</option>
+                            @if (ViewBag.Jobs != null)
+                            {
+                                foreach (var job in (IEnumerable<web_smart_recruitment.Models.TinTuyenDung>)ViewBag.Jobs)
+                                {
+                                    <option value="@job.MaTin" selected="@(selectedJobId == job.MaTin ? "selected" : null)">@job.TieuDe</option>
+                                }
+                            }
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--el-warm-gray); margin-bottom: 8px;">Hình thức</label>
-                        <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                                <input type="checkbox" checked /> Online
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                                <input type="checkbox" checked /> Offline
-                            </label>
-                        </div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--el-warm-gray); margin-bottom: 8px;">Trạng thái</label>
+                        <select name="status" class="el-input" style="width: 100%;" onchange="this.form.submit()">
+                            <option value="">Tất cả trạng thái</option>
+                            @if (ViewBag.Statuses != null)
+                            {
+                                foreach (var st in (IEnumerable<string>)ViewBag.Statuses)
+                                {
+                                    var stInfo = GetStatusInfo(st);
+                                    <option value="@st" selected="@(selectedStatus == st ? "selected" : null)">@stInfo.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <button type="submit" class="el-btn-primary" style="width: 100%; justify-content: center;">Áp dụng bộ lọc</button>
                     </div>
                 </div>
             </div>
         </aside>
 
         <div id="interview-list" style="display: flex; flex-direction: column; gap: 20px;">
-            <!-- Dữ liệu mẫu (Static) -->
-            <div class="el-card interview-card online" style="padding: 24px; display: flex; gap: 24px; align-items: center;">
-                <div class="date-badge">
-                    <div class="day">20</div>
-                    <div class="month">thg 5</div>
+            @if (!Model.Any())
+            {
+                <div style="padding: 40px; text-align: center; background: var(--el-bg-light); border-radius: 16px;">
+                    <h3 style="margin-top: 0;">Chưa có lịch hẹn nào</h3>
+                    <p class="el-text-muted">Không tìm thấy lịch hẹn phù hợp với bộ lọc hiện tại.</p>
                 </div>
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <h3 style="margin: 0; font-size: 18px; font-weight: 700;">Nguyễn Văn A</h3>
-                            <p style="margin: 4px 0 0; font-size: 14px; color: var(--el-dark-gray);">Vị trí: <strong>Senior .NET Developer</strong></p>
+            }
+            else
+            {
+                if (currentViewMode == "calendar")
+                {
+                    // Chế độ Xem theo lịch: Gom nhóm theo ngày
+                    var groupedInterviews = Model.GroupBy(i => i.NgayPhuongVan).OrderBy(g => g.Key);
+                    foreach (var group in groupedInterviews)
+                    {
+                        <div class="calendar-group-title">
+                            @group.Key.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))
                         </div>
-                        <span style="font-size: 13px; font-weight: 600; display: flex; align-items: center;">
-                            <span class="status-dot hr-iv-status--daxacnhan"></span>
-                            Đã xác nhận
-                        </span>
-                    </div>
-                    <div style="margin-top: 16px; display: flex; gap: 24px;">
-                        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--el-warm-gray);">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            09:00
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--el-warm-gray);">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                            Online: Google Meet
-                        </div>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="el-btn-white" style="padding: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>
-
-<!-- Modal Edit Interview -->
-<div class="modal-overlay" id="modal-edit-iv">
-    <div class="modal-content">
-        <h2 style="font-size: 24px; font-weight: 800; margin-top: 0; margin-bottom: 8px;">Chỉnh sửa lịch hẹn</h2>
-        <p class="el-text-muted" style="margin-bottom: 32px;">Thay đổi thời gian hoặc hình thức phỏng vấn cho ứng viên.</p>
-        
-        <form id="f-edit-iv">
-            <div class="el-grid el-grid--2">
-                <div class="el-form-group">
-                    <label class="el-label">Ngày phỏng vấn</label>
-                    <input type="date" class="el-input" value="2024-05-20" required>
-                </div>
-                <div class="el-form-group">
-                    <label class="el-label">Giờ phỏng vấn</label>
-                    <input type="time" class="el-input" value="09:00" required>
-                </div>
-            </div>
-            <div class="el-form-group">
-                <label class="el-label">Hình thức</label>
-                <select class="el-select" id="edit-hinhthuc">
-                    <option value="online" selected>Online (Google Meet/Zoom)</option>
-                    <option value="offline">Offline (Tại văn phòng)</option>
-                </select>
-            </div>
-            
-            <!-- Online Field -->
-            <div class="el-form-group" id="field-linkhop">
-                <label class="el-label">Link cuộc họp</label>
-                <input type="text" class="el-input" placeholder="https://meet.google.com/..." value="https://meet.google.com/abc-xyz">
-            </div>
-
-            <!-- Offline Field -->
-            <div class="el-form-group" id="field-diadiem" style="display: none;">
-                <label class="el-label">Địa điểm phỏng vấn</label>
-                <input type="text" class="el-input" placeholder="Số 123, Đường A, Quận B...">
-            </div>
-
-            <div style="margin-top: 40px; display: flex; gap: 12px; justify-content: flex-end;">
-                <button type="button" class="el-btn-white" id="btn-close-edit-iv">Hủy bỏ</button>
-                <button type="submit" class="el-btn-primary" style="padding: 0 32px;">Lưu thay đổi</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        (function() {
-            const modal = document.getElementById("modal-edit-iv");
-            const btnClose = document.getElementById("btn-close-edit-iv");
-            const editBtns = document.querySelectorAll('.interview-card button.el-btn-white');
-            
-            const hinhThucSelect = document.getElementById("edit-hinhthuc");
-            const fieldLinkHop = document.getElementById("field-linkhop");
-            const fieldDiaDiem = document.getElementById("field-diadiem");
-
-            hinhThucSelect.onchange = () => {
-                if (hinhThucSelect.value === "online") {
-                    fieldLinkHop.style.display = "block";
-                    fieldDiaDiem.style.display = "none";
-                } else {
-                    fieldLinkHop.style.display = "none";
-                    fieldDiaDiem.style.display = "block";
+                        foreach (var iv in group)
+                        {
+                            var statusInfo = GetStatusInfo(iv.TrangThai);
+                            string typeClass = (iv.HinhThuc?.ToLower() == "online") ? "online" : "offline";
+                            
+                            <div class="el-card interview-card @typeClass" style="padding: 24px; display: flex; gap: 24px; align-items: center;">
+                                <div class="date-badge">
+                                    <div class="day">@iv.NgayPhuongVan.Day</div>
+                                    <div class="month">thg @iv.NgayPhuongVan.Month</div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <div>
+                                            <h3 style="margin: 0; font-size: 18px; font-weight: 700;">@iv.MaDonNavigation?.MaUngVienNavigation?.HoTen</h3>
+                                            <p style="margin: 4px 0 0; font-size: 14px; color: var(--el-dark-gray);">Vị trí: <strong>@iv.MaDonNavigation?.MaTinNavigation?.TieuDe</strong></p>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 16px; display: flex; gap: 24px;">
+                                        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--el-warm-gray);">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                            @iv.GioPhuongVan.ToString("HH:mm")
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--el-warm-gray);">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                            @(iv.HinhThuc == "Online" ? "Online: " + iv.LinkHop : "Offline: " + iv.DiaDiem)
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 25px; min-width: 180px;">
+                                    <span style="font-size: 13px; font-weight: 600; display: flex; align-items: center;">
+                                        <span class="status-dot @statusInfo.CssClass"></span>
+                                        @statusInfo.Text
+                                    </span>
+                                    <a href="@Url.Action("AiCandidate", "Hr", new { maDon = iv.MaDon })" class="el-btn-primary" style="font-size: 12px; padding: 6px 16px; border-radius: 6px; text-decoration: none;">Xem chi tiết AI</a>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="el-btn-white" style="padding: 8px;" title="Chỉnh sửa lịch hẹn">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    }
                 }
-            };
+                else
+                {
+                    // Chế độ hiển thị Danh sách thông thường
+                    foreach (var iv in Model)
+                    {
+                        var statusInfo = GetStatusInfo(iv.TrangThai);
+                        string typeClass = (iv.HinhThuc?.ToLower() == "online") ? "online" : "offline";
+                        
+                        <div class="el-card interview-card @typeClass" style="padding: 24px; display: flex; gap: 24px; align-items: center;">
+                            <div class="date-badge">
+                                <div class="day">@iv.NgayPhuongVan.Day</div>
+                                <div class="month">thg @iv.NgayPhuongVan.Month</div>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 18px; font-weight: 700;">@iv.MaDonNavigation?.MaUngVienNavigation?.HoTen</h3>
+                                        <p style="margin: 4px 0 0; font-size: 14px; color: var(--el-dark-gray);">Vị trí: <strong>@iv.MaDonNavigation?.MaTinNavigation?.TieuDe</strong></p>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 16px; display: flex; gap: 24px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--el-warm-gray);">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        @iv.GioPhuongVan.ToString("HH:mm")
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--el-warm-gray);">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                        @(iv.HinhThuc == "Online" ? "Online: " + iv.LinkHop : "Offline: " + iv.DiaDiem)
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 25px; min-width: 180px;">
+                                <span style="font-size: 13px; font-weight: 600; display: flex; align-items: center;">
+                                    <span class="status-dot @statusInfo.CssClass"></span>
+                                    @statusInfo.Text
+                                </span>
+                                <a href="@Url.Action("AiCandidate", "Hr", new { maDon = iv.MaDon })" class="el-btn-primary" style="font-size: 12px; padding: 6px 16px; border-radius: 6px; text-decoration: none;">Xem chi tiết AI</a>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="el-btn-white" style="padding: 8px;" title="Chỉnh sửa lịch hẹn">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                }
 
-            editBtns.forEach(btn => {
-                btn.onclick = () => {
-                    modal.style.display = "grid";
-                };
-            });
+                <!-- Phân trang -->
+                @if (totalPages > 1)
+                {
+                    <div class="pagination">
+                        @if (currentPage > 1)
+                        {
+                            <a href="?page=@(currentPage - 1)&viewMode=@currentViewMode&jobId=@selectedJobId&status=@selectedStatus">Trang trước</a>
+                        }
+                        
+                        @for (int p = 1; p <= totalPages; p++)
+                        {
+                            <a href="?page=@p&viewMode=@currentViewMode&jobId=@selectedJobId&status=@selectedStatus" class="@(p == currentPage ? "active" : "")">@p</a>
+                        }
 
-            btnClose.onclick = () => modal.style.display = "none";
-
-            document.getElementById("f-edit-iv").onsubmit = (e) => {
-                e.preventDefault();
-                alert("Đã cập nhật lịch phỏng vấn (Demo)");
-                modal.style.display = "none";
-            };
-
-            window.onclick = (e) => {
-                if (e.target == modal) modal.style.display = "none";
-            };
-        })();
-    </script>
-}
+                        @if (currentPage < totalPages)
+                        {
+                            <a href="?page=@(currentPage + 1)&viewMode=@currentViewMode&jobId=@selectedJobId&status=@selectedStatus">Trang sau</a>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </form>
+</main>
