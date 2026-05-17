@@ -240,9 +240,14 @@
                             <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">AI đã lọc xong. Bạn có thể chấp nhận hoặc từ chối hồ sơ này.</p>
                             <form asp-action="UpdateApplicationStatus" method="post" style="display: flex; flex-direction: column; gap: 10px;">
                                 <input type="hidden" name="maDon" value="@Model.MaDon" />
-                                <button type="submit" name="newStatus" value="PhongVan" class="el-btn-primary" style="background: #15803D; justify-content: center; width: 100%;">Chấp nhận hồ sơ</button>
+                                <button type="submit" name="newStatus" value="DaChapNhan" class="el-btn-primary" style="background: #15803D; justify-content: center; width: 100%;">Chấp nhận hồ sơ</button>
                                 <button type="submit" name="newStatus" value="TuChoi" class="el-btn-primary" style="background: #B91C1C; justify-content: center; width: 100%;">Từ chối hồ sơ</button>
                             </form>
+                        }
+                        else if (Model.TrangThai == "DaChapNhan")
+                        {
+                            <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">Hồ sơ đã được chấp nhận. Vui lòng đặt lịch hẹn phỏng vấn.</p>
+                            <a href="#" class="el-btn-primary" style="justify-content: center; width: 100%;">Đặt lịch hẹn phỏng vấn</a>
                         }
                         else if (Model.TrangThai == "PhongVan")
                         {
@@ -255,12 +260,14 @@
                                 "TuChoi" => "Đã từ chối",
                                 "DaNop" => "Đã nộp",
                                 "TrungTuyen" => "Trúng tuyển",
+                                "DaChapNhan" => "Đã chấp nhận",
                                 _ => Model.TrangThai
                             };
                             string statusColor = Model.TrangThai switch {
                                 "TuChoi" => "var(--el-danger)",
                                 "DaNop" => "var(--el-info)",
                                 "TrungTuyen" => "var(--el-success)",
+                                "DaChapNhan" => "var(--el-success)",
                                 _ => "var(--el-warm-gray)"
                             };
                             <div style="color: @statusColor; font-weight: 600; text-align: center; padding: 10px; border: 1px solid currentColor; border-radius: 8px;">
