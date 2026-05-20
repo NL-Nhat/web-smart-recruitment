@@ -1,3 +1,4 @@
+@model web_smart_recruitment.Models.UngVien
 @{
     ViewData["Title"] = "Hồ sơ năng lực";
 }
@@ -21,6 +22,31 @@
             opacity: 1 !important;
             color: var(--el-danger);
         }
+        /* Custom dynamic alert banner */
+        .profile-alert {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+        .profile-alert--success {
+            background-color: var(--el-success-soft);
+            color: var(--el-success);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+        }
+        .profile-alert--danger {
+            background-color: var(--el-danger-soft);
+            color: var(--el-danger);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 }
 
@@ -39,27 +65,34 @@
             <form id="f-profile">
                 <div class="el-form-group">
                     <label class="el-label" for="hoTen">Họ và tên</label>
-                    <input class="el-input" id="hoTen" placeholder="Nguyễn Văn A" value="Nguyễn Văn A" required />
+                    <input class="el-input" id="hoTen" placeholder="Họ và tên" value="@Model.HoTen" required disabled />
                 </div>
                 <div class="el-grid el-grid--2">
                     <div class="el-form-group">
                         <label class="el-label" for="sdt">Số điện thoại</label>
-                        <input class="el-input" id="sdt" placeholder="090..." value="0901234567" />
+                        <input class="el-input" id="sdt" placeholder="Chưa cập nhật số điện thoại" value="@Model.SoDienThoai" disabled />
                     </div>
                     <div class="el-form-group">
                         <label class="el-label" for="namKn">Số năm kinh nghiệm</label>
-                        <input class="el-input" id="namKn" type="number" min="0" placeholder="0" value="3" />
+                        <input class="el-input" id="namKn" type="number" min="0" placeholder="0" value="@Model.SoNamKinhNghiem" disabled />
                     </div>
                 </div>
                 <div class="el-form-group">
                     <label class="el-label" for="linkedin">Link LinkedIn</label>
-                    <input class="el-input" id="linkedin" placeholder="linkedin.com/in/..." value="linkedin.com/in/nguyenvana" />
+                    <input class="el-input" id="linkedin" placeholder="linkedin.com/in/..." value="@Model.LinkLinkedIn" disabled />
                 </div>
                 <div class="el-form-group">
                     <label class="el-label" for="chucDanh">Chức danh hiện tại</label>
-                    <input class="el-input" id="chucDanh" placeholder="Software Engineer, Designer..." value="Frontend Developer" />
+                    <input class="el-input" id="chucDanh" placeholder="Software Engineer, Designer..." value="@Model.ChucDanhHienTai" disabled />
                 </div>
-                <button type="submit" class="el-btn-primary" style="width: 100%; height: 48px; justify-content: center; margin-top: 1rem;">Lưu hồ sơ cá nhân</button>
+                
+                <div id="action-buttons">
+                    <button type="button" id="btn-edit" class="el-btn-primary" style="width: 100%; height: 48px; justify-content: center; margin-top: 1rem;">Chỉnh sửa hồ sơ</button>
+                    <div id="edit-actions" style="display: none; gap: 12px; margin-top: 1rem;">
+                        <button type="submit" id="btn-save" class="el-btn-primary" style="flex: 1; height: 48px; justify-content: center;">Lưu thay đổi</button>
+                        <button type="button" id="btn-cancel" class="el-btn-warm" style="flex: 1; height: 48px; justify-content: center; background: var(--el-danger-soft); color: var(--el-danger);">Hủy</button>
+                    </div>
+                </div>
             </form>
         </div>
 
@@ -73,19 +106,13 @@
                     <button type="button" class="el-btn-warm" style="padding: 4px 10px; font-size: 11px;" id="btn-add-skill">+ Thêm</button>
                 </div>
                 <div class="sr-chips" id="my-skills" style="margin-top: 12px;">
-                    <!-- Dữ liệu mẫu (Static) -->
-                    <span class="el-status el-status--success" style="font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
-                        ReactJS
-                        <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;">&times;</span>
-                    </span>
-                    <span class="el-status el-status--success" style="font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
-                        TypeScript
-                        <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;">&times;</span>
-                    </span>
-                    <span class="el-status el-status--success" style="font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
-                        UI Design
-                        <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;">&times;</span>
-                    </span>
+                    @foreach (var item in Model.ChiTietKyNangUngViens)
+                    {
+                        <span class="el-status el-status--success" data-id="@item.MaKyNang" style="font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;">
+                            @item.MaKyNangNavigation.TenKyNang
+                            <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;" onclick="removeSkill(@item.MaKyNang)">&times;</span>
+                        </span>
+                    }
                 </div>
             </div>
 
@@ -107,36 +134,205 @@
 
 @section Scripts {
     <script>
+        // Hàm global dùng cho sự kiện onclick của nút xóa kỹ năng được sinh động
+        async function removeSkill(skillId) {
+            try {
+                const response = await fetch("/Candidate/DeleteSkill", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ MaKyNang: skillId })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    const chip = document.querySelector(`.sr-chips span[data-id="${skillId}"]`);
+                    if (chip) chip.remove();
+                    showNotification("success", result.message);
+                } else {
+                    showNotification("danger", result.message);
+                }
+            } catch (err) {
+                showNotification("danger", "Đã xảy ra lỗi khi kết nối máy chủ.");
+            }
+        }
+
+        function showNotification(type, text) {
+            const msgDiv = document.getElementById("msg");
+            msgDiv.innerHTML = `
+                <div class="profile-alert profile-alert--${type}">
+                    <span>${text}</span>
+                </div>
+            `;
+            setTimeout(() => {
+                msgDiv.innerHTML = "";
+            }, 4000);
+        }
+
         (function() {
-            const btn = document.getElementById("btn-add-skill");
+            // Cấu hình Chỉnh sửa thông tin cá nhân
+            const btnEdit = document.getElementById("btn-edit");
+            const btnCancel = document.getElementById("btn-cancel");
+            const editActions = document.getElementById("edit-actions");
+            const form = document.getElementById("f-profile");
+            
+            const inputs = [
+                document.getElementById("hoTen"),
+                document.getElementById("sdt"),
+                document.getElementById("namKn"),
+                document.getElementById("linkedin"),
+                document.getElementById("chucDanh")
+            ];
+
+            let originalValues = {};
+
+            btnEdit.onclick = () => {
+                // Lưu lại giá trị ban đầu đề phòng Hủy
+                inputs.forEach(input => {
+                    originalValues[input.id] = input.value;
+                    input.disabled = false;
+                });
+                
+                btnEdit.style.display = "none";
+                editActions.style.display = "flex";
+            };
+
+            btnCancel.onclick = () => {
+                // Khôi phục giá trị ban đầu và khóa trường lại
+                inputs.forEach(input => {
+                    input.value = originalValues[input.id] || "";
+                    input.disabled = true;
+                });
+                
+                btnEdit.style.display = "block";
+                editActions.style.display = "none";
+            };
+
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const payload = {
+                    HoTen: document.getElementById("hoTen").value,
+                    SoDienThoai: document.getElementById("sdt").value,
+                    SoNamKinhNghiem: parseInt(document.getElementById("namKn").value) || 0,
+                    LinkLinkedIn: document.getElementById("linkedin").value,
+                    ChucDanhHienTai: document.getElementById("chucDanh").value
+                };
+
+                try {
+                    const response = await fetch("/Candidate/UpdateProfile", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        showNotification("success", data.message);
+                        
+                        // Cập nhật lại originalValues thành giá trị mới
+                        inputs.forEach(input => {
+                            input.disabled = true;
+                        });
+                        
+                        btnEdit.style.display = "block";
+                        editActions.style.display = "none";
+                    } else {
+                        showNotification("danger", data.message);
+                    }
+                } catch (err) {
+                    showNotification("danger", "Đã xảy ra lỗi khi lưu thông tin.");
+                }
+            };
+
+            // Cấu hình Thêm kỹ năng (AI Insights)
+            const btnAddSkill = document.getElementById("btn-add-skill");
             const picker = document.getElementById("skill-picker");
             const skList = document.getElementById("sk-list");
+            const skSearch = document.getElementById("sk-search");
+            
+            let allAvailableSkills = [];
 
-            // Danh sách kỹ năng mẫu (Static)
-            const demoSkills = ["Angular", "VueJS", "Node.js", "Python", "Docker", "AWS", "Figma"];
-
-            btn.onclick = (e) => {
+            btnAddSkill.onclick = async (e) => {
                 e.stopPropagation();
-                const rect = btn.getBoundingClientRect();
-                picker.style.top = (rect.bottom + window.scrollY) + "px";
-                picker.style.left = (rect.left + window.scrollX - 240) + "px";
-                picker.style.display = picker.style.display === "none" ? "block" : "none";
                 
-                // Render list
-                skList.innerHTML = demoSkills.map(s => `
-                    <div class="sk-opt" style="padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px;" onclick="alert('Đã thêm kỹ năng: ${s}')">
-                        ${s}
+                try {
+                    const response = await fetch("/Candidate/GetAvailableSkills");
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        allAvailableSkills = result.skills;
+                        renderSkillPickerList(allAvailableSkills);
+                        
+                        const rect = btnAddSkill.getBoundingClientRect();
+                        picker.style.top = (rect.bottom + window.scrollY) + "px";
+                        picker.style.left = (rect.left + window.scrollX - 240) + "px";
+                        picker.style.display = "block";
+                        skSearch.value = "";
+                        skSearch.focus();
+                    } else {
+                        showNotification("danger", "Không thể lấy danh sách kỹ năng.");
+                    }
+                } catch (err) {
+                    showNotification("danger", "Không thể kết nối máy chủ.");
+                }
+            };
+
+            skSearch.oninput = () => {
+                const query = skSearch.value.toLowerCase().trim();
+                const filtered = allAvailableSkills.filter(s => s.tenKyNang.toLowerCase().includes(query));
+                renderSkillPickerList(filtered);
+            };
+
+            function renderSkillPickerList(skillsList) {
+                if (skillsList.length === 0) {
+                    skList.innerHTML = `<div style="padding:8px 12px; font-size:12px; color:var(--el-dark-gray);">Không tìm thấy kỹ năng nào.</div>`;
+                    return;
+                }
+
+                skList.innerHTML = skillsList.map(s => `
+                    <div class="sk-opt" style="padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px;" onclick="addSkillToProfile(${s.maKyNang})">
+                        ${s.tenKyNang}
                     </div>
                 `).join("");
+            }
+
+            // Gán hàm addSkillToProfile vào context global/window để thẻ HTML động gọi được
+            window.addSkillToProfile = async function(skillId) {
+                picker.style.display = "none";
+                
+                try {
+                    const response = await fetch("/Candidate/AddSkill", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ MaKyNang: skillId })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        // Thêm chip kỹ năng mới vào giao diện
+                        const mySkillsDiv = document.getElementById("my-skills");
+                        const newChip = document.createElement("span");
+                        newChip.className = "el-status el-status--success";
+                        newChip.setAttribute("data-id", result.skillId);
+                        newChip.style.cssText = "font-size: 13px; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px;";
+                        newChip.innerHTML = `
+                            ${result.skillName}
+                            <span class="skill-del" style="cursor: pointer; opacity: 0.6; font-size: 16px; line-height: 1;" onclick="removeSkill(${result.skillId})">&times;</span>
+                        `;
+                        mySkillsDiv.appendChild(newChip);
+                        showNotification("success", result.message);
+                    } else {
+                        showNotification("danger", result.message);
+                    }
+                } catch (err) {
+                    showNotification("danger", "Đã xảy ra lỗi khi thêm kỹ năng.");
+                }
             };
 
             document.onclick = (e) => {
-                if (!picker.contains(e.target)) picker.style.display = "none";
-            };
-
-            document.getElementById("f-profile").onsubmit = (e) => {
-                e.preventDefault();
-                alert("Đã lưu thông tin cá nhân!");
+                if (!picker.contains(e.target) && e.target !== btnAddSkill) {
+                    picker.style.display = "none";
+                }
             };
         })();
     </script>
