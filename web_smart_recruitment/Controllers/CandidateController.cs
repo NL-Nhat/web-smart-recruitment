@@ -166,7 +166,184 @@ namespace web_smart_recruitment.Controllers
         public IActionResult Interviews() => View();
         
         [Authorize(Roles = "UngVien")]
-        public IActionResult Profile() => View();
+        public async Task<IActionResult> Profile()
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(userIdStr, out int userId))
+            {
+                var candidate = await _context.UngViens
+                    .Include(u => u.ChiTietKyNangUngViens)
+                        .ThenInclude(ck => ck.MaKyNangNavigation)
+                    .FirstOrDefaultAsync(u => u.MaUngVien == userId);
+                
+                if (candidate != null)
+                {
+                    return View(candidate);
+                }
+            }
+            return RedirectToAction("Login", "Auth");
+        }
+
+        [Authorize(Roles = "UngVien")]
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileModel model)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại." });
+            }
+
+            if (model == null || string.IsNullOrWhiteSpace(model.HoTen))
+            {
+                return Json(new { success = false, message = "Họ tên không được để trống." });
+            }
+
+            try
+            {
+                var candidate = await _context.UngViens.FirstOrDefaultAsync(u => u.MaUngVien == userId);
+                if (candidate == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy thông tin ứng viên." });
+                }
+
+                candidate.HoTen = model.HoTen;
+                candidate.SoDienThoai = model.SoDienThoai;
+                candidate.SoNamKinhNghiem = model.SoNamKinhNghiem ?? 0;
+                candidate.LinkLinkedIn = model.LinkLinkedIn;
+                candidate.ChucDanhHienTai = model.ChucDanhHienTai;
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Cập nhật hồ sơ cá nhân thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        [Authorize(Roles = "UngVien")]
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableSkills()
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
+            }
+
+            try
+            {
+                var existingSkillIds = await _context.ChiTietKyNangUngViens
+                    .Where(c => c.MaUngVien == userId)
+                    .Select(c => c.MaKyNang)
+                    .ToListAsync();
+
+                var availableSkills = await _context.DanhMucKyNangs
+                    .Where(s => !existingSkillIds.Contains(s.MaKyNang))
+                    .Select(s => new { s.MaKyNang, s.TenKyNang })
+                    .ToListAsync();
+
+                return Json(new { success = true, skills = availableSkills });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        [Authorize(Roles = "UngVien")]
+        [HttpPost]
+        public async Task<IActionResult> AddSkill([FromBody] AddSkillModel model)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
+            }
+
+            try
+            {
+                var exists = await _context.ChiTietKyNangUngViens
+                    .AnyAsync(c => c.MaUngVien == userId && c.MaKyNang == model.MaKyNang);
+
+                if (exists)
+                {
+                    return Json(new { success = false, message = "Kỹ năng này đã tồn tại trong hồ sơ của bạn." });
+                }
+
+                var skillDetail = new ChiTietKyNangUngVien
+                {
+                    MaUngVien = userId,
+                    MaKyNang = model.MaKyNang,
+                    SoNamKinhNghiem = 0
+                };
+
+                _context.ChiTietKyNangUngViens.Add(skillDetail);
+                await _context.SaveChangesAsync();
+
+                var skillName = await _context.DanhMucKyNangs
+                    .Where(s => s.MaKyNang == model.MaKyNang)
+                    .Select(s => s.TenKyNang)
+                    .FirstOrDefaultAsync();
+
+                return Json(new { success = true, message = "Thêm kỹ năng thành công!", skillId = model.MaKyNang, skillName = skillName });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        [Authorize(Roles = "UngVien")]
+        [HttpPost]
+        public async Task<IActionResult> DeleteSkill([FromBody] DeleteSkillModel model)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
+            }
+
+            try
+            {
+                var skillDetail = await _context.ChiTietKyNangUngViens
+                    .FirstOrDefaultAsync(c => c.MaUngVien == userId && c.MaKyNang == model.MaKyNang);
+
+                if (skillDetail == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy kỹ năng này." });
+                }
+
+                _context.ChiTietKyNangUngViens.Remove(skillDetail);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Xóa kỹ năng thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        public class UpdateProfileModel
+        {
+            public string HoTen { get; set; } = null!;
+            public string? SoDienThoai { get; set; }
+            public int? SoNamKinhNghiem { get; set; }
+            public string? LinkLinkedIn { get; set; }
+            public string? ChucDanhHienTai { get; set; }
+        }
+
+        public class AddSkillModel
+        {
+            public int MaKyNang { get; set; }
+        }
+
+        public class DeleteSkillModel
+        {
+            public int MaKyNang { get; set; }
+        }
         
         [AllowAnonymous]
         public IActionResult CompanyDetail() => View();
