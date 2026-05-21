@@ -28,12 +28,46 @@
 <partial name="_HrNavbar" />
 
 <main class="sr-main">
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem;">
         <div>
             <h1 class="el-display-hero" style="font-size: 40px; margin: 0;">Quản lý tuyển dụng</h1>
-            <p class="el-text-muted">Tạo mới và quản trị trạng thái các vị trí đang tuyển dụng tại doanh nghiệp.</p>
+            <p class="el-text-muted">Đăng tin tuyển dụng và quản lý tin tuyển dụng</p>
         </div>
-        <a class="el-btn-primary" asp-action="JobForm" style="height: 48px;">+ Tạo tin tuyển dụng mới</a>
+        <a class="el-btn-primary" asp-action="JobForm" style="height: 48px; line-height: 48px; padding: 0 24px; text-decoration: none;">+ Tạo tin tuyển dụng mới</a>
+        
+    </div>
+    <div style="display: flex;  align-items: center; margin-bottom: 1rem;">
+        <!-- Bộ lọc trạng thái -->
+        <form method="get" asp-action="Jobs" style="display: flex; align-items: center; gap: 8px; margin: 0;">
+            <label style="font-size: 14px; font-weight: 600; white-space: nowrap;">Trạng thái:</label>
+            <select name="status" class="el-select" onchange="this.form.submit()" style="padding: 8px 14px; height: 40px; min-width: 150px;">
+                <option value="">Tất cả</option>
+                @if (ViewBag.CurrentStatus == "DangMo")
+                {
+                    <option value="DangMo" selected>Đang mở</option>
+                }
+                else
+                {
+                    <option value="DangMo">Đang mở</option>
+                }
+                @if (ViewBag.CurrentStatus == "DaDong")
+                {
+                    <option value="DaDong" selected>Đã đóng</option>
+                }
+                else
+                {
+                    <option value="DaDong">Đã đóng</option>
+                }
+                @if (ViewBag.CurrentStatus == "ChoDuyet")
+                {
+                    <option value="ChoDuyet" selected>Chờ duyệt</option>
+                }
+                else
+                {
+                    <option value="ChoDuyet">Chờ duyệt</option>
+                }
+            </select>
+        </form>
     </div>
 
     <div class="el-bordered">
@@ -100,6 +134,19 @@
             }
         </div>
     </div>
+
+    <!-- Phân trang -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 32px;">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <a href="@Url.Action("Jobs", new { page = i, status = ViewBag.CurrentStatus })" 
+                   class="@(i == ViewBag.CurrentPage ? "el-btn-primary" : "el-btn-white")"
+                   style="padding: 8px 16px; text-decoration: none;">@i</a>
+            }
+        </div>
+    }
 </main>
 
 @section Scripts {

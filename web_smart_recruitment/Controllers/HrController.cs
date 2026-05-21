@@ -19,7 +19,7 @@ namespace web_smart_recruitment.Controllers
         public IActionResult Dashboard() => View();
         
         // Chức năng Xem danh sách tin tuyển dụng của nhà tuyển dụng
-        public async Task<IActionResult> Jobs()
+        public async Task<IActionResult> Jobs(string status = null, int page = 1)
         {
             // 1. Lấy ID tài khoản của Nhà tuyển dụng đang đăng nhập từ Claims
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -34,13 +34,32 @@ namespace web_smart_recruitment.Controllers
             // 2. Dùng LINQ để lấy danh sách tin tuyển dụng thuộc về nhà tuyển dụng này
             // - Lọc theo MaNhaTuyenDung
             // - Lọc các tin chưa bị xóa (DaXoa == false hoặc null)
-            // - Sắp xếp theo ngày tạo mới nhất
-            var jobs = await _context.TinTuyenDungs
-                .Where(t => t.MaNhaTuyenDung == maNhaTuyenDung && (t.DaXoa == false || t.DaXoa == null))
+            var query = _context.TinTuyenDungs
+                .Where(t => t.MaNhaTuyenDung == maNhaTuyenDung && (t.DaXoa == false || t.DaXoa == null));
+
+            // Lọc theo trạng thái nếu có
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(t => t.TrangThai == status);
+            }
+
+            // Đếm tổng số bản ghi để tính số trang
+            int totalRecords = await query.CountAsync();
+            int pageSize = 10;
+            int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+            // Sắp xếp theo ngày tạo mới nhất và phân trang
+            var jobs = await query
                 .OrderByDescending(t => t.NgayTao)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             // 3. Trả dữ liệu về cho View hiển thị
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.CurrentStatus = status;
+
             return View(jobs);
         }
 
@@ -156,7 +175,78 @@ namespace web_smart_recruitment.Controllers
 
             return View(interviews);
         }
-        public IActionResult JobForm() => View();
+        public async Task<IActionResult> JobForm()
+        {
+            ViewBag.Skills = await _context.DanhMucKyNangs.ToListAsync();
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateJob(
+            TinTuyenDung model, 
+            List<int> skillIds, 
+            List<string> skillLevels)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            ViewBag.Skills = await _context.DanhMucKyNangs.ToListAsync();
+            
+            // 1. Kiểm tra validation
+            if (string.IsNullOrWhiteSpace(model.TieuDe) || string.IsNullOrWhiteSpace(model.MoTaCongViec) || string.IsNullOrWhiteSpace(model.YeuCauCongViec))
+            {
+                ModelState.AddModelError("", "Tiêu đề, Mô tả và Yêu cầu công việc không được để trống.");
+                return View("JobForm", model);
+            }
+
+            if (model.HanNopCv.HasValue && model.HanNopCv.Value.Date < DateTime.Today)
+            {
+                ModelState.AddModelError("HanNopCv", "Hạn nộp CV không được nhỏ hơn ngày hiện tại.");
+                return View("JobForm", model);
+            }
+
+            if (model.MucLuongToiThieu.HasValue && model.MucLuongToiThieu.Value < 0)
+            {
+                ModelState.AddModelError("MucLuongToiThieu", "Mức lương tối thiểu không được âm.");
+                return View("JobForm", model);
+            }
+
+            if (model.MucLuongToiThieu.HasValue && model.MucLuongToiDa.HasValue && model.MucLuongToiDa.Value < model.MucLuongToiThieu.Value)
+            {
+                ModelState.AddModelError("MucLuongToiDa", "Mức lương tối đa phải lớn hơn hoặc bằng mức lương tối thiểu.");
+                return View("JobForm", model);
+            }
+
+            // 2. Lưu tin tuyển dụng
+            model.MaNhaTuyenDung = userId;
+            model.TrangThai = "DangMo";
+            model.NgayTao = DateTime.Now;
+            model.NgayCapNhat = DateTime.Now;
+            model.DaXoa = false;
+
+            _context.TinTuyenDungs.Add(model);
+            await _context.SaveChangesAsync();
+
+            // 3. Lưu danh sách kỹ năng yêu cầu (nếu có)
+            if (skillIds != null && skillLevels != null && skillIds.Count == skillLevels.Count)
+            {
+                for (int i = 0; i < skillIds.Count; i++)
+                {
+                    _context.ChiTietKyNangTinTuyenDungs.Add(new ChiTietKyNangTinTuyenDung
+                    {
+                        MaTin = model.MaTin,
+                        MaKyNang = skillIds[i],
+                        CapDoYeuCau = skillLevels[i]
+                    });
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Jobs");
+        }
         public IActionResult JobStatus() => View();
         public IActionResult Company() => View();
         public IActionResult Profile() => View();
