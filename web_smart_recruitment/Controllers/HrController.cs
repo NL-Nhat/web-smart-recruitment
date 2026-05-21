@@ -175,9 +175,22 @@ namespace web_smart_recruitment.Controllers
 
             return View(interviews);
         }
-        public async Task<IActionResult> JobForm()
+        public async Task<IActionResult> JobForm(int? maTin)
         {
             ViewBag.Skills = await _context.DanhMucKyNangs.ToListAsync();
+            
+            if (maTin.HasValue)
+            {
+                // Dùng LINQ để lấy tin tuyển dụng và danh sách kỹ năng cũ
+                var job = await _context.TinTuyenDungs
+                    .Include(t => t.ChiTietKyNangTinTuyenDungs)
+                    .FirstOrDefaultAsync(t => t.MaTin == maTin.Value);
+
+                if (job == null) return NotFound();
+                
+                return View(job);
+            }
+            
             return View();
         }
 
@@ -244,6 +257,88 @@ namespace web_smart_recruitment.Controllers
                 }
                 await _context.SaveChangesAsync();
             }
+
+            return RedirectToAction("Jobs");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditJob(
+            int maTin,
+            TinTuyenDung model, 
+            List<int> skillIds, 
+            List<string> skillLevels)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            ViewBag.Skills = await _context.DanhMucKyNangs.ToListAsync();
+
+            // 1. Validation
+            if (string.IsNullOrWhiteSpace(model.TieuDe) || string.IsNullOrWhiteSpace(model.MoTaCongViec) || string.IsNullOrWhiteSpace(model.YeuCauCongViec))
+            {
+                ModelState.AddModelError("", "Tiêu đề, Mô tả và Yêu cầu công việc không được để trống.");
+                return View("JobForm", model);
+            }
+
+            if (model.HanNopCv.HasValue && model.HanNopCv.Value.Date < DateTime.Today)
+            {
+                ModelState.AddModelError("HanNopCv", "Hạn nộp CV không được nhỏ hơn ngày hiện tại.");
+                return View("JobForm", model);
+            }
+
+            if (model.MucLuongToiThieu.HasValue && model.MucLuongToiThieu.Value < 0)
+            {
+                ModelState.AddModelError("MucLuongToiThieu", "Mức lương tối thiểu không được âm.");
+                return View("JobForm", model);
+            }
+
+            if (model.MucLuongToiThieu.HasValue && model.MucLuongToiDa.HasValue && model.MucLuongToiDa.Value < model.MucLuongToiThieu.Value)
+            {
+                ModelState.AddModelError("MucLuongToiDa", "Mức lương tối đa phải lớn hơn hoặc bằng mức lương tối thiểu.");
+                return View("JobForm", model);
+            }
+
+            // 2. Lấy tin cũ và cập nhật
+            var job = await _context.TinTuyenDungs
+                .Include(t => t.ChiTietKyNangTinTuyenDungs)
+                .FirstOrDefaultAsync(t => t.MaTin == maTin && t.MaNhaTuyenDung == userId);
+
+            if (job == null) return NotFound();
+
+            job.TieuDe = model.TieuDe;
+            job.PhongBan = model.PhongBan;
+            job.DiaDiem = model.DiaDiem;
+            job.HinhThucLamViec = model.HinhThucLamViec;
+            job.HanNopCv = model.HanNopCv;
+            job.MucLuongToiThieu = model.MucLuongToiThieu;
+            job.MucLuongToiDa = model.MucLuongToiDa;
+            job.MoTaCongViec = model.MoTaCongViec;
+            job.YeuCauCongViec = model.YeuCauCongViec;
+            job.QuyenLoi = model.QuyenLoi;
+            job.TrangThai = model.TrangThai; // Cập nhật trạng thái
+            job.NgayCapNhat = DateTime.Now;
+
+            // 3. Xóa kỹ năng cũ
+            _context.ChiTietKyNangTinTuyenDungs.RemoveRange(job.ChiTietKyNangTinTuyenDungs);
+
+            // 4. Thêm kỹ năng mới
+            if (skillIds != null && skillLevels != null && skillIds.Count == skillLevels.Count)
+            {
+                for (int i = 0; i < skillIds.Count; i++)
+                {
+                    _context.ChiTietKyNangTinTuyenDungs.Add(new ChiTietKyNangTinTuyenDung
+                    {
+                        MaTin = job.MaTin,
+                        MaKyNang = skillIds[i],
+                        CapDoYeuCau = skillLevels[i]
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Jobs");
         }
