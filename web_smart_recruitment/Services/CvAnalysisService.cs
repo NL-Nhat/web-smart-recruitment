@@ -61,7 +61,6 @@ namespace web_smart_recruitment.Services
             // --- Lấy dữ liệu đơn ứng tuyển, CV, và tin tuyển dụng ---
             // Dùng Include để load dữ liệu liên quan trong 1 truy vấn (tránh N+1 query)
             var don = await _context.DonUngTuyens
-                .Include(d => d.MaCvNavigation)           // Load thông tin HoSoCV
                 .Include(d => d.MaTinNavigation)          // Load thông tin TinTuyenDung
                     .ThenInclude(t => t!.ChiTietKyNangTinTuyenDungs)  // Load kỹ năng yêu cầu
                         .ThenInclude(c => c.MaKyNangNavigation)       // Load tên kỹ năng
@@ -74,7 +73,7 @@ namespace web_smart_recruitment.Services
             }
 
             // Kiểm tra xem CV có tồn tại không
-            if (don.MaCvNavigation == null || string.IsNullOrEmpty(don.MaCvNavigation.DuongDanFile))
+            if (string.IsNullOrEmpty(don.DuongDanFile))
             {
                 _logger.LogWarning("Đơn MaDon={MaDon} không có file CV", maDon);
                 return;
@@ -86,7 +85,7 @@ namespace web_smart_recruitment.Services
             string extractedCvText = string.Empty;
             try
             {
-                extractedCvText = await Step1_ExtractTextFromPdfAsync(don.MaCvNavigation);
+                extractedCvText = await Step1_ExtractTextFromPdfAsync(don);
                 _logger.LogInformation("Bước 1 hoàn thành: Trích xuất {Length} ký tự từ CV", extractedCvText.Length);
             }
             catch (Exception ex)
@@ -135,7 +134,7 @@ namespace web_smart_recruitment.Services
         // Sử dụng thư viện UglyToad.PdfPig để đọc từng trang PDF
         // và gom toàn bộ chữ lại thành 1 chuỗi dài (extractedCvText)
         // ======================================================================
-        private async Task<string> Step1_ExtractTextFromPdfAsync(HoSoCv hoSo)
+        private async Task<string> Step1_ExtractTextFromPdfAsync(DonUngTuyen hoSo)
         {
             // Dựng đường dẫn tuyệt đối đến file trên server
             // DuongDanFile lưu dạng "/uploads/cvs/tên_file.pdf"

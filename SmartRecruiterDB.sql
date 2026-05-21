@@ -122,23 +122,15 @@ CREATE TABLE ChiTietKyNang_TinTuyenDung (
     CONSTRAINT CHK_ChiTietKyNang_CapDo CHECK (CapDoYeuCau IN ('BatBuoc', 'UuTien', 'KhongBatBuoc'))
 );
 
--- 8. TÀI LIỆU CV
-CREATE TABLE HoSoCV (
-    MaCV INT IDENTITY(1,1) PRIMARY KEY,
-    MaUngVien INT FOREIGN KEY REFERENCES UngVien(MaUngVien),
-    TenFile NVARCHAR(255) NOT NULL,
-    DuongDanFile NVARCHAR(500) NOT NULL, 
-    DinhDang VARCHAR(20) NOT NULL, -- 'PDF', 'DOCX'
-    NoiDungTrichXuat NVARCHAR(MAX), 
-    NgayTaiLen DATETIME DEFAULT GETDATE()
-);
-
--- 9. ĐƠN ỨNG TUYỂN
+-- 8. ĐƠN ỨNG TUYỂN (Gộp từ HoSoCV)
 CREATE TABLE DonUngTuyen (
     MaDon INT IDENTITY(1,1) PRIMARY KEY,
     MaTin INT FOREIGN KEY REFERENCES TinTuyenDung(MaTin),
     MaUngVien INT FOREIGN KEY REFERENCES UngVien(MaUngVien),
-    MaCV INT FOREIGN KEY REFERENCES HoSoCV(MaCV),
+    TenFile NVARCHAR(255) NOT NULL,
+    DuongDanFile NVARCHAR(500) NOT NULL, 
+    DinhDang VARCHAR(20) NOT NULL,
+    NoiDungTrichXuat NVARCHAR(MAX), 
     TrangThai VARCHAR(50) DEFAULT 'DaNop', 
     NgayNop DATETIME DEFAULT GETDATE(),
     NgayCapNhat DATETIME DEFAULT GETDATE(),
@@ -324,38 +316,25 @@ INSERT INTO ChiTietKyNang_TinTuyenDung (MaTin, MaKyNang, CapDoYeuCau) VALUES
 (6, 11, 'BatBuoc'), (6, 12, 'BatBuoc'), (6, 13, 'BatBuoc');
 
 -- ---------------------------------------------------------
--- 8. TÀI LIỆU CV
--- ---------------------------------------------------------
-SET IDENTITY_INSERT HoSoCV ON;
-INSERT INTO HoSoCV (MaCV, MaUngVien, TenFile, DuongDanFile, DinhDang, NoiDungTrichXuat, NgayTaiLen) VALUES 
-(1, 7, 'NguyenVanA_NET_CV.pdf', '/cvs/nguyenvana_1.pdf', 'PDF', N'Senior Backend .NET. Kỹ năng: C#, ASP.NET Core, SQL. 4 năm KN.', '2024-04-05 08:00'),
-(2, 8, 'TranNgoc_ReactJS.pdf', '/cvs/tranngoc.pdf', 'PDF', N'Frontend React Developer. Có kinh nghiệm với ReactJS, JS, HTML/CSS.', '2024-04-06 09:00'),
-(3, 9, 'LeHoangHai_Fullstack.docx', '/cvs/lehoanghai.docx', 'DOCX', N'Lập trình viên Fullstack. Backend .NET Core 5 năm, Frontend ReactJS 3 năm. Biết dùng Docker.', '2024-04-07 10:00'),
-(4, 10, 'PhamTuan_Java.pdf', '/cvs/phamtuan.pdf', 'PDF', N'Java Dev. Tech stack: Java, Spring Boot, MySQL. 3 years experience.', '2024-04-08 11:00'),
-(5, 12, 'VuMinhDuc_AI.pdf', '/cvs/vuminhduc.pdf', 'PDF', N'AI/ML Engineer. Python, PyTorch, Scikit-learn. NLP projects.', '2024-04-09 14:00'),
-(6, 13, 'DoanVanHau_DevOps.pdf', '/cvs/doanvanhau.pdf', 'PDF', N'DevOps. AWS Certified. K8s, Docker, CI/CD Jenkins.', '2024-04-10 15:00');
-SET IDENTITY_INSERT HoSoCV OFF;
-
--- ---------------------------------------------------------
--- 9. ĐƠN ỨNG TUYỂN
+-- 8. ĐƠN ỨNG TUYỂN
 -- Ràng buộc: TrangThai (DaNop, AIDaLoc, TrungTuyen, TuChoi)
 -- ---------------------------------------------------------
 SET IDENTITY_INSERT DonUngTuyen ON;
-INSERT INTO DonUngTuyen (MaDon, MaTin, MaUngVien, MaCV, TrangThai, NgayNop, NgayCapNhat) VALUES 
+INSERT INTO DonUngTuyen (MaDon, MaTin, MaUngVien, TenFile, DuongDanFile, DinhDang, NoiDungTrichXuat, TrangThai, NgayNop, NgayCapNhat) VALUES 
 -- Job 1 (Senior .NET): UV 7 & UV 9 apply
-(1, 1, 7, 1, 'TrungTuyen', '2024-04-10 08:30', '2024-04-15 10:00'), -- UV7 pass
-(2, 1, 9, 3, 'AIDaLoc', '2024-04-11 09:00', '2024-04-11 09:05'),   -- UV9 đang chờ HR xem
+(1, 1, 7, 'NguyenVanA_NET_CV.pdf', '/cvs/nguyenvana_1.pdf', 'PDF', N'Senior Backend .NET. Kỹ năng: C#, ASP.NET Core, SQL. 4 năm KN.', 'TrungTuyen', '2024-04-10 08:30', '2024-04-15 10:00'), -- UV7 pass
+(2, 1, 9, 'LeHoangHai_Fullstack.docx', '/cvs/lehoanghai.docx', 'DOCX', N'Lập trình viên Fullstack. Backend .NET Core 5 năm, Frontend ReactJS 3 năm. Biết dùng Docker.', 'AIDaLoc', '2024-04-11 09:00', '2024-04-11 09:05'),   -- UV9 đang chờ HR xem
 
 -- Job 2 (ReactJS): UV 8 & UV 9 apply
-(3, 2, 8, 2, 'AIDaLoc', '2024-04-12 10:00', '2024-04-12 10:05'),   -- UV8
-(4, 2, 9, 3, 'DaNop', '2024-04-13 14:00', '2024-04-13 14:00'),     -- UV9 vừa nộp, AI chưa chạy xong
+(3, 2, 8, 'TranNgoc_ReactJS.pdf', '/cvs/tranngoc.pdf', 'PDF', N'Frontend React Developer. Có kinh nghiệm với ReactJS, JS, HTML/CSS.', 'AIDaLoc', '2024-04-12 10:00', '2024-04-12 10:05'),   -- UV8
+(4, 2, 9, 'LeHoangHai_Fullstack.docx', '/cvs/lehoanghai.docx', 'DOCX', N'Lập trình viên Fullstack. Backend .NET Core 5 năm, Frontend ReactJS 3 năm. Biết dùng Docker.', 'DaNop', '2024-04-13 14:00', '2024-04-13 14:00'),     -- UV9 vừa nộp, AI chưa chạy xong
 
 -- Job 3 (Java): UV 10 apply, UV 8 nộp nhầm
-(5, 3, 10, 4, 'TrungTuyen', '2024-04-14 09:00', '2024-04-20 16:00'), -- UV10 pass
-(6, 3, 8, 2, 'TuChoi', '2024-04-15 10:00', '2024-04-15 10:10'),    -- UV8 tạch vì sai skill
+(5, 3, 10, 'PhamTuan_Java.pdf', '/cvs/phamtuan.pdf', 'PDF', N'Java Dev. Tech stack: Java, Spring Boot, MySQL. 3 years experience.', 'TrungTuyen', '2024-04-14 09:00', '2024-04-20 16:00'), -- UV10 pass
+(6, 3, 8, 'TranNgoc_ReactJS.pdf', '/cvs/tranngoc.pdf', 'PDF', N'Frontend React Developer. Có kinh nghiệm với ReactJS, JS, HTML/CSS.', 'TuChoi', '2024-04-15 10:00', '2024-04-15 10:10'),    -- UV8 tạch vì sai skill
 
 -- Job 4 (AI): UV 12 apply
-(7, 4, 12, 5, 'AIDaLoc', '2024-04-16 11:00', '2024-04-16 11:05');    -- UV12
+(7, 4, 12, 'VuMinhDuc_AI.pdf', '/cvs/vuminhduc.pdf', 'PDF', N'AI/ML Engineer. Python, PyTorch, Scikit-learn. NLP projects.', 'AIDaLoc', '2024-04-16 11:00', '2024-04-16 11:05');    -- UV12
 
 SET IDENTITY_INSERT DonUngTuyen OFF;
 
@@ -550,42 +529,24 @@ INSERT INTO ChiTietKyNang_TinTuyenDung (MaTin, MaKyNang, CapDoYeuCau) VALUES
 (14, 20, 'BatBuoc'), (14, 7, 'BatBuoc');
 
 -- ---------------------------------------------------------
--- 8. TÀI LIỆU CV MỚI (10 CVs)
--- Tiếp nối ID từ 7 đến 16
--- ---------------------------------------------------------
-SET IDENTITY_INSERT HoSoCV ON;
-INSERT INTO HoSoCV (MaCV, MaUngVien, TenFile, DuongDanFile, DinhDang, NoiDungTrichXuat) VALUES 
-(7, 21, 'LeThanh_BA_CV.pdf', '/cvs/lethanh_ba.pdf', 'PDF', N'Business Analyst với 5 năm kinh nghiệm. Kỹ năng lấy requirements, vẽ UML, viết tài liệu. Có hiểu biết về SQL Server.'),
-(8, 22, 'TranToan_QA.pdf', '/cvs/trantoan_qa.pdf', 'PDF', N'Automation QA. Sử dụng Selenium, Cypress. Có 3 năm kinh nghiệm test Web và Mobile app.'),
-(9, 23, 'NguyenHa_Mobile.pdf', '/cvs/nguyenha_mobile.pdf', 'PDF', N'Mobile Developer. 4 năm Native Android (Kotlin), 2 năm cross-platform Flutter.'),
-(10, 24, 'PhamHung_iOS.docx', '/cvs/phamhung_ios.docx', 'DOCX', N'iOS Dev, 2 năm kinh nghiệm với Swift, UIKit, SwiftUI. Từng thử nghiệm React Native 1 dự án nhỏ.'),
-(11, 25, 'DoVan_DataEng.pdf', '/cvs/dovan_data.pdf', 'PDF', N'Data Engineer. Tech stack: Python, PostgreSQL, AWS Redshift, Airflow.'),
-(12, 26, 'LyNhan_UIUX.pdf', '/cvs/lynhan_uiux.pdf', 'PDF', N'UI/UX Designer. Sử dụng thành thạo Figma, Adobe XD. Đã thiết kế app e-commerce.'),
-(13, 27, 'VuongDinh_PHP.pdf', '/cvs/vuongdinh_php.pdf', 'PDF', N'Backend Dev. 5 năm PHP, 4 năm sử dụng Laravel framework, MySQL optimization.'),
-(14, 28, 'CaoThang_Golang.pdf', '/cvs/caothang_go.pdf', 'PDF', N'Golang Developer. Chuyên làm hệ thống high concurrency. Redis, Docker, gRPC.'),
-(15, 29, 'DinhBao_Vue.pdf', '/cvs/dinhbao_vue.pdf', 'PDF', N'Frontend Dev 2 năm kinh nghiệm. Framework chính là VueJS, Vuex, NuxtJS.'),
-(16, 33, 'TuanAnh_MERN.pdf', '/cvs/tuananh_mern.pdf', 'PDF', N'MERN Stack. NodeJS, ReactJS, MongoDB. Có thể làm fullstack cho các dự án SME.');
-SET IDENTITY_INSERT HoSoCV OFF;
-
--- ---------------------------------------------------------
 -- 9. ĐƠN ỨNG TUYỂN MỚI
 -- Tiếp nối ID từ 8 đến 20
 -- ---------------------------------------------------------
 SET IDENTITY_INSERT DonUngTuyen ON;
-INSERT INTO DonUngTuyen (MaDon, MaTin, MaUngVien, MaCV, TrangThai, NgayNop) VALUES 
-(8, 7, 28, 14, 'TrungTuyen', '2024-06-10 09:00'), -- Thắng nộp Go (Match cao)
-(9, 7, 27, 13, 'TuChoi', '2024-06-11 10:00'),    -- Đình (PHP) nộp Go (Fail)
-(10, 8, 27, 13, 'AIDaLoc', '2024-06-12 11:00'),   -- Đình (PHP) nộp PHP (Match cao)
-(11, 9, 23, 9, 'DaNop', '2024-06-13 14:00'),      -- Hà nộp Flutter
-(12, 10, 22, 8, 'TrungTuyen', '2024-06-14 15:00'),-- Toản nộp QA
-(13, 11, 21, 7, 'AIDaLoc', '2024-06-15 16:00'),   -- Thanh nộp BA
-(14, 12, 25, 11, 'AIDaLoc', '2024-06-16 09:00'),  -- Văn nộp Data
-(15, 13, 26, 12, 'DaNop', '2024-06-17 10:00'),    -- Nhân nộp UI/UX
-(16, 14, 29, 15, 'AIDaLoc', '2024-06-18 11:00'),  -- Bảo nộp VueJS
-(17, 14, 33, 16, 'TuChoi', '2024-06-19 14:00'),   -- Tuấn Anh (React) nộp VueJS (Mismatch framework)
-(18, 15, 24, 10, 'TuChoi', '2024-05-20 15:00'),   -- Hùng nộp Fresher iOS nhưng job đã đóng
-(19, 12, 28, 14, 'TuChoi', '2024-06-20 09:00'),   -- Thắng (Go) nộp Data Engineer (Fail)
-(20, 2, 33, 16, 'DaNop', '2024-06-21 10:00');     -- Tuấn Anh nộp React (Job cũ số 2)
+INSERT INTO DonUngTuyen (MaDon, MaTin, MaUngVien, TenFile, DuongDanFile, DinhDang, NoiDungTrichXuat, TrangThai, NgayNop) VALUES 
+(8, 7, 28, 'CaoThang_Golang.pdf', '/cvs/caothang_go.pdf', 'PDF', N'Golang Developer. Chuyên làm hệ thống high concurrency. Redis, Docker, gRPC.', 'TrungTuyen', '2024-06-10 09:00'), -- Thắng nộp Go (Match cao)
+(9, 7, 27, 'VuongDinh_PHP.pdf', '/cvs/vuongdinh_php.pdf', 'PDF', N'Backend Dev. 5 năm PHP, 4 năm sử dụng Laravel framework, MySQL optimization.', 'TuChoi', '2024-06-11 10:00'),    -- Đình (PHP) nộp Go (Fail)
+(10, 8, 27, 'VuongDinh_PHP.pdf', '/cvs/vuongdinh_php.pdf', 'PDF', N'Backend Dev. 5 năm PHP, 4 năm sử dụng Laravel framework, MySQL optimization.', 'AIDaLoc', '2024-06-12 11:00'),   -- Đình (PHP) nộp PHP (Match cao)
+(11, 9, 23, 'NguyenHa_Mobile.pdf', '/cvs/nguyenha_mobile.pdf', 'PDF', N'Mobile Developer. 4 năm Native Android (Kotlin), 2 năm cross-platform Flutter.', 'DaNop', '2024-06-13 14:00'),      -- Hà nộp Flutter
+(12, 10, 22, 'TranToan_QA.pdf', '/cvs/trantoan_qa.pdf', 'PDF', N'Automation QA. Sử dụng Selenium, Cypress. Có 3 năm kinh nghiệm test Web và Mobile app.', 'TrungTuyen', '2024-06-14 15:00'),-- Toản nộp QA
+(13, 11, 21, 'LeThanh_BA_CV.pdf', '/cvs/lethanh_ba.pdf', 'PDF', N'Business Analyst với 5 năm kinh nghiệm. Kỹ năng lấy requirements, vẽ UML, viết tài liệu. Có hiểu biết về SQL Server.', 'AIDaLoc', '2024-06-15 16:00'),   -- Thanh nộp BA
+(14, 12, 25, 'DoVan_DataEng.pdf', '/cvs/dovan_data.pdf', 'PDF', N'Data Engineer. Tech stack: Python, PostgreSQL, AWS Redshift, Airflow.', 'AIDaLoc', '2024-06-16 09:00'),  -- Văn nộp Data
+(15, 13, 26, 'LyNhan_UIUX.pdf', '/cvs/lynhan_uiux.pdf', 'PDF', N'UI/UX Designer. Sử dụng thành thạo Figma, Adobe XD. Đã thiết kế app e-commerce.', 'DaNop', '2024-06-17 10:00'),    -- Nhân nộp UI/UX
+(16, 14, 29, 'DinhBao_Vue.pdf', '/cvs/dinhbao_vue.pdf', 'PDF', N'Frontend Dev 2 năm kinh nghiệm. Framework chính là VueJS, Vuex, NuxtJS.', 'AIDaLoc', '2024-06-18 11:00'),  -- Bảo nộp VueJS
+(17, 14, 33, 'TuanAnh_MERN.pdf', '/cvs/tuananh_mern.pdf', 'PDF', N'MERN Stack. NodeJS, ReactJS, MongoDB. Có thể làm fullstack cho các dự án SME.', 'TuChoi', '2024-06-19 14:00'),   -- Tuấn Anh (React) nộp VueJS (Mismatch framework)
+(18, 15, 24, 'PhamHung_iOS.docx', '/cvs/phamhung_ios.docx', 'DOCX', N'iOS Dev, 2 năm kinh nghiệm với Swift, UIKit, SwiftUI. Từng thử nghiệm React Native 1 dự án nhỏ.', 'TuChoi', '2024-05-20 15:00'),   -- Hùng nộp Fresher iOS nhưng job đã đóng
+(19, 12, 28, 'CaoThang_Golang.pdf', '/cvs/caothang_go.pdf', 'PDF', N'Golang Developer. Chuyên làm hệ thống high concurrency. Redis, Docker, gRPC.', 'TuChoi', '2024-06-20 09:00'),   -- Thắng (Go) nộp Data Engineer (Fail)
+(20, 2, 33, 'TuanAnh_MERN.pdf', '/cvs/tuananh_mern.pdf', 'PDF', N'MERN Stack. NodeJS, ReactJS, MongoDB. Có thể làm fullstack cho các dự án SME.', 'DaNop', '2024-06-21 10:00');     -- Tuấn Anh nộp React (Job cũ số 2)
 SET IDENTITY_INSERT DonUngTuyen OFF;
 
 -- ---------------------------------------------------------
@@ -626,6 +587,5 @@ select *from TinTuyenDung
 select *from ChiTietKyNang_TinTuyenDung
 select *from DanhMucKyNang
 select *from DonUngTuyen
-select *from HoSoCV
 select *from KetQua_AI
 select *from LichHenPhongVan

@@ -161,9 +161,9 @@
                             }
                         </div>
                         <div style="margin-top: 24px; display: flex; gap: 12px;">
-                            @if(Model.MaCvNavigation != null)
+                            @if(!string.IsNullOrEmpty(Model.DuongDanFile))
                             {
-                                <a href="@Model.MaCvNavigation.DuongDanFile" target="_blank" class="el-btn-primary" style="height: 40px; padding: 0 20px; font-size: 14px;">Xem CV gốc</a>
+                                <a href="@Model.DuongDanFile" target="_blank" class="el-btn-primary" style="height: 40px; padding: 0 20px; font-size: 14px;">Xem CV gốc</a>
                             }
                         </div>
                     </div>

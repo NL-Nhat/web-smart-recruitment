@@ -176,7 +176,6 @@ namespace web_smart_recruitment.Controllers
             var application = await _context.DonUngTuyens
                 .Include(d => d.MaUngVienNavigation)
                 .Include(d => d.MaTinNavigation)
-                .Include(d => d.MaCvNavigation)
                 .Include(d => d.KetQuaAis)
                 .FirstOrDefaultAsync(d => d.MaDon == maDon && d.MaTinNavigation.MaNhaTuyenDung == maNhaTuyenDung);
 
