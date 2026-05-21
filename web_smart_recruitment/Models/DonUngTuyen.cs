@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace web_smart_recruitment.Models;
@@ -11,7 +11,13 @@ public partial class DonUngTuyen
 
     public int? MaUngVien { get; set; }
 
-    public int? MaCv { get; set; }
+    public string TenFile { get; set; } = null!;
+
+    public string DuongDanFile { get; set; } = null!;
+
+    public string DinhDang { get; set; } = null!;
+
+    public string? NoiDungTrichXuat { get; set; }
 
     public string? TrangThai { get; set; }
 
@@ -22,8 +28,6 @@ public partial class DonUngTuyen
     public virtual ICollection<KetQuaAi> KetQuaAis { get; set; } = new List<KetQuaAi>();
 
     public virtual ICollection<LichHenPhongVan> LichHenPhongVans { get; set; } = new List<LichHenPhongVan>();
-
-    public virtual HoSoCv? MaCvNavigation { get; set; }
 
     public virtual TinTuyenDung? MaTinNavigation { get; set; }
 

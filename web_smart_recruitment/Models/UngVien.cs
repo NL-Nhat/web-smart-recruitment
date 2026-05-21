@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace web_smart_recruitment.Models;
@@ -24,8 +24,6 @@ public partial class UngVien
     public virtual ICollection<ChiTietKyNangUngVien> ChiTietKyNangUngViens { get; set; } = new List<ChiTietKyNangUngVien>();
 
     public virtual ICollection<DonUngTuyen> DonUngTuyens { get; set; } = new List<DonUngTuyen>();
-
-    public virtual ICollection<HoSoCv> HoSoCvs { get; set; } = new List<HoSoCv>();
 
     public virtual TaiKhoan MaUngVienNavigation { get; set; } = null!;
 }

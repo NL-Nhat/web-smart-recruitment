@@ -23,7 +23,6 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<DonUngTuyen> DonUngTuyens { get; set; }
 
-    public virtual DbSet<HoSoCv> HoSoCvs { get; set; }
 
     public virtual DbSet<KetQuaAi> KetQuaAis { get; set; }
 
@@ -106,7 +105,12 @@ public partial class AppDbContext : DbContext
 
             entity.HasIndex(e => new { e.MaTin, e.MaUngVien }, "UQ_DonUngTuyen_Tin_UngVien").IsUnique();
 
-            entity.Property(e => e.MaCv).HasColumnName("MaCV");
+            entity.Property(e => e.TenFile).HasMaxLength(255);
+            entity.Property(e => e.DuongDanFile).HasMaxLength(500);
+            entity.Property(e => e.DinhDang)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            
             entity.Property(e => e.NgayCapNhat)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -118,10 +122,6 @@ public partial class AppDbContext : DbContext
                 .IsUnicode(false)
                 .HasDefaultValue("DaNop");
 
-            entity.HasOne(d => d.MaCvNavigation).WithMany(p => p.DonUngTuyens)
-                .HasForeignKey(d => d.MaCv)
-                .HasConstraintName("FK__DonUngTuye__MaCV__656C112C");
-
             entity.HasOne(d => d.MaTinNavigation).WithMany(p => p.DonUngTuyens)
                 .HasForeignKey(d => d.MaTin)
                 .HasConstraintName("FK__DonUngTuy__MaTin__6383C8BA");
@@ -131,26 +131,6 @@ public partial class AppDbContext : DbContext
                 .HasConstraintName("FK__DonUngTuy__MaUng__6477ECF3");
         });
 
-        modelBuilder.Entity<HoSoCv>(entity =>
-        {
-            entity.HasKey(e => e.MaCv).HasName("PK__HoSoCV__27258E7606A8D8BD");
-
-            entity.ToTable("HoSoCV");
-
-            entity.Property(e => e.MaCv).HasColumnName("MaCV");
-            entity.Property(e => e.DinhDang)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.DuongDanFile).HasMaxLength(500);
-            entity.Property(e => e.NgayTaiLen)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.TenFile).HasMaxLength(255);
-
-            entity.HasOne(d => d.MaUngVienNavigation).WithMany(p => p.HoSoCvs)
-                .HasForeignKey(d => d.MaUngVien)
-                .HasConstraintName("FK__HoSoCV__MaUngVie__5FB337D6");
-        });
 
         modelBuilder.Entity<KetQuaAi>(entity =>
         {

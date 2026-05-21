@@ -58,24 +58,14 @@ namespace web_smart_recruitment.Controllers
                     await cvFile.CopyToAsync(fileStream);
                 }
 
-                // 4. Lưu thông tin hồ sơ CV vào Database
-                var hoSo = new HoSoCv
-                {
-                    MaUngVien = userId,
-                    TenFile = cvFile.FileName,
-                    DuongDanFile = "/uploads/cvs/" + uniqueFileName,
-                    DinhDang = Path.GetExtension(cvFile.FileName).ToLower(),
-                    NgayTaiLen = DateTime.Now
-                };
-                _context.HoSoCvs.Add(hoSo);
-                await _context.SaveChangesAsync(); // Lưu để lấy MaCv vừa tạo
-
-                // 5. Tạo đơn ứng tuyển mới
+                // 4. Tạo đơn ứng tuyển mới và lưu thông tin CV
                 var donUngTuyen = new DonUngTuyen
                 {
                     MaTin = maTin,
                     MaUngVien = userId,
-                    MaCv = hoSo.MaCv,
+                    TenFile = cvFile.FileName,
+                    DuongDanFile = "/uploads/cvs/" + uniqueFileName,
+                    DinhDang = Path.GetExtension(cvFile.FileName).ToLower(),
                     NgayNop = DateTime.Now,
                     TrangThai = "DaNop",
                     NgayCapNhat = DateTime.Now
