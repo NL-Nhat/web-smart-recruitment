@@ -49,32 +49,42 @@
         </div>
 
         <div class="el-card">
-            <div id="msg"></div>
-            <form id="f-job">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div style="padding: 16px; margin-bottom: 24px; background: #fee2e2; color: #b91c1c; border-radius: 8px;">
+                    <ul style="margin: 0; padding-left: 20px;">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+            <form method="post" asp-action="CreateJob" id="f-job">
                 <!-- Thông tin cơ bản -->
                 <div class="form-section">
                     <h2 class="form-section-title">Thông tin cơ bản</h2>
 
                     <div class="el-form-group" style="margin-bottom: 32px;">
                         <label class="el-label" for="tieuDe">Tiêu đề vị trí</label>
-                        <input class="el-input" id="tieuDe" placeholder="Ví dụ: Senior Backend Engineer (.NET)" required />
+                        <input class="el-input" name="TieuDe" id="tieuDe" placeholder="Ví dụ: Senior Backend Engineer (.NET)" required />
                     </div>
 
                     <div class="input-grid-row">
                         <div class="el-form-group">
                             <label class="el-label" for="phongBan">Phòng ban</label>
-                            <input class="el-input" id="phongBan" placeholder="Kỹ thuật, Sản phẩm..." />
+                            <input class="el-input" name="PhongBan" id="phongBan" placeholder="Kỹ thuật, Sản phẩm..." />
                         </div>
                         <div class="el-form-group">
                             <label class="el-label" for="diaDiem">Địa điểm</label>
-                            <input class="el-input" id="diaDiem" placeholder="Hà Nội, TP.HCM..." required />
+                            <input class="el-input" name="DiaDiem" id="diaDiem" placeholder="Hà Nội, TP.HCM..." required />
                         </div>
                     </div>
 
                     <div class="input-grid-row">
                         <div class="el-form-group">
                             <label class="el-label" for="hinhThuc">Hình thức</label>
-                            <select class="el-select" id="hinhThuc">
+                            <select class="el-select" name="HinhThucLamViec" id="hinhThuc">
                                 <option value="FullTime">Full-time</option>
                                 <option value="PartTime">Part-time</option>
                                 <option value="Online">Remote / Online</option>
@@ -83,7 +93,7 @@
                         </div>
                         <div class="el-form-group">
                             <label class="el-label" for="hanNop">Hạn nộp CV</label>
-                            <input class="el-input" id="hanNop" type="date" />
+                            <input class="el-input" name="HanNopCv" id="hanNop" type="date" />
                         </div>
                     </div>
 
@@ -91,11 +101,11 @@
                         <div class="input-grid-row" style="margin-bottom: 0;">
                             <div class="el-form-group">
                                 <label class="el-label" for="luongMin">Lương tối thiểu (VNĐ)</label>
-                                <input class="el-input" id="luongMin" type="number" placeholder="0" />
+                                <input class="el-input" name="MucLuongToiThieu" id="luongMin" type="number" placeholder="0" />
                             </div>
                             <div class="el-form-group">
                                 <label class="el-label" for="luongMax">Lương tối đa (VNĐ)</label>
-                                <input class="el-input" id="luongMax" type="number" placeholder="0" />
+                                <input class="el-input" name="MucLuongToiDa" id="luongMax" type="number" placeholder="0" />
                             </div>
                         </div>
                     </div>
@@ -106,15 +116,15 @@
                     <h2 class="form-section-title">Nội dung tuyển dụng</h2>
                     <div class="el-form-group">
                         <label class="el-label" for="moTa">Mô tả công việc</label>
-                        <textarea class="el-textarea" id="moTa" rows="5" placeholder="Các trách nhiệm chính của vị trí này..." required></textarea>
+                        <textarea class="el-textarea" name="MoTaCongViec" id="moTa" rows="5" placeholder="Các trách nhiệm chính của vị trí này..." required></textarea>
                     </div>
                     <div class="el-form-group">
                         <label class="el-label" for="yeuCau">Yêu cầu ứng viên</label>
-                        <textarea class="el-textarea" id="yeuCau" rows="5" placeholder="Kỹ năng, kinh nghiệm cần có..." required></textarea>
+                        <textarea class="el-textarea" name="YeuCauCongViec" id="yeuCau" rows="5" placeholder="Kỹ năng, kinh nghiệm cần có..." required></textarea>
                     </div>
                     <div class="el-form-group">
                         <label class="el-label" for="quyenLoi">Quyền lợi & Chế độ</label>
-                        <textarea class="el-textarea" id="quyenLoi" rows="4" placeholder="Lương thưởng, bảo hiểm, môi trường làm việc..."></textarea>
+                        <textarea class="el-textarea" name="QuyenLoi" id="quyenLoi" rows="4" placeholder="Lương thưởng, bảo hiểm, môi trường làm việc..."></textarea>
                     </div>
                 </div>
 
@@ -123,22 +133,30 @@
                     <h2 class="form-section-title">Thiết lập AI Matcher</h2>
                     <p class="el-text-muted" style="font-size: 14px; margin-bottom: 20px;">Chọn các kỹ năng cốt lõi để AI chấm điểm mức độ phù hợp của ứng viên.</p>
                     <div id="skill-rows">
-                        <!-- Dữ liệu mẫu (Static) -->
                         <div class="skill-row">
                             <div class="el-form-group" style="margin-bottom:0">
                                 <label class="el-label">Kỹ năng</label>
-                                <select class="el-select sk-id">
-                                    <option value="1">ASP.NET Core</option>
-                                    <option value="2">SQL Server</option>
+                                <select class="el-select" name="skillIds">
+                                    @if (ViewBag.Skills != null)
+                                    {
+                                        foreach (var skill in (IEnumerable<web_smart_recruitment.Models.DanhMucKyNang>)ViewBag.Skills)
+                                        {
+                                            <option value="@skill.MaKyNang">@skill.TenKyNang</option>
+                                        }
+                                    }
                                 </select>
                             </div>
                             <div class="el-form-group" style="margin-bottom:0">
                                 <label class="el-label">Mức độ yêu cầu</label>
-                                <select class="el-select sk-cap">
-                                    <option value="BatBuoc" selected>Bắt buộc (Must-have)</option>
-                                    <option value="UuTien">Ưu tiên (Nice-to-have)</option>
+                                <select class="el-select" name="skillLevels">
+                                    <option value="BatBuoc" selected>Bắt buộc</option>
+                                    <option value="UuTien">Ưu tiên</option>
+                                    <option value="KhongBatBuoc">Không bắt buộc</option>
                                 </select>
                             </div>
+                            <button type="button" class="el-icon-btn remove-skill" style="margin-bottom: 8px;" title="Xóa">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                            </button>
                         </div>
                     </div>
                     <button type="button" class="el-btn-warm" id="add-skill" style="padding: 8px 16px; font-size: 13px;">+ Thêm kỹ năng</button>
@@ -154,6 +172,51 @@
 
 @section Scripts {
     <script>
-        // Chức năng tạo/sửa tin tuyển dụng hiện đang hiển thị dữ liệu tĩnh.
+        document.addEventListener('DOMContentLoaded', function () {
+            const skillRowsContainer = document.getElementById('skill-rows');
+            const addSkillBtn = document.getElementById('add-skill');
+
+            // Template kỹ năng
+            const skillTemplate = `
+                <div class="skill-row" style="margin-top: 12px;">
+                    <div class="el-form-group" style="margin-bottom:0">
+                        <select class="el-select" name="skillIds">
+                            @if (ViewBag.Skills != null)
+                            {
+                                foreach (var skill in (IEnumerable<web_smart_recruitment.Models.DanhMucKyNang>)ViewBag.Skills)
+                                {
+                                    <option value="@skill.MaKyNang">@skill.TenKyNang</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="el-form-group" style="margin-bottom:0">
+                        <select class="el-select" name="skillLevels">
+                            <option value="BatBuoc" selected>Bắt buộc</option>
+                            <option value="UuTien">Ưu tiên</option>
+                            <option value="KhongBatBuoc">Không bắt buộc</option>
+                        </select>
+                    </div>
+                    <button type="button" class="el-icon-btn remove-skill" style="margin-bottom: 8px;" title="Xóa">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            `;
+
+            addSkillBtn.addEventListener('click', function () {
+                skillRowsContainer.insertAdjacentHTML('beforeend', skillTemplate);
+            });
+
+            skillRowsContainer.addEventListener('click', function (e) {
+                if (e.target.closest('.remove-skill')) {
+                    const row = e.target.closest('.skill-row');
+                    if (skillRowsContainer.children.length > 1) {
+                        row.remove();
+                    } else {
+                        alert("Cần ít nhất một kỹ năng yêu cầu!");
+                    }
+                }
+            });
+        });
     </script>
 }
