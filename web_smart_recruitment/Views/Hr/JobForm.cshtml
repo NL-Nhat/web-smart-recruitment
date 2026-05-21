@@ -1,5 +1,7 @@
+@model web_smart_recruitment.Models.TinTuyenDung
 @{
-    ViewData["Title"] = "Tạo tin tuyển dụng";
+    ViewData["Title"] = Model != null ? "Chỉnh sửa tin tuyển dụng" : "Tạo tin tuyển dụng";
+    bool isEdit = Model != null;
 }
 
 @section Styles {
@@ -44,7 +46,7 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 Quay lại
             </a>
-            <h1 class="el-display-hero" style="font-size: 40px; margin: 0;">Tạo tin tuyển dụng mới</h1>
+            <h1 class="el-display-hero" style="font-size: 40px; margin: 0;">@(isEdit ? "Chỉnh sửa tin tuyển dụng" : "Tạo tin tuyển dụng mới")</h1>
             <p class="el-text-muted">Cung cấp thông tin chi tiết về vị trí và yêu cầu để AI hỗ trợ lọc hồ sơ chính xác nhất.</p>
         </div>
 
@@ -60,24 +62,28 @@
                     </ul>
                 </div>
             }
-            <form method="post" asp-action="CreateJob" id="f-job">
+            <form method="post" asp-action="@(isEdit ? "EditJob" : "CreateJob")" id="f-job">
+                @if (isEdit)
+                {
+                    <input type="hidden" name="maTin" value="@Model.MaTin" />
+                }
                 <!-- Thông tin cơ bản -->
                 <div class="form-section">
                     <h2 class="form-section-title">Thông tin cơ bản</h2>
 
                     <div class="el-form-group" style="margin-bottom: 32px;">
                         <label class="el-label" for="tieuDe">Tiêu đề vị trí</label>
-                        <input class="el-input" name="TieuDe" id="tieuDe" placeholder="Ví dụ: Senior Backend Engineer (.NET)" required />
+                        <input class="el-input" name="TieuDe" id="tieuDe" value="@Model?.TieuDe" placeholder="Ví dụ: Senior Backend Engineer (.NET)" required />
                     </div>
 
                     <div class="input-grid-row">
                         <div class="el-form-group">
                             <label class="el-label" for="phongBan">Phòng ban</label>
-                            <input class="el-input" name="PhongBan" id="phongBan" placeholder="Kỹ thuật, Sản phẩm..." />
+                            <input class="el-input" name="PhongBan" id="phongBan" value="@Model?.PhongBan" placeholder="Kỹ thuật, Sản phẩm..." />
                         </div>
                         <div class="el-form-group">
                             <label class="el-label" for="diaDiem">Địa điểm</label>
-                            <input class="el-input" name="DiaDiem" id="diaDiem" placeholder="Hà Nội, TP.HCM..." required />
+                            <input class="el-input" name="DiaDiem" id="diaDiem" value="@Model?.DiaDiem" placeholder="Hà Nội, TP.HCM..." required />
                         </div>
                     </div>
 
@@ -85,27 +91,41 @@
                         <div class="el-form-group">
                             <label class="el-label" for="hinhThuc">Hình thức</label>
                             <select class="el-select" name="HinhThucLamViec" id="hinhThuc">
-                                <option value="FullTime">Full-time</option>
-                                <option value="PartTime">Part-time</option>
-                                <option value="Online">Remote / Online</option>
-                                <option value="Intern">Internship</option>
+                                @if (Model?.HinhThucLamViec == "FullTime") { <option value="FullTime" selected>Full-time</option> } else { <option value="FullTime">Full-time</option> }
+                                @if (Model?.HinhThucLamViec == "PartTime") { <option value="PartTime" selected>Part-time</option> } else { <option value="PartTime">Part-time</option> }
+                                @if (Model?.HinhThucLamViec == "Online") { <option value="Online" selected>Remote / Online</option> } else { <option value="Online">Remote / Online</option> }
+                                @if (Model?.HinhThucLamViec == "Intern") { <option value="Intern" selected>Internship</option> } else { <option value="Intern">Internship</option> }
                             </select>
                         </div>
                         <div class="el-form-group">
                             <label class="el-label" for="hanNop">Hạn nộp CV</label>
-                            <input class="el-input" name="HanNopCv" id="hanNop" type="date" />
+                            <input class="el-input" name="HanNopCv" id="hanNop" type="date" value="@(Model?.HanNopCv?.ToString("yyyy-MM-dd"))" />
                         </div>
                     </div>
+
+                    @if (isEdit)
+                    {
+                        <div class="input-grid-row">
+                            <div class="el-form-group">
+                                <label class="el-label" for="trangThai">Trạng thái tin</label>
+                                <select class="el-select" name="TrangThai" id="trangThai">
+                                    @if (Model?.TrangThai == "DangMo") { <option value="DangMo" selected>Đang mở</option> } else { <option value="DangMo">Đang mở</option> }
+                                    @if (Model?.TrangThai == "DaDong") { <option value="DaDong" selected>Đã đóng</option> } else { <option value="DaDong">Đã đóng</option> }
+                                    @if (Model?.TrangThai == "ChoDuyet") { <option value="ChoDuyet" selected>Chờ duyệt</option> } else { <option value="ChoDuyet">Chờ duyệt</option> }
+                                </select>
+                            </div>
+                        </div>
+                    }
 
                     <div style="margin-top: 40px; padding-top: 40px; border-top: 1px solid var(--el-border-subtle);">
                         <div class="input-grid-row" style="margin-bottom: 0;">
                             <div class="el-form-group">
                                 <label class="el-label" for="luongMin">Lương tối thiểu (VNĐ)</label>
-                                <input class="el-input" name="MucLuongToiThieu" id="luongMin" type="number" placeholder="0" />
+                                <input class="el-input" name="MucLuongToiThieu" id="luongMin" type="number" placeholder="0" value="@(Model?.MucLuongToiThieu?.ToString("0"))" />
                             </div>
                             <div class="el-form-group">
                                 <label class="el-label" for="luongMax">Lương tối đa (VNĐ)</label>
-                                <input class="el-input" name="MucLuongToiDa" id="luongMax" type="number" placeholder="0" />
+                                <input class="el-input" name="MucLuongToiDa" id="luongMax" type="number" placeholder="0" value="@(Model?.MucLuongToiDa?.ToString("0"))" />
                             </div>
                         </div>
                     </div>
@@ -116,15 +136,15 @@
                     <h2 class="form-section-title">Nội dung tuyển dụng</h2>
                     <div class="el-form-group">
                         <label class="el-label" for="moTa">Mô tả công việc</label>
-                        <textarea class="el-textarea" name="MoTaCongViec" id="moTa" rows="5" placeholder="Các trách nhiệm chính của vị trí này..." required></textarea>
+                        <textarea class="el-textarea" name="MoTaCongViec" id="moTa" rows="5" placeholder="Các trách nhiệm chính của vị trí này..." required>@Model?.MoTaCongViec</textarea>
                     </div>
                     <div class="el-form-group">
                         <label class="el-label" for="yeuCau">Yêu cầu ứng viên</label>
-                        <textarea class="el-textarea" name="YeuCauCongViec" id="yeuCau" rows="5" placeholder="Kỹ năng, kinh nghiệm cần có..." required></textarea>
+                        <textarea class="el-textarea" name="YeuCauCongViec" id="yeuCau" rows="5" placeholder="Kỹ năng, kinh nghiệm cần có..." required>@Model?.YeuCauCongViec</textarea>
                     </div>
                     <div class="el-form-group">
                         <label class="el-label" for="quyenLoi">Quyền lợi & Chế độ</label>
-                        <textarea class="el-textarea" name="QuyenLoi" id="quyenLoi" rows="4" placeholder="Lương thưởng, bảo hiểm, môi trường làm việc..."></textarea>
+                        <textarea class="el-textarea" name="QuyenLoi" id="quyenLoi" rows="4" placeholder="Lương thưởng, bảo hiểm, môi trường làm việc...">@Model?.QuyenLoi</textarea>
                     </div>
                 </div>
 
@@ -133,37 +153,72 @@
                     <h2 class="form-section-title">Thiết lập AI Matcher</h2>
                     <p class="el-text-muted" style="font-size: 14px; margin-bottom: 20px;">Chọn các kỹ năng cốt lõi để AI chấm điểm mức độ phù hợp của ứng viên.</p>
                     <div id="skill-rows">
-                        <div class="skill-row">
-                            <div class="el-form-group" style="margin-bottom:0">
-                                <label class="el-label">Kỹ năng</label>
-                                <select class="el-select" name="skillIds">
-                                    @if (ViewBag.Skills != null)
-                                    {
-                                        foreach (var skill in (IEnumerable<web_smart_recruitment.Models.DanhMucKyNang>)ViewBag.Skills)
+                        @if (isEdit && Model?.ChiTietKyNangTinTuyenDungs != null && Model.ChiTietKyNangTinTuyenDungs.Any())
+                        {
+                            foreach (var item in Model.ChiTietKyNangTinTuyenDungs)
+                            {
+                                <div class="skill-row" style="margin-top: 12px;">
+                                    <div class="el-form-group" style="margin-bottom:0">
+                                        <label class="el-label">Kỹ năng</label>
+                                        <select class="el-select" name="skillIds">
+                                            @if (ViewBag.Skills != null)
+                                            {
+                                                foreach (var skill in (IEnumerable<web_smart_recruitment.Models.DanhMucKyNang>)ViewBag.Skills)
+                                                {
+                                                    if (skill.MaKyNang == item.MaKyNang) { <option value="@skill.MaKyNang" selected>@skill.TenKyNang</option> }
+                                                    else { <option value="@skill.MaKyNang">@skill.TenKyNang</option> }
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="el-form-group" style="margin-bottom:0">
+                                        <label class="el-label">Mức độ yêu cầu</label>
+                                        <select class="el-select" name="skillLevels">
+                                            @if (item.CapDoYeuCau == "BatBuoc") { <option value="BatBuoc" selected>Bắt buộc</option> } else { <option value="BatBuoc">Bắt buộc</option> }
+                                            @if (item.CapDoYeuCau == "UuTien") { <option value="UuTien" selected>Ưu tiên</option> } else { <option value="UuTien">Ưu tiên</option> }
+                                            @if (item.CapDoYeuCau == "KhongBatBuoc") { <option value="KhongBatBuoc" selected>Không bắt buộc</option> } else { <option value="KhongBatBuoc">Không bắt buộc</option> }
+                                        </select>
+                                    </div>
+                                    <button type="button" class="el-icon-btn remove-skill" style="margin-bottom: 8px;" title="Xóa">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="skill-row">
+                                <div class="el-form-group" style="margin-bottom:0">
+                                    <label class="el-label">Kỹ năng</label>
+                                    <select class="el-select" name="skillIds">
+                                        @if (ViewBag.Skills != null)
                                         {
-                                            <option value="@skill.MaKyNang">@skill.TenKyNang</option>
+                                            foreach (var skill in (IEnumerable<web_smart_recruitment.Models.DanhMucKyNang>)ViewBag.Skills)
+                                            {
+                                                <option value="@skill.MaKyNang">@skill.TenKyNang</option>
+                                            }
                                         }
-                                    }
-                                </select>
+                                    </select>
+                                </div>
+                                <div class="el-form-group" style="margin-bottom:0">
+                                    <label class="el-label">Mức độ yêu cầu</label>
+                                    <select class="el-select" name="skillLevels">
+                                        <option value="BatBuoc" selected>Bắt buộc</option>
+                                        <option value="UuTien">Ưu tiên</option>
+                                        <option value="KhongBatBuoc">Không bắt buộc</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="el-icon-btn remove-skill" style="margin-bottom: 8px;" title="Xóa">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                                </button>
                             </div>
-                            <div class="el-form-group" style="margin-bottom:0">
-                                <label class="el-label">Mức độ yêu cầu</label>
-                                <select class="el-select" name="skillLevels">
-                                    <option value="BatBuoc" selected>Bắt buộc</option>
-                                    <option value="UuTien">Ưu tiên</option>
-                                    <option value="KhongBatBuoc">Không bắt buộc</option>
-                                </select>
-                            </div>
-                            <button type="button" class="el-icon-btn remove-skill" style="margin-bottom: 8px;" title="Xóa">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                            </button>
-                        </div>
+                        }
                     </div>
                     <button type="button" class="el-btn-warm" id="add-skill" style="padding: 8px 16px; font-size: 13px;">+ Thêm kỹ năng</button>
                 </div>
 
                 <div style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--el-border); display: flex; justify-content: flex-end; gap: 16px;">
-                    <button type="submit" class="el-btn-primary" style="padding: 0 40px; height: 52px; font-size: 16px;">Đăng tin tuyển dụng</button>
+                    <button type="submit" class="el-btn-primary" style="padding: 0 40px; height: 52px; font-size: 16px;">@(isEdit ? "Cập nhật tin tuyển dụng" : "Đăng tin tuyển dụng")</button>
                 </div>
             </form>
         </div>
