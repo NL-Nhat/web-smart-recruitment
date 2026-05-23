@@ -159,6 +159,7 @@ namespace web_smart_recruitment.Controllers
             }
 
             var query = _context.DonUngTuyens
+                .Include(d => d.MaTinNavigation)
                 .Where(d => d.MaUngVien == userId);
 
             return View();
