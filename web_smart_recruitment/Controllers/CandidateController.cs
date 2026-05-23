@@ -218,6 +218,36 @@ namespace web_smart_recruitment.Controllers
 
             return View(interviews);
         }
+
+        [Authorize(Roles = "UngVien")]
+        [HttpPost]
+        public async Task<IActionResult> AcceptInterview(int maLichHen)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
+            }
+
+            var interview = await _context.LichHenPhongVans
+                .Include(l => l.MaDonNavigation)
+                .FirstOrDefaultAsync(l => l.MaLichHen == maLichHen && l.MaDonNavigation.MaUngVien == userId);
+
+            if (interview == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy lịch phỏng vấn này." });
+            }
+
+            if (interview.TrangThai != "ChoXacNhan")
+            {
+                return Json(new { success = false, message = "Lịch phỏng vấn này không thể xác nhận ở trạng thái hiện tại." });
+            }
+
+            interview.TrangThai = "DaXacNhan";
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Đã xác nhận chấp nhận lịch hẹn phỏng vấn!" });
+        }
         
         [Authorize(Roles = "UngVien")]
         public async Task<IActionResult> Profile()
