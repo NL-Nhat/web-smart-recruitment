@@ -59,7 +59,30 @@
                         </div>
                         <div class="el-text-warm" style="font-size: 14px;">@item.NgayNop.ToString("dd/MM/yyyy")</div>
                         <div>
-                            <span class="el-status el-status--info">Mới nộp</span>
+                            @switch (item.TrangThai)
+                            {
+                                case "DaNop":
+                                    <span class="el-status el-status--info">Đã nộp</span>
+                                    break;
+                                case "AIDaLoc":
+                                    <span class="el-status el-status--warning">AI đã lọc</span>
+                                    break;
+                                case "DaChapNhan":
+                                    <span class="el-status el-status--success">Đã duyệt</span>
+                                    break;
+                                case "PhongVan":
+                                    <span class="el-status el-status--info">Phỏng vấn</span>
+                                    break;
+                                case "TrungTuyen":
+                                    <span class="el-status el-status--success">Trúng tuyển</span>
+                                    break;
+                                case "TuChoi":
+                                    <span class="el-status el-status--danger">Từ chối</span>
+                                    break;
+                                default:
+                                    <span class="el-status el-status--info">@item.TrangThai</span>
+                                    break;
+                            }
                         </div>
                         <div style="text-align: right;">
                             <span style="font-weight: 700; font-size: 18px; color: var(--el-black)">85%</span>
