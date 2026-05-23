@@ -189,7 +189,19 @@ namespace web_smart_recruitment.Controllers
         }
         
         [Authorize(Roles = "UngVien")]
-        public IActionResult Interviews() => View();
+        public IActionResult Interviews()
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var query = _context.LichHenPhongVans
+                .Where(l => l.MaDonNavigation.MaUngVien == userId);
+
+            return View();
+        }
         
         [Authorize(Roles = "UngVien")]
         public async Task<IActionResult> Profile()
