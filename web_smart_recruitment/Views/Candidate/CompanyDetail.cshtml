@@ -121,11 +121,11 @@
                     </span>
                     <span class="el-text-muted" style="font-size: 14px; display: flex; align-items: center; gap: 6px;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                        Tòa nhà Innovation, Quận 1, TP.HCM
+                        @(string.IsNullOrEmpty(Model.DiaChi) ? "Chưa cập nhật địa chỉ" : Model.DiaChi)
                     </span>
                     <span class="el-text-muted" style="font-size: 14px; display: flex; align-items: center; gap: 6px;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
-                        100 - 500 nhân viên
+                        Quy mô lớn
                     </span>
                 </div>
             </div>
@@ -187,7 +187,7 @@
                             </div>
                             <div>
                                 <div style="font-size: 12px; color: var(--el-warm-gray); font-weight: 600;">ĐIỆN THOẠI</div>
-                                <div style="font-size: 14px; font-weight: 600;">028 3824 1234</div>
+                                <div style="font-size: 14px; font-weight: 600;">@(string.IsNullOrEmpty(Model.SoDienThoai) ? "Chưa cập nhật" : Model.SoDienThoai)</div>
                             </div>
                         </div>
                     </div>
@@ -196,7 +196,7 @@
                 <div class="el-card">
                     <h3 style="font-size: 18px; margin-top: 0; margin-bottom: 20px;">Địa điểm làm việc</h3>
                     <p style="font-size: 14px; line-height: 1.5; color: var(--el-dark-gray);">
-                        Tòa nhà Innovation, Quận 1, TP.HCM
+                        @(string.IsNullOrEmpty(Model.DiaChi) ? "Chưa cập nhật địa chỉ chính thức." : Model.DiaChi)
                     </p>
                 </div>
             </aside>
