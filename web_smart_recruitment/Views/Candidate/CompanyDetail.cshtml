@@ -132,9 +132,12 @@
             <button class="el-btn-primary" style="height: 48px; padding: 0 32px;">Theo dõi</button>
         </div>
 
+        @{
+            var activeJobs = ViewBag.ActiveJobs as IEnumerable<web_smart_recruitment.Models.TinTuyenDung>;
+        }
         <div class="co-nav-tabs">
             <a href="#" class="co-tab is-active">Tổng quan</a>
-            <a href="#jobs" class="co-tab">Việc làm (2)</a>
+            <a href="#jobs" class="co-tab">Việc làm (@(activeJobs?.Count() ?? 0))</a>
         </div>
 
         <div class="sr-grid" style="grid-template-columns: 2fr 1.2fr; gap: 40px; align-items: start;">
@@ -149,30 +152,30 @@
                 <section id="jobs">
                     <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px;">Vị trí đang tuyển dụng</h2>
                     <div style="display: flex; flex-direction: column; gap: 16px;">
-                        <a href="#" class="el-bordered-item" style="text-decoration: none; color: inherit; display: block; padding: 24px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 600;">Senior Frontend Developer (React)</h3>
-                                    <div style="display: flex; gap: 16px; font-size: 14px; color: var(--el-warm-gray);">
-                                        <span>📍 Quận 1, TP.HCM</span>
-                                        <span>💰 25,000,000 - 45,000,000 VND</span>
+                        @if (activeJobs != null && activeJobs.Any())
+                        {
+                            foreach (var job in activeJobs)
+                            {
+                                <a href="#" class="el-bordered-item" style="text-decoration: none; color: inherit; display: block; padding: 24px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 600;">@job.TieuDe</h3>
+                                            <div style="display: flex; gap: 16px; font-size: 14px; color: var(--el-warm-gray);">
+                                                <span>📍 @job.DiaDiem</span>
+                                                <span>💰 @(job.MucLuongToiThieu?.ToString("N0")) - @(job.MucLuongToiDa?.ToString("N0")) VNĐ</span>
+                                            </div>
+                                        </div>
+                                        <span style="font-weight: 700; font-size: 20px;">→</span>
                                     </div>
-                                </div>
-                                <span style="font-weight: 700; font-size: 20px;">→</span>
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <div class="el-text-muted" style="text-align: center; padding: 24px;">
+                                Hiện tại chưa có vị trí nào đang tuyển dụng.
                             </div>
-                        </a>
-                        <a href="#" class="el-bordered-item" style="text-decoration: none; color: inherit; display: block; padding: 24px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 600;">AI Engineer (Computer Vision)</h3>
-                                    <div style="display: flex; gap: 16px; font-size: 14px; color: var(--el-warm-gray);">
-                                        <span>📍 Quận 1, TP.HCM</span>
-                                        <span>💰 Thỏa thuận</span>
-                                    </div>
-                                </div>
-                                <span style="font-weight: 700; font-size: 20px;">→</span>
-                            </div>
-                        </a>
+                        }
                     </div>
                 </section>
             </div>
