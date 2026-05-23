@@ -1,0 +1,5 @@
+This placeholder ensures the img directory exists in wwwroot. Place your company logos here.
+fpt.png
+vng.png
+viettel.png
+momo.png
