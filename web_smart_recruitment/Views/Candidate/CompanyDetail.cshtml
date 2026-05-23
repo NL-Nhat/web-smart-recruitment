@@ -156,7 +156,7 @@
                         {
                             foreach (var job in activeJobs)
                             {
-                                <a href="#" class="el-bordered-item" style="text-decoration: none; color: inherit; display: block; padding: 24px;">
+                                <a href="@Url.Action("JobDetail", "Candidate", new { maTin = job.MaTin })" class="el-bordered-item" style="text-decoration: none; color: inherit; display: block; padding: 24px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <div>
                                             <h3 style="margin: 0 0 8px; font-size: 18px; font-weight: 600;">@job.TieuDe</h3>
