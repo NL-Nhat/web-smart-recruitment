@@ -93,9 +93,18 @@
 <main class="sr-main">
     <div id="content">
         <!-- Dữ liệu mẫu (Static) -->
-        <div class="co-banner"></div>
+        <div class="co-banner" style="@(string.IsNullOrEmpty(Model.AnhBia) ? "" : $"background: url('{Model.AnhBia}') center/cover;")"></div>
         <div class="co-header-card">
-            <img src="https://via.placeholder.com/140" class="co-logo-lg" alt="Logo">
+            @if (!string.IsNullOrEmpty(Model.Logo))
+            {
+                <img src="@Model.Logo" class="co-logo-lg" alt="Logo">
+            }
+            else
+            {
+                <div class="co-logo-lg" style="display: grid; place-items: center; font-size: 40px; font-weight: 700; color: var(--el-warm-gray);">
+                    @(Model.TenCongTy?.Substring(0, 1) ?? "C")
+                </div>
+            }
             <div class="co-info-main">
                 <h1 style="font-size: 32px; font-weight: 700; margin: 0; color: var(--el-black);">@Model.TenCongTy</h1>
                 <div style="display: flex; gap: 20px; margin-top: 12px; align-items: center; flex-wrap: wrap;">
