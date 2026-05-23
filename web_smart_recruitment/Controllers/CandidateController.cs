@@ -150,7 +150,16 @@ namespace web_smart_recruitment.Controllers
         }
 
         [Authorize(Roles = "UngVien")]
-        public IActionResult Applications() => View();
+        public IActionResult Applications()
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            return View();
+        }
         
         [Authorize(Roles = "UngVien")]
         public IActionResult Interviews() => View();
