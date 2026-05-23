@@ -1,3 +1,4 @@
+@model web_smart_recruitment.Models.NhaTuyenDung
 @{
     ViewData["Title"] = "Hồ sơ doanh nghiệp";
 }
@@ -30,8 +31,8 @@
 <main class="sr-main">
     <div class="profile-header-container">
         <div class="profile-banner">
-            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200" alt="Banner">
-            <div class="img-edit-overlay">
+            <img id="banner-preview" src="@(!string.IsNullOrEmpty(Model?.AnhBia) ? Model.AnhBia : "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200")" alt="Banner">
+            <div class="img-edit-overlay" onclick="document.getElementById('anhBiaFile').click()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                 <span style="font-size: 13px; font-weight: 600; margin-top: 8px;">Đổi ảnh bìa</span>
             </div>
@@ -39,72 +40,78 @@
 
         <div class="profile-info-card">
             <div class="profile-logo-wrapper">
-                <img id="logo-preview" src="https://via.placeholder.com/180" alt="Logo">
-                <div class="img-edit-overlay">
+                <img id="logo-preview" src="@(!string.IsNullOrEmpty(Model?.Logo) ? Model.Logo : "https://via.placeholder.com/180")" alt="Logo">
+                <div class="img-edit-overlay" onclick="document.getElementById('logoFile').click()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                 </div>
             </div>
 
             <div class="profile-meta-main">
                 <div class="co-name-row">
-                    <h1 id="disp-name">Công ty Công nghệ ABC</h1>
+                    <h1 id="disp-name">@(Model?.TenCongTy ?? "Tên công ty")</h1>
                     <button class="edit-icon-btn" title="Chỉnh sửa tên">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
                 </div>
                 <div class="co-sub-info">
                     <div style="display: flex; align-items: center; gap: 4px;">
-                        <a href="#" id="disp-web" class="info-item-link">
+                        <a href="@Model?.Website" id="disp-web" class="info-item-link">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                            <span>abc-tech.com.vn</span>
+                            <span>@(Model?.Website ?? "Website")</span>
                         </a>
                     </div>
                     <div style="display: flex; align-items: center; gap: 4px;">
                         <div id="disp-loc" style="display: flex; align-items: center; gap: 8px;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                            <span>Tòa nhà Innovation, Quận 1, TP.HCM</span>
+                            <span>@(Model?.DiaChi ?? "Địa chỉ")</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div style="padding-bottom: 12px;">
-                <button class="el-btn-primary" id="btn-save-top" style="height: 44px; padding: 0 24px;">Lưu thay đổi</button>
+                <button class="el-btn-primary" id="btn-save-top" onclick="document.getElementById('f-profile').submit()" style="height: 44px; padding: 0 24px;">Lưu thay đổi</button>
             </div>
         </div>
     </div>
 
-    <form id="f-profile">
+    <form id="f-profile" method="post" asp-action="UpdateProfile" enctype="multipart/form-data">
+        <input type="file" id="logoFile" name="logoFile" accept="image/*" style="display: none;">
+        <input type="file" id="anhBiaFile" name="anhBiaFile" accept="image/*" style="display: none;">
         <div class="form-section-card">
-            <div id="msg"></div>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div style="padding: 16px; margin-bottom: 24px; background: #fee2e2; color: #b91c1c; border-radius: 8px;">
+                    <ul style="margin: 0; padding-left: 20px;">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
             <div class="form-section">
                 <h2 style="font-size: 20px; font-weight: 700; margin: 0 0 24px; border-bottom: 1px solid var(--el-border-subtle); padding-bottom: 12px;">Thông tin chi tiết</h2>
                 <div class="el-grid el-grid--2" style="row-gap: 24px; column-gap: 32px;">
                     <div class="el-form-group">
                         <label class="el-label">Tên đầy đủ công ty</label>
-                        <input class="el-input" id="tenCongTy" value="Công ty Công nghệ ABC" required>
+                        <input class="el-input" name="TenCongTy" id="tenCongTy" value="@Model?.TenCongTy" required>
                     </div>
                     <div class="el-form-group">
                         <label class="el-label">Website (URL)</label>
-                        <input class="el-input" id="website" value="https://abc-tech.com.vn" placeholder="https://...">
-                    </div>
-                    <div class="el-form-group">
-                        <label class="el-label">Quy mô nhân sự</label>
-                        <select class="el-select" id="quyMo">
-                            <option value="1-50 nhân viên">1-50 nhân viên</option>
-                            <option value="50-200 nhân viên" selected>50-200 nhân viên</option>
-                            <option value="200-500 nhân viên">200-500 nhân viên</option>
-                            <option value="500-1000 nhân viên">500-1000 nhân viên</option>
-                            <option value="1000+ nhân viên">1000+ nhân viên</option>
-                        </select>
+                        <input class="el-input" name="Website" id="website" value="@Model?.Website" placeholder="https://...">
                     </div>
                     <div class="el-form-group">
                         <label class="el-label">Số điện thoại liên hệ</label>
-                        <input class="el-input" id="sdt" value="02812345678">
+                        <input class="el-input" name="SoDienThoai" id="sdt" value="@Model?.SoDienThoai">
+                    </div>
+                    <div class="el-form-group">
+                        <label class="el-label">Địa chỉ trụ sở chính</label>
+                        <input class="el-input" name="DiaChi" id="diaChi" value="@Model?.DiaChi" placeholder="Số nhà, tên đường, quận/huyện, thành phố...">
                     </div>
                     <div class="el-form-group" style="grid-column: 1 / -1;">
-                        <label class="el-label">Địa chỉ trụ sở chính</label>
-                        <input class="el-input" id="diaChi" value="Tòa nhà Innovation, Quận 1, TP.HCM" placeholder="Số nhà, tên đường, quận/huyện, thành phố...">
+                        <label class="el-label">Mô tả công ty</label>
+                        <textarea class="el-textarea" name="MoTa" id="moTa" rows="4" placeholder="Giới thiệu về doanh nghiệp...">@Model?.MoTa</textarea>
                     </div>
                 </div>
             </div>
@@ -117,6 +124,24 @@
 
 @section Scripts {
     <script>
-        // Chức năng quản lý hồ sơ doanh nghiệp hiện đang hiển thị dữ liệu tĩnh.
+        document.getElementById('logoFile').addEventListener('change', function (e) {
+            if (e.target.files && e.target.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('logo-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        document.getElementById('anhBiaFile').addEventListener('change', function (e) {
+            if (e.target.files && e.target.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('banner-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
     </script>
 }

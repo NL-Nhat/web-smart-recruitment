@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace web_smart_recruitment.Models;
@@ -6,8 +6,6 @@ namespace web_smart_recruitment.Models;
 public partial class NhaTuyenDung
 {
     public int MaNhaTuyenDung { get; set; }
-
-    public string HoTen { get; set; } = null!;
 
     public string? TenCongTy { get; set; }
 

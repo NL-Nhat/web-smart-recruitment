@@ -96,7 +96,7 @@ namespace web_smart_recruitment.Middlewares
                     else if (account.MaVaiTroNavigation.TenVaiTro == "NhaTuyenDung")
                     {
                         var ntd = await dbContext.NhaTuyenDungs.FirstOrDefaultAsync(n => n.MaNhaTuyenDung == account.MaTaiKhoan);
-                        fullName = ntd?.HoTen ?? account.Email;
+                        fullName = ntd?.TenCongTy ?? account.Email;
                     }
                     else if (account.MaVaiTroNavigation.TenVaiTro == "Admin")
                     {

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.IO;
 using web_smart_recruitment.Models;
 
 namespace web_smart_recruitment.Controllers
@@ -344,7 +345,118 @@ namespace web_smart_recruitment.Controllers
         }
         public IActionResult JobStatus() => View();
         public IActionResult Company() => View();
-        public IActionResult Profile() => View();
+        public async Task<IActionResult> Profile()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var employer = await _context.NhaTuyenDungs.FirstOrDefaultAsync(n => n.MaNhaTuyenDung == userId);
+            if (employer == null)
+            {
+                return NotFound();
+            }
+
+            return View(employer);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(NhaTuyenDung model, IFormFile? logoFile, IFormFile? anhBiaFile)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // Lấy thông tin cũ từ database
+            var existingEmployer = await _context.NhaTuyenDungs.FirstOrDefaultAsync(n => n.MaNhaTuyenDung == userId);
+            if (existingEmployer == null)
+            {
+                return NotFound();
+            }
+
+            // Kiểm tra ràng buộc
+            if (string.IsNullOrWhiteSpace(model.TenCongTy))
+            {
+                ModelState.AddModelError("TenCongTy", "Tên công ty không được để trống.");
+            }
+
+            // Bỏ qua lỗi validation của trường Navigation và File (không cần thiết khi bind form)
+            ModelState.Remove("MaNhaTuyenDungNavigation");
+            ModelState.Remove("logoFile");
+            ModelState.Remove("anhBiaFile");
+
+            if (!ModelState.IsValid)
+            {
+                // Truyền lại thông tin cũ nếu form không hợp lệ (những trường không sửa)
+                existingEmployer.TenCongTy = model.TenCongTy;
+                existingEmployer.Website = model.Website;
+                existingEmployer.SoDienThoai = model.SoDienThoai;
+                existingEmployer.DiaChi = model.DiaChi;
+                existingEmployer.MoTa = model.MoTa;
+                return View("Profile", existingEmployer);
+            }
+
+            // Xử lý upload ảnh Logo
+            if (logoFile != null && logoFile.Length > 0)
+            {
+                var ext = Path.GetExtension(logoFile.FileName);
+                var fileName = Guid.NewGuid().ToString() + ext;
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await logoFile.CopyToAsync(stream);
+                }
+
+                if (!string.IsNullOrEmpty(existingEmployer.Logo))
+                {
+                    var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existingEmployer.Logo.TrimStart('/'));
+                    if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                }
+
+                existingEmployer.Logo = "/img/" + fileName;
+            }
+
+            // Xử lý upload Ảnh Bìa
+            if (anhBiaFile != null && anhBiaFile.Length > 0)
+            {
+                var ext = Path.GetExtension(anhBiaFile.FileName);
+                var fileName = Guid.NewGuid().ToString() + ext;
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await anhBiaFile.CopyToAsync(stream);
+                }
+
+                if (!string.IsNullOrEmpty(existingEmployer.AnhBia))
+                {
+                    var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existingEmployer.AnhBia.TrimStart('/'));
+                    if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                }
+
+                existingEmployer.AnhBia = "/img/" + fileName;
+            }
+
+            // Cập nhật các trường được yêu cầu, giữ nguyên các trường khác
+            existingEmployer.TenCongTy = model.TenCongTy;
+            existingEmployer.Website = model.Website;
+            existingEmployer.SoDienThoai = model.SoDienThoai;
+            existingEmployer.DiaChi = model.DiaChi;
+            existingEmployer.MoTa = model.MoTa;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Profile");
+        }
         // Chức năng Xem chi tiết đánh giá AI
         public async Task<IActionResult> AiCandidate(int maDon)
         {
