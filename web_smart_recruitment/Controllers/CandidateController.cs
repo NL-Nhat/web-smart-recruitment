@@ -470,6 +470,13 @@ namespace web_smart_recruitment.Controllers
                 return NotFound();
             }
 
+            var activeJobs = _context.TinTuyenDungs
+                .Where(t => t.MaNhaTuyenDung == maNhaTuyenDung && t.TrangThai == "DangMo" && (t.DaXoa == false || t.DaXoa == null))
+                .OrderByDescending(t => t.NgayTao)
+                .ToList();
+
+            ViewBag.ActiveJobs = activeJobs;
+
             return View();
         }
     }
