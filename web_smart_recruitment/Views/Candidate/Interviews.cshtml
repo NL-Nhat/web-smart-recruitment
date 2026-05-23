@@ -89,7 +89,24 @@
                                 <h3 style="margin: 0; font-size: 22px; font-weight: 700; color: var(--el-black);">@(ntd?.TenCongTy ?? "Nha tuyen dung")</h3>
                                 <p style="margin: 4px 0 0; font-size: 16px; color: var(--el-dark-gray);">Vị trí: <strong>@(tin?.TieuDe ?? "Cong viec")</strong></p>
                             </div>
-                            <span class="status-pill can-iv-status--choxacnhan">Chờ bạn xác nhận</span>
+                            @switch (item.TrangThai)
+                            {
+                                case "ChoXacNhan":
+                                    <span class="status-pill can-iv-status--choxacnhan">Chờ bạn xác nhận</span>
+                                    break;
+                                case "DaXacNhan":
+                                    <span class="status-pill can-iv-status--daxacnhan">Đã xác nhận</span>
+                                    break;
+                                case "DaHuy":
+                                    <span class="status-pill can-iv-status--dahuy">Đã hủy</span>
+                                    break;
+                                case "HoanThanh":
+                                    <span class="status-pill can-iv-status--hoanthanh">Đã phỏng vấn</span>
+                                    break;
+                                default:
+                                    <span class="status-pill can-iv-status--choxacnhan">@item.TrangThai</span>
+                                    break;
+                            }
                         </div>
                         
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px; background: var(--el-bg-light); padding: 20px; border-radius: 16px;">
@@ -116,7 +133,7 @@
 
                         <div style="font-size: 14px; color: var(--el-dark-gray);">
                             <strong>Ghi chú từ nhà tuyển dụng:</strong> 
-                            <span style="font-style: italic;">"Vui lòng chuẩn bị sẵn máy tính và micrô để làm bài test trực tuyến."</span>
+                            <span style="font-style: italic;">"@(string.IsNullOrEmpty(item.GhiChu) ? "Không có ghi chú thêm." : item.GhiChu)"</span>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 12px; justify-content: center;">
