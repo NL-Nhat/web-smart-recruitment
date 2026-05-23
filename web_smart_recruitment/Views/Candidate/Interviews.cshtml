@@ -135,6 +135,7 @@
                 
                 <div class="el-card interview-item" style="padding: 32px; display: flex; gap: 32px;" 
                      data-id="@item.MaLichHen"
+                     data-company-id="@(ntd?.MaNhaTuyenDung ?? 0)"
                      data-company="@(ntd?.TenCongTy ?? "Nha tuyen dung")"
                      data-logo="@(ntd?.Logo ?? "")"
                      data-job="@(tin?.TieuDe ?? "Cong viec")"
@@ -254,7 +255,8 @@
                     <div id="modal-notes" style="font-style: italic; color: var(--el-dark-gray); margin-top: 8px; line-height: 1.6; padding: 16px; border-left: 4px solid var(--el-black); background: #fafafa; border-radius: 4px;"></div>
                 </div>
             </div>
-            <div style="margin-top: 32px; text-align: right;">
+            <div style="margin-top: 32px; display: flex; justify-content: flex-end; gap: 12px;">
+                <a id="modal-company-link" href="#" class="el-btn-white" style="padding: 10px 24px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--el-black); border: 1px solid var(--el-border);">Xem trang công ty</a>
                 <button id="close-modal-footer-btn" class="el-btn-white" style="padding: 10px 24px;">Đóng</button>
             </div>
         </div>
@@ -278,6 +280,7 @@
                     return;
                 }
 
+                const companyId = this.getAttribute('data-company-id');
                 const company = this.getAttribute('data-company');
                 const logo = this.getAttribute('data-logo');
                 const job = this.getAttribute('data-job');
@@ -287,6 +290,9 @@
                 const type = this.getAttribute('data-type');
                 const locationStr = this.getAttribute('data-location');
                 const notes = this.getAttribute('data-notes');
+
+                // Cap nhat href cho link xem trang cong ty
+                document.getElementById('modal-company-link').setAttribute('href', `/Candidate/CompanyDetail?maNhaTuyenDung=${companyId}`);
 
                 // Cap nhat thong tin len modal
                 document.getElementById('modal-company-name').innerText = company;
