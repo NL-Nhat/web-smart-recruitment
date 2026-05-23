@@ -151,6 +151,41 @@
 
 @section Scripts {
     <script>
-        // Chức năng quản lý lịch phỏng vấn hiện đang hiển thị dữ liệu tĩnh.
+        document.querySelectorAll('.btn-accept').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.interview-item');
+                const maLichHen = card.getAttribute('data-id');
+                
+                if (!confirm("Bạn có chắc chắn muốn CHẤP NHẬN lịch hẹn phỏng vấn này không?")) return;
+
+                const originalText = this.innerText;
+                this.disabled = true;
+                this.innerText = "Đang xử lý...";
+
+                fetch('@Url.Action("AcceptInterview", "Candidate")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `maLichHen=${maLichHen}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                        this.disabled = false;
+                        this.innerText = originalText;
+                    }
+                })
+                .catch(err => {
+                    alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+                    this.disabled = false;
+                    this.innerText = originalText;
+                });
+            });
+        });
     </script>
 }
