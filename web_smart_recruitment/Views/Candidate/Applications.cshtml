@@ -85,7 +85,24 @@
                             }
                         </div>
                         <div style="text-align: right;">
-                            <span style="font-weight: 700; font-size: 18px; color: var(--el-black)">85%</span>
+                            @if (item.TrangThaiAI == "DangXuLy")
+                            {
+                                <span class="el-text-muted" style="font-size: 13px; font-style: italic;">Đang phân tích...</span>
+                            }
+                            else if (item.TrangThaiAI == "Loi")
+                            {
+                                <span style="font-weight: 600; font-size: 14px; color: var(--el-danger)">Lỗi</span>
+                            }
+                            else if (item.TrangThaiAI == "HoanThanh" && item.DiemPhuHop.HasValue)
+                            {
+                                var score = item.DiemPhuHop.Value;
+                                var color = score >= 80 ? "var(--el-success)" : (score >= 50 ? "var(--el-black)" : "var(--el-warm-gray)");
+                                <span style="font-weight: 700; font-size: 18px; color: @color">@score.ToString("N0")%</span>
+                            }
+                            else
+                            {
+                                <span class="el-text-muted" style="font-size: 14px;">-</span>
+                            }
                         </div>
                     </div>
                 }
