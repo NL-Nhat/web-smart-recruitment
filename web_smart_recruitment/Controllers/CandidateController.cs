@@ -462,6 +462,14 @@ namespace web_smart_recruitment.Controllers
         [AllowAnonymous]
         public IActionResult CompanyDetail(int maNhaTuyenDung)
         {
+            var company = _context.NhaTuyenDungs
+                .FirstOrDefault(n => n.MaNhaTuyenDung == maNhaTuyenDung);
+
+            if (company == null)
+            {
+                return NotFound();
+            }
+
             return View();
         }
     }
