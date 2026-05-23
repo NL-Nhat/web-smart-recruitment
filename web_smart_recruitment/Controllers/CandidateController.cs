@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using web_smart_recruitment.Models;
 using web_smart_recruitment.Services;
+using web_smart_recruitment.Models.ViewModels;
 using System.IO;
 
 namespace web_smart_recruitment.Controllers
@@ -150,7 +151,42 @@ namespace web_smart_recruitment.Controllers
         }
 
         [Authorize(Roles = "UngVien")]
-        public IActionResult Applications() => View();
+        public async Task<IActionResult> Applications()
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var query = _context.DonUngTuyens
+                .Include(d => d.MaTinNavigation)
+                    .ThenInclude(t => t.MaNhaTuyenDungNavigation)
+                .Include(d => d.KetQuaAis)
+                .Where(d => d.MaUngVien == userId);
+
+            var applications = await query
+                .OrderByDescending(d => d.NgayNop)
+                .Select(d => new ApplicationsViewModel
+                {
+                    MaDon = d.MaDon,
+                    MaTin = d.MaTin ?? 0,
+                    TieuDeCongViec = d.MaTinNavigation != null ? d.MaTinNavigation.TieuDe : "Cong viec da bi xoa",
+                    TenCongTy = d.MaTinNavigation != null && d.MaTinNavigation.MaNhaTuyenDungNavigation != null 
+                        ? d.MaTinNavigation.MaNhaTuyenDungNavigation.TenCongTy ?? "Nha tuyen dung" 
+                        : "Cong ty an danh",
+                    LogoCongTy = d.MaTinNavigation != null && d.MaTinNavigation.MaNhaTuyenDungNavigation != null 
+                        ? d.MaTinNavigation.MaNhaTuyenDungNavigation.Logo 
+                        : null,
+                    NgayNop = d.NgayNop ?? DateTime.Now,
+                    TrangThai = d.TrangThai ?? "DaNop",
+                    DiemPhuHop = d.KetQuaAis.FirstOrDefault() != null ? d.KetQuaAis.FirstOrDefault().DiemPhuHop : null,
+                    TrangThaiAI = d.KetQuaAis.FirstOrDefault() != null ? d.KetQuaAis.FirstOrDefault().TrangThaiXuLy : null
+                })
+                .ToListAsync();
+
+            return View(applications);
+        }
         
         [Authorize(Roles = "UngVien")]
         public IActionResult Interviews() => View();
