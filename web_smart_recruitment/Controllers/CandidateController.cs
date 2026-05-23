@@ -158,6 +158,9 @@ namespace web_smart_recruitment.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            var query = _context.DonUngTuyens
+                .Where(d => d.MaUngVien == userId);
+
             return View();
         }
         
