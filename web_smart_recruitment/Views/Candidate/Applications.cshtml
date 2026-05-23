@@ -23,6 +23,23 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        @@media (max-width: 768px) {
+            .app-item {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                padding: 16px;
+            }
+            /* Hide the header on mobile */
+            .el-bordered > .app-item:first-child {
+                display: none;
+            }
+            .app-item > div:first-child {
+                grid-column: span 2;
+            }
+            .app-item > div:last-child {
+                text-align: left !important;
+            }
+        }
     </style>
 }
 
