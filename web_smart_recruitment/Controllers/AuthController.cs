@@ -76,7 +76,7 @@ namespace web_smart_recruitment.Controllers
             else if (account.MaVaiTroNavigation.TenVaiTro == "NhaTuyenDung")
             {
                 var ntd = await _context.NhaTuyenDungs.FirstOrDefaultAsync(n => n.MaNhaTuyenDung == account.MaTaiKhoan);
-                fullName = ntd?.HoTen ?? account.Email;
+                fullName = ntd?.TenCongTy ?? account.Email;
             }
 
             SetAuthCookies(account, account.MaVaiTroNavigation.TenVaiTro, fullName);
@@ -239,7 +239,6 @@ namespace web_smart_recruitment.Controllers
                     var nhaTuyenDung = new NhaTuyenDung
                     {
                         MaNhaTuyenDung = newAccount.MaTaiKhoan, // PK-FK 1:1 với bảng TaiKhoan
-                        HoTen = model.HoTen,
                         TenCongTy = model.TenCongTy,
                         SoDienThoai = model.SoDienThoai
                     };

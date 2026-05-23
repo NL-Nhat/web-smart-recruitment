@@ -200,7 +200,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.MaNhaTuyenDung).ValueGeneratedNever();
             entity.Property(e => e.AnhBia).HasMaxLength(500);
             entity.Property(e => e.DiaChi).HasMaxLength(255);
-            entity.Property(e => e.HoTen).HasMaxLength(100);
             entity.Property(e => e.Logo).HasMaxLength(500);
             entity.Property(e => e.SoDienThoai)
                 .HasMaxLength(20)

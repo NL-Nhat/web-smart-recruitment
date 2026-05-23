@@ -44,7 +44,6 @@ CREATE TABLE TaiKhoan (
 -- Không dùng IDENTITY vì là quan hệ 1-1, lấy ID từ TaiKhoan
 CREATE TABLE NhaTuyenDung (
     MaNhaTuyenDung INT PRIMARY KEY, 
-    HoTen NVARCHAR(100) NOT NULL,
     TenCongTy NVARCHAR(150),
     SoDienThoai VARCHAR(20),
     Website NVARCHAR(255),
@@ -231,11 +230,11 @@ SET IDENTITY_INSERT TaiKhoan OFF;
 -- ---------------------------------------------------------
 -- 2. HỒ SƠ NHÀ TUYỂN DỤNG (Không có IDENTITY, map ID: 3-6)
 -- ---------------------------------------------------------
-INSERT INTO NhaTuyenDung (MaNhaTuyenDung, HoTen, TenCongTy, SoDienThoai, Website, DiaChi, MoTa, Logo) VALUES 
-(3, N'Nguyễn Minh Tâm', N'FPT Software', '0901111222', 'https://fptsoftware.com', N'Duy Tân, Cầu Giấy, Hà Nội', N'Công ty xuất khẩu phần mềm hàng đầu Việt Nam...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6f9YQZ1I0v-t3zP8i_zY6N-V8u6RjXjP8wQ&s'),
-(4, N'Lê Trọng Đạt', N'VNG Corporation', '0903333444', 'https://vng.com.vn', N'VNG Campus, Quận 7, TP.HCM', N'Kỳ lân công nghệ đầu tiên tại Việt Nam...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzR6X-N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s'),
-(5, N'Trần Thu Hà', N'Viettel Group', '0988888999', 'https://viettel.vn', N'Giang Văn Minh, Ba Đình, Hà Nội', N'Tập đoàn Viễn thông và Công nghệ hàng đầu...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1-X1N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s'),
-(6, N'Phạm Băng Băng', N'MoMo', '0912222333', 'https://momo.vn', N'Lầu 6, Phú Mỹ Hưng, Quận 7, TP.HCM', N'Ví điện tử số 1 Việt Nam...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3R6X-N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s');
+INSERT INTO NhaTuyenDung (MaNhaTuyenDung, TenCongTy, SoDienThoai, Website, DiaChi, MoTa, Logo) VALUES 
+(3, N'FPT Software', '0901111222', 'https://fptsoftware.com', N'Duy Tân, Cầu Giấy, Hà Nội', N'Công ty xuất khẩu phần mềm hàng đầu Việt Nam...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6f9YQZ1I0v-t3zP8i_zY6N-V8u6RjXjP8wQ&s'),
+(4, N'VNG Corporation', '0903333444', 'https://vng.com.vn', N'VNG Campus, Quận 7, TP.HCM', N'Kỳ lân công nghệ đầu tiên tại Việt Nam...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzR6X-N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s'),
+(5, N'Viettel Group', '0988888999', 'https://viettel.vn', N'Giang Văn Minh, Ba Đình, Hà Nội', N'Tập đoàn Viễn thông và Công nghệ hàng đầu...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1-X1N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s'),
+(6, N'MoMo', '0912222333', 'https://momo.vn', N'Lầu 6, Phú Mỹ Hưng, Quận 7, TP.HCM', N'Ví điện tử số 1 Việt Nam...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3R6X-N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s');
 
 -- ---------------------------------------------------------
 -- 3. HỒ SƠ ỨNG VIÊN (Không có IDENTITY, map ID: 7-14)
@@ -428,13 +427,13 @@ SET IDENTITY_INSERT TaiKhoan OFF;
 -- ---------------------------------------------------------
 -- 2. HỒ SƠ NHÀ TUYỂN DỤNG MỚI
 -- ---------------------------------------------------------
-INSERT INTO NhaTuyenDung (MaNhaTuyenDung, HoTen, TenCongTy, SoDienThoai, Website, DiaChi, MoTa, Logo) VALUES 
-(15, N'Đặng Lê Nguyên', N'Shopee Vietnam', '0911223344', 'https://shopee.vn', N'Capital Place, Liễu Giai, Hà Nội', N'Nền tảng thương mại điện tử lớn nhất...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4R6X-N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s'),
-(16, N'Hoàng Yến', N'Tiki', '0922334455', 'https://tiki.vn', N'Phổ Quang, Tân Bình, TP.HCM', N'Sàn thương mại điện tử uy tín...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5R6X-N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s'),
-(17, N'Bùi Thanh Thủy', N'VNPay', '0933445566', 'https://vnpay.vn', N'Láng Hạ, Đống Đa, Hà Nội', N'Giải pháp thanh toán điện tử...', NULL),
-(18, N'Ngô Gia Tự', N'NashTech', '0944556677', 'https://nashtechglobal.com', N'Etown, Tân Bình, TP.HCM', N'Tư vấn và giải pháp công nghệ...', NULL),
-(19, N'Trịnh Xuân', N'Katalon', '0955667788', 'https://katalon.com', N'Quận 4, TP.HCM', N'Nền tảng kiểm thử tự động...', NULL),
-(20, N'Mai Phương', N'VinAI', '0966778899', 'https://vinai.io', N'Times City, Hai Bà Trưng, Hà Nội', N'Viện nghiên cứu trí tuệ nhân tạo...', NULL);
+INSERT INTO NhaTuyenDung (MaNhaTuyenDung, TenCongTy, SoDienThoai, Website, DiaChi, MoTa, Logo) VALUES 
+(15, N'Shopee Vietnam', '0911223344', 'https://shopee.vn', N'Capital Place, Liễu Giai, Hà Nội', N'Nền tảng thương mại điện tử lớn nhất...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4R6X-N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s'),
+(16, N'Tiki', '0922334455', 'https://tiki.vn', N'Phổ Quang, Tân Bình, TP.HCM', N'Sàn thương mại điện tử uy tín...', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5R6X-N1xR_m9QY_N_E-K8z1m_x_z_X1xR_g&s'),
+(17, N'VNPay', '0933445566', 'https://vnpay.vn', N'Láng Hạ, Đống Đa, Hà Nội', N'Giải pháp thanh toán điện tử...', NULL),
+(18, N'NashTech', '0944556677', 'https://nashtechglobal.com', N'Etown, Tân Bình, TP.HCM', N'Tư vấn và giải pháp công nghệ...', NULL),
+(19, N'Katalon', '0955667788', 'https://katalon.com', N'Quận 4, TP.HCM', N'Nền tảng kiểm thử tự động...', NULL),
+(20, N'VinAI', '0966778899', 'https://vinai.io', N'Times City, Hai Bà Trưng, Hà Nội', N'Viện nghiên cứu trí tuệ nhân tạo...', NULL);
 
 -- ---------------------------------------------------------
 -- 3. HỒ SƠ ỨNG VIÊN MỚI
