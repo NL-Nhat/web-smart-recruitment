@@ -95,14 +95,21 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px; background: var(--el-bg-light); padding: 20px; border-radius: 16px;">
                             <div>
                                 <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; margin-bottom: 6px;">Thời gian</div>
-                                <div style="font-weight: 600; color: var(--el-black);">Thứ Hai, 20 tháng 5, 2024</div>
-                                <div style="font-size: 14px; color: var(--el-dark-gray); margin-top: 2px;">Vào lúc: 09:00</div>
+                                <div style="font-weight: 600; color: var(--el-black);">@item.NgayPhuongVan.ToString("dd/MM/yyyy")</div>
+                                <div style="font-size: 14px; color: var(--el-dark-gray); margin-top: 2px;">Vào lúc: @item.GioPhuongVan.ToString("HH:mm")</div>
                             </div>
                             <div>
                                 <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; margin-bottom: 6px;">Hình thức & Địa điểm</div>
-                                <div style="font-weight: 600; color: var(--el-black);">Online</div>
+                                <div style="font-weight: 600; color: var(--el-black);">@(item.HinhThuc == "Online" ? "Phỏng vấn Online" : "Phỏng vấn Trực tiếp")</div>
                                 <div style="font-size: 14px; color: var(--el-primary); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                <a href="https://meet.google.com/abc-xyz" target="_blank">https://meet.google.com/abc-xyz</a>
+                                    @if (item.HinhThuc == "Online" && !string.IsNullOrEmpty(item.LinkHop))
+                                    {
+                                        <a href="@item.LinkHop" target="_blank">@item.LinkHop</a>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: var(--el-black);">@(item.DiaDiem ?? "Địa chỉ liên hệ sau")</span>
+                                    }
                                 </div>
                             </div>
                         </div>
