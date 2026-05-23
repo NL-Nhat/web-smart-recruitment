@@ -460,6 +460,9 @@ namespace web_smart_recruitment.Controllers
         }
         
         [AllowAnonymous]
-        public IActionResult CompanyDetail() => View();
+        public IActionResult CompanyDetail(int maNhaTuyenDung)
+        {
+            return View();
+        }
     }
 }
