@@ -38,6 +38,67 @@
             overflow: hidden;
         }
         .company-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.is-active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: var(--el-white);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 550px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.is-active .modal-content {
+            transform: scale(1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--el-border-subtle);
+            padding-bottom: 16px;
+        }
+        .modal-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--el-black);
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--el-warm-gray);
+            line-height: 1;
+            padding: 0;
+        }
+        .close-btn:hover {
+            color: var(--el-black);
+        }
+        .interview-item {
+            cursor: pointer;
+        }
     </style>
 }
 
@@ -72,7 +133,17 @@
                 var tin = item.MaDonNavigation?.MaTinNavigation;
                 var ntd = tin?.MaNhaTuyenDungNavigation;
                 
-                <div class="el-card interview-item" style="padding: 32px; display: flex; gap: 32px;" data-id="@item.MaLichHen">
+                <div class="el-card interview-item" style="padding: 32px; display: flex; gap: 32px;" 
+                     data-id="@item.MaLichHen"
+                     data-company="@(ntd?.TenCongTy ?? "Nha tuyen dung")"
+                     data-logo="@(ntd?.Logo ?? "")"
+                     data-job="@(tin?.TieuDe ?? "Cong viec")"
+                     data-status="@item.TrangThai"
+                     data-date="@item.NgayPhuongVan.ToString("dd/MM/yyyy")"
+                     data-time="@item.GioPhuongVan.ToString("HH:mm")"
+                     data-type="@(item.HinhThuc == "Online" ? "Phỏng vấn Online" : "Phỏng vấn Trực tiếp")"
+                     data-location="@(item.HinhThuc == "Online" ? (item.LinkHop ?? "Chưa cung cấp link") : (item.DiaDiem ?? "Chưa cung cấp địa chỉ"))"
+                     data-notes="@(item.GhiChu ?? "Không có ghi chú thêm.")">
                     <div class="company-logo">
                         @if (ntd != null && !string.IsNullOrEmpty(ntd.Logo))
                         {
@@ -147,13 +218,149 @@
             }
         }
     </div>
+
+    <!-- Modal Chi tiet -->
+    <div id="interview-detail-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chi tiết lịch hẹn</h2>
+                <button id="close-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                    <div class="company-logo" id="modal-logo-container" style="width: 64px; height: 64px;">
+                        <!-- JS insert dynamic logo -->
+                    </div>
+                    <div>
+                        <h4 id="modal-company-name" style="margin: 0 0 4px; font-size: 18px; font-weight: 700; color: var(--el-black);"></h4>
+                        <p id="modal-job-title" style="margin: 0 0 8px; font-size: 14px; color: var(--el-dark-gray);"></p>
+                        <span id="modal-status-badge" class="status-pill"></span>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 16px; background: var(--el-bg-light); padding: 20px; border-radius: 16px; margin-bottom: 20px;">
+                    <div>
+                        <strong style="font-size: 11px; color: var(--el-warm-gray); text-transform: uppercase;">Thời gian phỏng vấn</strong>
+                        <div id="modal-time" style="font-weight: 600; color: var(--el-black); margin-top: 4px; font-size: 15px;"></div>
+                    </div>
+                    <div>
+                        <strong style="font-size: 11px; color: var(--el-warm-gray); text-transform: uppercase;">Hình thức & Địa điểm</strong>
+                        <div id="modal-location" style="font-weight: 600; color: var(--el-black); margin-top: 4px; font-size: 15px; word-break: break-all;"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <strong style="font-size: 11px; color: var(--el-warm-gray); text-transform: uppercase;">Lời nhắn từ Nhà tuyển dụng</strong>
+                    <div id="modal-notes" style="font-style: italic; color: var(--el-dark-gray); margin-top: 8px; line-height: 1.6; padding: 16px; border-left: 4px solid var(--el-black); background: #fafafa; border-radius: 4px;"></div>
+                </div>
+            </div>
+            <div style="margin-top: 32px; text-align: right;">
+                <button id="close-modal-footer-btn" class="el-btn-white" style="padding: 10px 24px;">Đóng</button>
+            </div>
+        </div>
+    </div>
 </main>
 
 @section Scripts {
     <script>
         // Cap nhat thanh cong quan ly lich phong van tu co so du lieu
+        
+        // Modal elements
+        const modal = document.getElementById('interview-detail-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const closeModalFooterBtn = document.getElementById('close-modal-footer-btn');
+
+        // Mo modal khi click vao interview-item (khong phai nut bam)
+        document.querySelectorAll('.interview-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Neu click vao tag button hoac cac the ben trong button, thi dung lai khong mo modal
+                if (e.target.closest('button') || e.target.closest('a')) {
+                    return;
+                }
+
+                const company = this.getAttribute('data-company');
+                const logo = this.getAttribute('data-logo');
+                const job = this.getAttribute('data-job');
+                const status = this.getAttribute('data-status');
+                const date = this.getAttribute('data-date');
+                const time = this.getAttribute('data-time');
+                const type = this.getAttribute('data-type');
+                const locationStr = this.getAttribute('data-location');
+                const notes = this.getAttribute('data-notes');
+
+                // Cap nhat thong tin len modal
+                document.getElementById('modal-company-name').innerText = company;
+                document.getElementById('modal-job-title').innerHTML = `Vị trí: <strong>${job}</strong>`;
+                
+                // Set logo
+                const logoContainer = document.getElementById('modal-logo-container');
+                if (logo) {
+                    logoContainer.innerHTML = `<img src="${logo}" alt="Logo" style="width: 100%; height: 100%; object-fit: cover;" />`;
+                } else {
+                    logoContainer.innerHTML = `<span style="font-weight: 700; color: var(--el-warm-gray);">${company.substring(0, 1)}</span>`;
+                }
+
+                // Set status badge style
+                const statusBadge = document.getElementById('modal-status-badge');
+                statusBadge.className = 'status-pill';
+                if (status === 'ChoXacNhan') {
+                    statusBadge.classList.add('can-iv-status--choxacnhan');
+                    statusBadge.innerText = 'Chờ bạn xác nhận';
+                } else if (status === 'DaXacNhan') {
+                    statusBadge.classList.add('can-iv-status--daxacnhan');
+                    statusBadge.innerText = 'Đã xác nhận';
+                } else if (status === 'DaHuy') {
+                    statusBadge.classList.add('can-iv-status--dahuy');
+                    statusBadge.innerText = 'Đã hủy';
+                } else if (status === 'HoanThanh') {
+                    statusBadge.classList.add('can-iv-status--hoanthanh');
+                    statusBadge.innerText = 'Đã phỏng vấn';
+                } else {
+                    statusBadge.classList.add('can-iv-status--choxacnhan');
+                    statusBadge.innerText = status;
+                }
+
+                // Set time and location
+                document.getElementById('modal-time').innerText = `${date} (Vào lúc ${time})`;
+                
+                const locationContainer = document.getElementById('modal-location');
+                if (type === 'Phỏng vấn Online' && locationStr.startsWith('http')) {
+                    locationContainer.innerHTML = `<a href="${locationStr}" target="_blank" style="color: var(--el-primary); text-decoration: underline;">${locationStr}</a>`;
+                } else {
+                    locationContainer.innerText = `${type} - ${locationStr}`;
+                }
+
+                // Set notes
+                document.getElementById('modal-notes').innerText = notes;
+
+                // Hien thi modal
+                modal.style.display = 'flex';
+                setTimeout(() => {
+                    modal.classList.add('is-active');
+                }, 10);
+            });
+        });
+
+        // Dong modal
+        function closeModal() {
+            modal.classList.remove('is-active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        closeModalFooterBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // AJAX handlers
         document.querySelectorAll('.btn-accept').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Stop click propagation to parent interview-item
                 const card = this.closest('.interview-item');
                 const maLichHen = card.getAttribute('data-id');
                 
@@ -190,7 +397,8 @@
         });
 
         document.querySelectorAll('.btn-decline').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Stop click propagation to parent interview-item
                 const card = this.closest('.interview-item');
                 const maLichHen = card.getAttribute('data-id');
                 
