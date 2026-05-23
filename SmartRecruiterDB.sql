@@ -589,3 +589,8 @@ select *from DanhMucKyNang
 select *from DonUngTuyen
 select *from KetQua_AI
 select *from LichHenPhongVan
+
+UPDATE NhaTuyenDung SET Logo = '/img/fpt.png' WHERE MaNhaTuyenDung = 3;
+UPDATE NhaTuyenDung SET Logo = '/img/vng.png' WHERE MaNhaTuyenDung = 4;
+UPDATE NhaTuyenDung SET Logo = '/img/viettel.png' WHERE MaNhaTuyenDung = 5;
+UPDATE NhaTuyenDung SET Logo = '/img/momo.png' WHERE MaNhaTuyenDung = 6;

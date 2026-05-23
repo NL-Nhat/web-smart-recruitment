@@ -460,6 +460,24 @@ namespace web_smart_recruitment.Controllers
         }
         
         [AllowAnonymous]
-        public IActionResult CompanyDetail() => View();
+        public IActionResult CompanyDetail(int maNhaTuyenDung)
+        {
+            var company = _context.NhaTuyenDungs
+                .FirstOrDefault(n => n.MaNhaTuyenDung == maNhaTuyenDung);
+
+            if (company == null)
+            {
+                return NotFound();
+            }
+
+            var activeJobs = _context.TinTuyenDungs
+                .Where(t => t.MaNhaTuyenDung == maNhaTuyenDung && t.TrangThai == "DangMo" && (t.DaXoa == false || t.DaXoa == null))
+                .OrderByDescending(t => t.NgayTao)
+                .ToList();
+
+            ViewBag.ActiveJobs = activeJobs;
+
+            return View(company);
+        }
     }
 }
