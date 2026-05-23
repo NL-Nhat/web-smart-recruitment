@@ -203,7 +203,20 @@ namespace web_smart_recruitment.Controllers
                         .ThenInclude(t => t.MaNhaTuyenDungNavigation)
                 .Where(l => l.MaDonNavigation.MaUngVien == userId);
 
-            return View();
+            var interviews = query
+                .OrderBy(l => l.NgayPhuongVan)
+                .ThenBy(l => l.GioPhuongVan)
+                .ToList();
+
+            // Tinh so buoi phong van trong tuan nay
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var startOfWeek = today.AddDays(-1 * diff);
+            var endOfWeek = startOfWeek.AddDays(7);
+
+            ViewBag.InterviewsThisWeek = interviews.Count(l => l.NgayPhuongVan >= startOfWeek && l.NgayPhuongVan < endOfWeek && l.TrangThai != "DaHuy");
+
+            return View(interviews);
         }
         
         [Authorize(Roles = "UngVien")]
