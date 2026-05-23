@@ -477,7 +477,7 @@ namespace web_smart_recruitment.Controllers
 
             ViewBag.ActiveJobs = activeJobs;
 
-            return View();
+            return View(company);
         }
     }
 }
