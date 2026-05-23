@@ -189,7 +189,95 @@ namespace web_smart_recruitment.Controllers
         }
         
         [Authorize(Roles = "UngVien")]
-        public IActionResult Interviews() => View();
+        public IActionResult Interviews()
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var query = _context.LichHenPhongVans
+                .Include(l => l.MaDonNavigation)
+                    .ThenInclude(d => d.MaTinNavigation)
+                        .ThenInclude(t => t.MaNhaTuyenDungNavigation)
+                .Where(l => l.MaDonNavigation.MaUngVien == userId);
+
+            var interviews = query
+                .OrderBy(l => l.NgayPhuongVan)
+                .ThenBy(l => l.GioPhuongVan)
+                .ToList();
+
+            // Tinh so buoi phong van trong tuan nay
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var startOfWeek = today.AddDays(-1 * diff);
+            var endOfWeek = startOfWeek.AddDays(7);
+
+            ViewBag.InterviewsThisWeek = interviews.Count(l => l.NgayPhuongVan >= startOfWeek && l.NgayPhuongVan < endOfWeek && l.TrangThai != "DaHuy");
+
+            return View(interviews);
+        }
+
+        [Authorize(Roles = "UngVien")]
+        [HttpPost]
+        public async Task<IActionResult> AcceptInterview(int maLichHen)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
+            }
+
+            var interview = await _context.LichHenPhongVans
+                .Include(l => l.MaDonNavigation)
+                .FirstOrDefaultAsync(l => l.MaLichHen == maLichHen && l.MaDonNavigation.MaUngVien == userId);
+
+            if (interview == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy lịch phỏng vấn này." });
+            }
+
+            if (interview.TrangThai != "ChoXacNhan")
+            {
+                return Json(new { success = false, message = "Lịch phỏng vấn này không thể xác nhận ở trạng thái hiện tại." });
+            }
+
+            interview.TrangThai = "DaXacNhan";
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Đã xác nhận chấp nhận lịch hẹn phỏng vấn!" });
+        }
+
+        [Authorize(Roles = "UngVien")]
+        [HttpPost]
+        public async Task<IActionResult> DeclineInterview(int maLichHen)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
+            }
+
+            var interview = await _context.LichHenPhongVans
+                .Include(l => l.MaDonNavigation)
+                .FirstOrDefaultAsync(l => l.MaLichHen == maLichHen && l.MaDonNavigation.MaUngVien == userId);
+
+            if (interview == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy lịch phỏng vấn này." });
+            }
+
+            if (interview.TrangThai != "ChoXacNhan")
+            {
+                return Json(new { success = false, message = "Lịch phỏng vấn này không thể từ chối ở trạng thái hiện tại." });
+            }
+
+            interview.TrangThai = "DaHuy";
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Đã xác nhận từ chối lịch hẹn phỏng vấn!" });
+        }
         
         [Authorize(Roles = "UngVien")]
         public async Task<IActionResult> Profile()

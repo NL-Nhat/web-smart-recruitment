@@ -1,3 +1,4 @@
+@model IEnumerable<web_smart_recruitment.Models.LichHenPhongVan>
 @{
     ViewData["Title"] = "Lịch phỏng vấn của tôi";
 }
@@ -37,6 +38,67 @@
             overflow: hidden;
         }
         .company-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.is-active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: var(--el-white);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 550px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.is-active .modal-content {
+            transform: scale(1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--el-border-subtle);
+            padding-bottom: 16px;
+        }
+        .modal-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--el-black);
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--el-warm-gray);
+            line-height: 1;
+            padding: 0;
+        }
+        .close-btn:hover {
+            color: var(--el-black);
+        }
+        .interview-item {
+            cursor: pointer;
+        }
     </style>
 }
 
@@ -52,49 +114,150 @@
             <span style="font-size: 24px;">📅</span>
             <div>
                 <div style="font-size: 11px; font-weight: 700; color: #4F46E5; text-transform: uppercase;">Tuần này</div>
-                <div style="font-size: 14px; font-weight: 600; color: #1E1B4B;" id="stats-text">0 buổi phỏng vấn</div>
+                <div style="font-size: 14px; font-weight: 600; color: #1E1B4B;" id="stats-text">@ViewBag.InterviewsThisWeek buổi phỏng vấn</div>
             </div>
         </div>
     </div>
 
     <div id="interview-list" style="display: grid; grid-template-columns: 1fr; gap: 24px;">
-        <!-- Dữ liệu mẫu (Static) -->
-        <div class="el-card interview-item" style="padding: 32px; display: flex; gap: 32px;">
-            <div class="company-logo">
-                <span style="font-weight: 700; color: var(--el-warm-gray);">A</span>
+        @if (Model == null || !Model.Any())
+        {
+            <div style="text-align: center; padding: 3rem;" class="el-card el-text-muted">
+                Bạn chưa có lịch hẹn phỏng vấn nào.
             </div>
-            <div style="flex: 1;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                    <div>
-                        <h3 style="margin: 0; font-size: 22px; font-weight: 700; color: var(--el-black);">Công ty Công nghệ ABC</h3>
-                        <p style="margin: 4px 0 0; font-size: 16px; color: var(--el-dark-gray);">Vị trí: <strong>Senior Frontend Developer</strong></p>
-                    </div>
-                    <span class="status-pill can-iv-status--choxacnhan">Chờ bạn xác nhận</span>
-                </div>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                var tin = item.MaDonNavigation?.MaTinNavigation;
+                var ntd = tin?.MaNhaTuyenDungNavigation;
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px; background: var(--el-bg-light); padding: 20px; border-radius: 16px;">
-                    <div>
-                        <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; margin-bottom: 6px;">Thời gian</div>
-                        <div style="font-weight: 600; color: var(--el-black);">Thứ Hai, 20 tháng 5, 2024</div>
-                        <div style="font-size: 14px; color: var(--el-dark-gray); margin-top: 2px;">Vào lúc: 09:00</div>
+                <div class="el-card interview-item" style="padding: 32px; display: flex; gap: 32px;" 
+                     data-id="@item.MaLichHen"
+                     data-company-id="@(ntd?.MaNhaTuyenDung ?? 0)"
+                     data-company="@(ntd?.TenCongTy ?? "Nha tuyen dung")"
+                     data-logo="@(ntd?.Logo ?? "")"
+                     data-job="@(tin?.TieuDe ?? "Cong viec")"
+                     data-status="@item.TrangThai"
+                     data-date="@item.NgayPhuongVan.ToString("dd/MM/yyyy")"
+                     data-time="@item.GioPhuongVan.ToString("HH:mm")"
+                     data-type="@(item.HinhThuc == "Online" ? "Phỏng vấn Online" : "Phỏng vấn Trực tiếp")"
+                     data-location="@(item.HinhThuc == "Online" ? (item.LinkHop ?? "Chưa cung cấp link") : (item.DiaDiem ?? "Chưa cung cấp địa chỉ"))"
+                     data-notes="@(item.GhiChu ?? "Không có ghi chú thêm.")">
+                    <div class="company-logo">
+                        @if (ntd != null && !string.IsNullOrEmpty(ntd.Logo))
+                        {
+                            <img src="@ntd.Logo" alt="Logo" />
+                        }
+                        else
+                        {
+                            <span style="font-weight: 700; color: var(--el-warm-gray);">@(ntd?.TenCongTy?.Substring(0, 1) ?? "A")</span>
+                        }
                     </div>
-                    <div>
-                        <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; margin-bottom: 6px;">Hình thức & Địa điểm</div>
-                        <div style="font-weight: 600; color: var(--el-black);">Online</div>
-                        <div style="font-size: 14px; color: var(--el-primary); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                           <a href="https://meet.google.com/abc-xyz" target="_blank">https://meet.google.com/abc-xyz</a>
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 22px; font-weight: 700; color: var(--el-black);">@(ntd?.TenCongTy ?? "Nha tuyen dung")</h3>
+                                <p style="margin: 4px 0 0; font-size: 16px; color: var(--el-dark-gray);">Vị trí: <strong>@(tin?.TieuDe ?? "Cong viec")</strong></p>
+                            </div>
+                            @switch (item.TrangThai)
+                            {
+                                case "ChoXacNhan":
+                                    <span class="status-pill can-iv-status--choxacnhan">Chờ bạn xác nhận</span>
+                                    break;
+                                case "DaXacNhan":
+                                    <span class="status-pill can-iv-status--daxacnhan">Đã xác nhận</span>
+                                    break;
+                                case "DaHuy":
+                                    <span class="status-pill can-iv-status--dahuy">Đã hủy</span>
+                                    break;
+                                case "HoanThanh":
+                                    <span class="status-pill can-iv-status--hoanthanh">Đã phỏng vấn</span>
+                                    break;
+                                default:
+                                    <span class="status-pill can-iv-status--choxacnhan">@item.TrangThai</span>
+                                    break;
+                            }
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px; background: var(--el-bg-light); padding: 20px; border-radius: 16px;">
+                            <div>
+                                <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; margin-bottom: 6px;">Thời gian</div>
+                                <div style="font-weight: 600; color: var(--el-black);">@item.NgayPhuongVan.ToString("dd/MM/yyyy")</div>
+                                <div style="font-size: 14px; color: var(--el-dark-gray); margin-top: 2px;">Vào lúc: @item.GioPhuongVan.ToString("HH:mm")</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; font-weight: 700; color: var(--el-warm-gray); text-transform: uppercase; margin-bottom: 6px;">Hình thức & Địa điểm</div>
+                                <div style="font-weight: 600; color: var(--el-black);">@(item.HinhThuc == "Online" ? "Phỏng vấn Online" : "Phỏng vấn Trực tiếp")</div>
+                                <div style="font-size: 14px; color: var(--el-primary); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    @if (item.HinhThuc == "Online" && !string.IsNullOrEmpty(item.LinkHop))
+                                    {
+                                        <a href="@item.LinkHop" target="_blank">@item.LinkHop</a>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: var(--el-black);">@(item.DiaDiem ?? "Địa chỉ liên hệ sau")</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 14px; color: var(--el-dark-gray);">
+                            <strong>Ghi chú từ nhà tuyển dụng:</strong> 
+                            <span style="font-style: italic;">"@(string.IsNullOrEmpty(item.GhiChu) ? "Không có ghi chú thêm." : item.GhiChu)"</span>
                         </div>
                     </div>
+                    @if (item.TrangThai == "ChoXacNhan")
+                    {
+                        <div style="display: flex; flex-direction: column; gap: 12px; justify-content: center;">
+                            <button class="el-btn-primary btn-accept" style="justify-content: center;">Chấp nhận</button>
+                            <button class="el-btn-white btn-decline" style="color: var(--el-danger); justify-content: center;">Từ chối</button>
+                        </div>
+                    }
                 </div>
+            }
+        }
+    </div>
 
-                <div style="font-size: 14px; color: var(--el-dark-gray);">
-                    <strong>Ghi chú từ nhà tuyển dụng:</strong> 
-                    <span style="font-style: italic;">"Vui lòng chuẩn bị sẵn máy tính và micrô để làm bài test trực tuyến."</span>
+    <!-- Modal Chi tiet -->
+    <div id="interview-detail-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chi tiết lịch hẹn</h2>
+                <button id="close-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                    <div class="company-logo" id="modal-logo-container" style="width: 64px; height: 64px;">
+                        <!-- JS insert dynamic logo -->
+                    </div>
+                    <div>
+                        <h4 id="modal-company-name" style="margin: 0 0 4px; font-size: 18px; font-weight: 700; color: var(--el-black);"></h4>
+                        <p id="modal-job-title" style="margin: 0 0 8px; font-size: 14px; color: var(--el-dark-gray);"></p>
+                        <span id="modal-status-badge" class="status-pill"></span>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 16px; background: var(--el-bg-light); padding: 20px; border-radius: 16px; margin-bottom: 20px;">
+                    <div>
+                        <strong style="font-size: 11px; color: var(--el-warm-gray); text-transform: uppercase;">Thời gian phỏng vấn</strong>
+                        <div id="modal-time" style="font-weight: 600; color: var(--el-black); margin-top: 4px; font-size: 15px;"></div>
+                    </div>
+                    <div>
+                        <strong style="font-size: 11px; color: var(--el-warm-gray); text-transform: uppercase;">Hình thức & Địa điểm</strong>
+                        <div id="modal-location" style="font-weight: 600; color: var(--el-black); margin-top: 4px; font-size: 15px; word-break: break-all;"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <strong style="font-size: 11px; color: var(--el-warm-gray); text-transform: uppercase;">Lời nhắn từ Nhà tuyển dụng</strong>
+                    <div id="modal-notes" style="font-style: italic; color: var(--el-dark-gray); margin-top: 8px; line-height: 1.6; padding: 16px; border-left: 4px solid var(--el-black); background: #fafafa; border-radius: 4px;"></div>
                 </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 12px; justify-content: center;">
-                <button class="el-btn-primary" style="justify-content: center;">Chấp nhận</button>
-                <button class="el-btn-white" style="color: var(--el-danger); justify-content: center;">Từ chối</button>
+            <div style="margin-top: 32px; display: flex; justify-content: flex-end; gap: 12px;">
+                <a id="modal-company-link" href="#" class="el-btn-white" style="padding: 10px 24px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--el-black); border: 1px solid var(--el-border);">Xem trang công ty</a>
+                <button id="close-modal-footer-btn" class="el-btn-white" style="padding: 10px 24px;">Đóng</button>
             </div>
         </div>
     </div>
@@ -102,6 +265,179 @@
 
 @section Scripts {
     <script>
-        // Chức năng quản lý lịch phỏng vấn hiện đang hiển thị dữ liệu tĩnh.
+        // Cap nhat thanh cong quan ly lich phong van tu co so du lieu
+        
+        // Modal elements
+        const modal = document.getElementById('interview-detail-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const closeModalFooterBtn = document.getElementById('close-modal-footer-btn');
+
+        // Mo modal khi click vao interview-item (khong phai nut bam)
+        document.querySelectorAll('.interview-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Neu click vao tag button hoac cac the ben trong button, thi dung lai khong mo modal
+                if (e.target.closest('button') || e.target.closest('a')) {
+                    return;
+                }
+
+                const companyId = this.getAttribute('data-company-id');
+                const company = this.getAttribute('data-company');
+                const logo = this.getAttribute('data-logo');
+                const job = this.getAttribute('data-job');
+                const status = this.getAttribute('data-status');
+                const date = this.getAttribute('data-date');
+                const time = this.getAttribute('data-time');
+                const type = this.getAttribute('data-type');
+                const locationStr = this.getAttribute('data-location');
+                const notes = this.getAttribute('data-notes');
+
+                // Cap nhat href cho link xem trang cong ty
+                document.getElementById('modal-company-link').setAttribute('href', `/Candidate/CompanyDetail?maNhaTuyenDung=${companyId}`);
+
+                // Cap nhat thong tin len modal
+                document.getElementById('modal-company-name').innerText = company;
+                document.getElementById('modal-job-title').innerHTML = `Vị trí: <strong>${job}</strong>`;
+                
+                // Set logo
+                const logoContainer = document.getElementById('modal-logo-container');
+                if (logo) {
+                    logoContainer.innerHTML = `<img src="${logo}" alt="Logo" style="width: 100%; height: 100%; object-fit: cover;" />`;
+                } else {
+                    logoContainer.innerHTML = `<span style="font-weight: 700; color: var(--el-warm-gray);">${company.substring(0, 1)}</span>`;
+                }
+
+                // Set status badge style
+                const statusBadge = document.getElementById('modal-status-badge');
+                statusBadge.className = 'status-pill';
+                if (status === 'ChoXacNhan') {
+                    statusBadge.classList.add('can-iv-status--choxacnhan');
+                    statusBadge.innerText = 'Chờ bạn xác nhận';
+                } else if (status === 'DaXacNhan') {
+                    statusBadge.classList.add('can-iv-status--daxacnhan');
+                    statusBadge.innerText = 'Đã xác nhận';
+                } else if (status === 'DaHuy') {
+                    statusBadge.classList.add('can-iv-status--dahuy');
+                    statusBadge.innerText = 'Đã hủy';
+                } else if (status === 'HoanThanh') {
+                    statusBadge.classList.add('can-iv-status--hoanthanh');
+                    statusBadge.innerText = 'Đã phỏng vấn';
+                } else {
+                    statusBadge.classList.add('can-iv-status--choxacnhan');
+                    statusBadge.innerText = status;
+                }
+
+                // Set time and location
+                document.getElementById('modal-time').innerText = `${date} (Vào lúc ${time})`;
+                
+                const locationContainer = document.getElementById('modal-location');
+                if (type === 'Phỏng vấn Online' && locationStr.startsWith('http')) {
+                    locationContainer.innerHTML = `<a href="${locationStr}" target="_blank" style="color: var(--el-primary); text-decoration: underline;">${locationStr}</a>`;
+                } else {
+                    locationContainer.innerText = `${type} - ${locationStr}`;
+                }
+
+                // Set notes
+                document.getElementById('modal-notes').innerText = notes;
+
+                // Hien thi modal
+                modal.style.display = 'flex';
+                setTimeout(() => {
+                    modal.classList.add('is-active');
+                }, 10);
+            });
+        });
+
+        // Dong modal
+        function closeModal() {
+            modal.classList.remove('is-active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        closeModalFooterBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // AJAX handlers
+        document.querySelectorAll('.btn-accept').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Stop click propagation to parent interview-item
+                const card = this.closest('.interview-item');
+                const maLichHen = card.getAttribute('data-id');
+                
+                if (!confirm("Bạn có chắc chắn muốn CHẤP NHẬN lịch hẹn phỏng vấn này không?")) return;
+
+                const originalText = this.innerText;
+                this.disabled = true;
+                this.innerText = "Đang xử lý...";
+
+                fetch('@Url.Action("AcceptInterview", "Candidate")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `maLichHen=${maLichHen}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                        this.disabled = false;
+                        this.innerText = originalText;
+                    }
+                })
+                .catch(err => {
+                    alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+                    this.disabled = false;
+                    this.innerText = originalText;
+                });
+            });
+        });
+
+        document.querySelectorAll('.btn-decline').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // Stop click propagation to parent interview-item
+                const card = this.closest('.interview-item');
+                const maLichHen = card.getAttribute('data-id');
+                
+                if (!confirm("Bạn có chắc chắn muốn TỪ CHỐI lịch hẹn phỏng vấn này không?")) return;
+
+                const originalText = this.innerText;
+                this.disabled = true;
+                this.innerText = "Đang xử lý...";
+
+                fetch('@Url.Action("DeclineInterview", "Candidate")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `maLichHen=${maLichHen}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                        this.disabled = false;
+                        this.innerText = originalText;
+                    }
+                })
+                .catch(err => {
+                    alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+                    this.disabled = false;
+                    this.innerText = originalText;
+                });
+            });
+        });
     </script>
 }
