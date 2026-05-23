@@ -198,6 +198,8 @@ namespace web_smart_recruitment.Controllers
             }
 
             var query = _context.LichHenPhongVans
+                .Include(l => l.MaDonNavigation)
+                    .ThenInclude(d => d.MaTinNavigation)
                 .Where(l => l.MaDonNavigation.MaUngVien == userId);
 
             return View();
