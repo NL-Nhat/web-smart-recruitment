@@ -370,8 +370,6 @@
                 const card = this.closest('.interview-item');
                 const maLichHen = card.getAttribute('data-id');
                 
-                if (!confirm("Bạn có chắc chắn muốn CHẤP NHẬN lịch hẹn phỏng vấn này không?")) return;
-
                 const originalText = this.innerText;
                 this.disabled = true;
                 this.innerText = "Đang xử lý...";
@@ -386,7 +384,6 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        alert(data.message);
                         location.reload();
                     } else {
                         alert(data.message);

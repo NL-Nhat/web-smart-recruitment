@@ -493,7 +493,7 @@ namespace web_smart_recruitment.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateApplicationStatus(int maDon, string newStatus)
+        public async Task<IActionResult> UpdateApplicationStatus(int maDon, string newStatus, string? returnUrl = null)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out int userId))
@@ -501,14 +501,24 @@ namespace web_smart_recruitment.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            // Tìm đơn ứng tuyển: kiểm tra quyền sở hữu dựa theo nhà tuyển dụng,
+            // dùng điều kiện nullable-safe để tránh lỗi nếu MaTinNavigation chưa được load
             var application = await _context.DonUngTuyens
                 .Include(d => d.MaTinNavigation)
-                .FirstOrDefaultAsync(d => d.MaDon == maDon && d.MaTinNavigation.MaNhaTuyenDung == userId);
+                .FirstOrDefaultAsync(d => d.MaDon == maDon
+                    && d.MaTinNavigation != null
+                    && d.MaTinNavigation.MaNhaTuyenDung == userId);
 
             if (application != null)
             {
+                // Cập nhật trạng thái đơn ứng tuyển thành TrungTuyen hoặc TuChoi
                 application.TrangThai = newStatus;
                 await _context.SaveChangesAsync();
+            }
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
             }
 
             return RedirectToAction("AiCandidate", new { maDon = maDon });
@@ -557,7 +567,7 @@ namespace web_smart_recruitment.Controllers
 
         // Chức năng Cập nhật Lịch hẹn phỏng vấn
         [HttpPost]
-        public async Task<IActionResult> UpdateInterview(int maDon, DateOnly NgayPhuongVan, TimeOnly GioPhuongVan, string HinhThuc, string LinkHop, string DiaDiem, string GhiChu)
+        public async Task<IActionResult> UpdateInterview(int maDon, DateOnly NgayPhuongVan, TimeOnly GioPhuongVan, string HinhThuc, string LinkHop, string DiaDiem, string GhiChu, string? TrangThai)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userIdStr, out int userId))
@@ -590,11 +600,25 @@ namespace web_smart_recruitment.Controllers
                     
                     lichHen.GhiChu = string.IsNullOrWhiteSpace(GhiChu) ? null : GhiChu;
 
+                    // Update Status logic based on constraints
+                    if (!string.IsNullOrEmpty(TrangThai))
+                    {
+                        if (lichHen.TrangThai == "ChoXacNhan" && TrangThai == "DaHuy")
+                        {
+                            lichHen.TrangThai = "DaHuy";
+                        }
+                        else if (lichHen.TrangThai == "DaXacNhan" && TrangThai == "HoanThanh")
+                        {
+                            lichHen.TrangThai = "HoanThanh";
+                        }
+                    }
+
                     await _context.SaveChangesAsync();
                 }
             }
 
             return RedirectToAction("Interviews");
         }
+
     }
 }
