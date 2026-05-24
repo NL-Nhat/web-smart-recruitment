@@ -116,6 +116,88 @@ namespace web_smart_recruitment.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UpdateUserRole([FromBody] UpdateRoleModel model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.TenVaiTro))
+            {
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
+            }
+
+            var account = await _context.TaiKhoans
+                .Include(a => a.MaVaiTroNavigation)
+                .FirstOrDefaultAsync(a => a.MaTaiKhoan == model.MaTaiKhoan);
+
+            if (account == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy tài khoản." });
+            }
+
+            var newRole = await _context.VaiTros.FirstOrDefaultAsync(r => r.TenVaiTro == model.TenVaiTro);
+            if (newRole == null)
+            {
+                return Json(new { success = false, message = "Vai trò mới không hợp lệ." });
+            }
+
+            if (account.MaVaiTro == newRole.MaVaiTro)
+            {
+                return Json(new { success = true, message = "Vai trò không thay đổi." });
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                account.MaVaiTro = newRole.MaVaiTro;
+                account.NgayCapNhat = DateTime.Now;
+
+                if (model.TenVaiTro == "UngVien")
+                {
+                    var exists = await _context.UngViens.AnyAsync(u => u.MaUngVien == account.MaTaiKhoan);
+                    if (!exists)
+                    {
+                        var newUngVien = new UngVien
+                        {
+                            MaUngVien = account.MaTaiKhoan,
+                            HoTen = "Ứng viên mới",
+                            SoDienThoai = ""
+                        };
+                        _context.UngViens.Add(newUngVien);
+                    }
+                }
+                else if (model.TenVaiTro == "NhaTuyenDung")
+                {
+                    var exists = await _context.NhaTuyenDungs.AnyAsync(n => n.MaNhaTuyenDung == account.MaTaiKhoan);
+                    if (!exists)
+                    {
+                        var newNtd = new NhaTuyenDung
+                        {
+                            MaNhaTuyenDung = account.MaTaiKhoan,
+                            TenCongTy = "Công ty mới",
+                            SoDienThoai = "",
+                            DiaChi = ""
+                        };
+                        _context.NhaTuyenDungs.Add(newNtd);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Json(new { success = true, message = "Cập nhật vai trò thành công!" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        public class UpdateRoleModel
+        {
+            public int MaTaiKhoan { get; set; }
+            public string TenVaiTro { get; set; } = null!;
+        }
+
         public IActionResult Skills() => View();
         public IActionResult Reports() => View();
         public IActionResult Profile() => View();

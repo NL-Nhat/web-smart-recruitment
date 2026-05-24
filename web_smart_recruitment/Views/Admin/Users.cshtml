@@ -154,6 +154,35 @@
     </div>
 </div>
 
+<!-- Modal Edit Role -->
+<div class="modal-overlay" id="modal-edit">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2 style="font-size: 24px; font-weight: 800; margin-top: 0; margin-bottom: 8px;">Chỉnh sửa vai trò</h2>
+        <p class="el-text-muted" style="margin-bottom: 32px;">Thay đổi vai trò của người dùng trong hệ thống.</p>
+        
+        <form id="f-edit-role">
+            <input type="hidden" id="edit-userid">
+            <div class="el-form-group">
+                <label class="el-label">Email tài khoản</label>
+                <input type="text" class="el-input" id="edit-email" disabled style="background: var(--el-bg-light); cursor: not-allowed;">
+            </div>
+            <div class="el-form-group">
+                <label class="el-label">Vai trò mới</label>
+                <select class="el-select" id="edit-role">
+                    <option value="UngVien">Ứng viên</option>
+                    <option value="NhaTuyenDung">Nhà tuyển dụng (HR)</option>
+                    <option value="Admin">Quản trị viên (Admin)</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 40px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="el-btn-white" id="btn-close-edit">Hủy bỏ</button>
+                <button type="submit" class="el-btn-primary" style="padding: 0 32px;">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         (function() {
@@ -223,8 +252,61 @@
                 }
             };
 
+            // Edit Role logic
+            const editModal = document.getElementById("modal-edit");
+            const btnCloseEdit = document.getElementById("btn-close-edit");
+            const editUserIdInput = document.getElementById("edit-userid");
+            const editEmailInput = document.getElementById("edit-email");
+            const editRoleSelect = document.getElementById("edit-role");
+
+            document.querySelectorAll(".btn-edit-role").forEach(btn => {
+                btn.onclick = () => {
+                    const id = btn.getAttribute("data-id");
+                    const email = btn.getAttribute("data-email");
+                    const role = btn.getAttribute("data-role");
+                    
+                    editUserIdInput.value = id;
+                    editEmailInput.value = email;
+                    editRoleSelect.value = role;
+                    
+                    editModal.style.display = "grid";
+                };
+            });
+
+            btnCloseEdit.onclick = () => editModal.style.display = "none";
+
+            document.getElementById("f-edit-role").onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const id = parseInt(editUserIdInput.value);
+                const role = editRoleSelect.value;
+                
+                try {
+                    const response = await fetch('/Admin/UpdateUserRole', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ maTaiKhoan: id, tenVaiTro: role })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        editModal.style.display = "none";
+                        location.reload();
+                    } else {
+                        alert(result.message || "Đã xảy ra lỗi khi cập nhật vai trò.");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Lỗi kết nối đến máy chủ.");
+                }
+            };
+
             window.onclick = (e) => {
                 if (e.target == modal) modal.style.display = "none";
+                if (e.target == editModal) editModal.style.display = "none";
             };
         })();
     </script>
