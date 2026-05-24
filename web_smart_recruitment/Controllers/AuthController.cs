@@ -115,6 +115,12 @@ namespace web_smart_recruitment.Controllers
                 return View(model);
             }
 
+            if (account.TrangThaiHoatDong == false)
+            {
+                ModelState.AddModelError("", "Tài khoản Admin này hiện đang bị khóa.");
+                return View(model);
+            }
+
             SetAuthCookies(account, "Admin", "Quản trị viên");
             return RedirectToAction("Dashboard", "Admin");
         }
