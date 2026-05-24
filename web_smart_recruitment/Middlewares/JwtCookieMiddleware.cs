@@ -39,7 +39,22 @@ namespace web_smart_recruitment.Middlewares
                         // Nếu Access Token còn hạn sử dụng
                         if (expTime > DateTime.UtcNow)
                         {
-                            context.User = principal;
+                            var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
+                            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                            {
+                                // Truy vấn DB để kiểm tra xem tài khoản có bị khóa hay không
+                                var account = await dbContext.TaiKhoans.FirstOrDefaultAsync(a => a.MaTaiKhoan == userId);
+                                if (account != null && account.TrangThaiHoatDong != false)
+                                {
+                                    context.User = principal;
+                                }
+                                else
+                                {
+                                    // Nếu tài khoản đã bị khóa hoặc không tồn tại, xóa Cookies để đăng xuất ngay lập tức
+                                    context.Response.Cookies.Delete("AccessToken");
+                                    context.Response.Cookies.Delete("RefreshToken");
+                                }
+                            }
                         }
                         else
                         {
