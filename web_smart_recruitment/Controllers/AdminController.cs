@@ -306,6 +306,46 @@ namespace web_smart_recruitment.Controllers
             public string? PhanLoai { get; set; }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteSkill([FromBody] DeleteSkillModel model)
+        {
+            if (model == null)
+            {
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
+            }
+
+            var skill = await _context.DanhMucKyNangs.FirstOrDefaultAsync(s => s.MaKyNang == model.MaKyNang);
+            if (skill == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy kỹ năng cần xóa." });
+            }
+
+            // Kiểm tra ràng buộc khóa ngoại trước khi xóa
+            var isUsedInJob = await _context.ChiTietKyNangTinTuyenDungs.AnyAsync(c => c.MaKyNang == model.MaKyNang);
+            var isUsedInCandidate = await _context.ChiTietKyNangUngViens.AnyAsync(c => c.MaKyNang == model.MaKyNang);
+
+            if (isUsedInJob || isUsedInCandidate)
+            {
+                return Json(new { success = false, message = "Kỹ năng này đang được sử dụng bởi ứng viên hoặc tin tuyển dụng. Không thể xóa!" });
+            }
+
+            try
+            {
+                _context.DanhMucKyNangs.Remove(skill);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Xóa kỹ năng thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        public class DeleteSkillModel
+        {
+            public int MaKyNang { get; set; }
+        }
+
         public IActionResult Reports() => View();
         public IActionResult Profile() => View();
         public IActionResult Roles() => View();
