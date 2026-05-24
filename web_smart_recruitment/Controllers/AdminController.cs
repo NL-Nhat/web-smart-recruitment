@@ -198,6 +198,41 @@ namespace web_smart_recruitment.Controllers
             public string TenVaiTro { get; set; } = null!;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ToggleUserStatus([FromBody] ToggleStatusModel model)
+        {
+            if (model == null)
+            {
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
+            }
+
+            var account = await _context.TaiKhoans.FirstOrDefaultAsync(a => a.MaTaiKhoan == model.MaTaiKhoan);
+            if (account == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy tài khoản." });
+            }
+
+            bool currentStatus = account.TrangThaiHoatDong ?? true;
+            account.TrangThaiHoatDong = !currentStatus;
+            account.NgayCapNhat = DateTime.Now;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                string statusText = account.TrangThaiHoatDong.Value ? "mở khóa" : "khóa";
+                return Json(new { success = true, message = $"Đã {statusText} tài khoản thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        public class ToggleStatusModel
+        {
+            public int MaTaiKhoan { get; set; }
+        }
+
         public IActionResult Skills() => View();
         public IActionResult Reports() => View();
         public IActionResult Profile() => View();

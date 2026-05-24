@@ -304,6 +304,39 @@
                 }
             };
 
+            // Toggle User Status logic
+            document.querySelectorAll(".btn-toggle-status").forEach(btn => {
+                btn.onclick = async () => {
+                    const id = parseInt(btn.getAttribute("data-id"));
+                    const confirmMsg = btn.textContent.trim() === "Khóa" 
+                        ? "Bạn có chắc chắn muốn khóa tài khoản này không?" 
+                        : "Bạn có chắc chắn muốn mở khóa tài khoản này không?";
+                        
+                    if (!confirm(confirmMsg)) return;
+                    
+                    try {
+                        const response = await fetch('/Admin/ToggleUserStatus', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ maTaiKhoan: id })
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            alert(result.message);
+                            location.reload();
+                        } else {
+                            alert(result.message || "Đã xảy ra lỗi khi thực hiện thao tác.");
+                        }
+                    } catch (error) {
+                        console.error("Error:", error);
+                        alert("Lỗi kết nối đến máy chủ.");
+                    }
+                };
+            });
+
             window.onclick = (e) => {
                 if (e.target == modal) modal.style.display = "none";
                 if (e.target == editModal) editModal.style.display = "none";
