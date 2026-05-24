@@ -1,3 +1,4 @@
+@model IEnumerable<web_smart_recruitment.Models.ViewModels.AdminUserViewModel>
 @{
     ViewData["Title"] = "Quản lý Người dùng";
     Layout = "_AdminLayout";
@@ -37,46 +38,48 @@
                     </tr>
                 </thead>
                 <tbody id="tb-users">
-                    <!-- Dữ liệu mẫu (Static) -->
-                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
-                        <td style="padding: 20px 24px; font-weight: 600;">admin@recruiter.com</td>
-                        <td style="padding: 20px 24px;">Administrator</td>
-                        <td style="padding: 20px 24px;">
-                            <span class="el-status el-status--warning">Admin</span>
-                        </td>
-                        <td style="padding: 20px 24px;">
-                            <span class="el-status el-status--success">Hoạt động</span>
-                        </td>
-                        <td style="padding: 20px 24px; text-align: right;">
-                            <button class="el-btn-white" style="font-size: 12px; padding: 6px 16px; border: 1px solid #ef4444; color: #ef4444;">Khóa</button>
-                        </td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
-                        <td style="padding: 20px 24px; font-weight: 600;">hr@fpt.com.vn</td>
-                        <td style="padding: 20px 24px;">FPT Software</td>
-                        <td style="padding: 20px 24px;">
-                            <span class="el-status el-status--info">NhaTuyenDung</span>
-                        </td>
-                        <td style="padding: 20px 24px;">
-                            <span class="el-status el-status--success">Hoạt động</span>
-                        </td>
-                        <td style="padding: 20px 24px; text-align: right;">
-                            <button class="el-btn-white" style="font-size: 12px; padding: 6px 16px; border: 1px solid #ef4444; color: #ef4444;">Khóa</button>
-                        </td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
-                        <td style="padding: 20px 24px; font-weight: 600;">candidate@gmail.com</td>
-                        <td style="padding: 20px 24px;">Nguyễn Văn A</td>
-                        <td style="padding: 20px 24px;">
-                            <span class="el-status el-status--info">UngVien</span>
-                        </td>
-                        <td style="padding: 20px 24px;">
-                            <span class="el-status el-status--success">Hoạt động</span>
-                        </td>
-                        <td style="padding: 20px 24px; text-align: right;">
-                            <button class="el-btn-white" style="font-size: 12px; padding: 6px 16px; border: 1px solid #ef4444; color: #ef4444;">Khóa</button>
-                        </td>
-                    </tr>
+                    @foreach (var user in Model)
+                    {
+                        <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                            <td style="padding: 20px 24px; font-weight: 600;">@user.Email</td>
+                            <td style="padding: 20px 24px;">@user.TenHienThi</td>
+                            <td style="padding: 20px 24px;">
+                                @if (user.TenVaiTro == "Admin")
+                                {
+                                    <span class="el-status el-status--warning">Admin</span>
+                                }
+                                else if (user.TenVaiTro == "NhaTuyenDung")
+                                {
+                                    <span class="el-status el-status--info">Nhà tuyển dụng</span>
+                                }
+                                else
+                                {
+                                    <span class="el-status el-status--success">Ứng viên</span>
+                                }
+                            </td>
+                            <td style="padding: 20px 24px;">
+                                @if (user.TrangThaiHoatDong)
+                                {
+                                    <span class="el-status el-status--success">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="el-status el-status--danger">Bị khóa</span>
+                                }
+                            </td>
+                            <td style="padding: 20px 24px; text-align: right;">
+                                <button class="el-btn-white btn-edit-role" data-id="@user.MaTaiKhoan" data-email="@user.Email" data-role="@user.TenVaiTro" style="font-size: 12px; padding: 6px 16px;">Sửa vai trò</button>
+                                @if (user.TrangThaiHoatDong)
+                                {
+                                    <button class="el-btn-white btn-toggle-status" data-id="@user.MaTaiKhoan" style="font-size: 12px; padding: 6px 16px; border: 1px solid #ef4444; color: #ef4444;">Khóa</button>
+                                }
+                                else
+                                {
+                                    <button class="el-btn-white btn-toggle-status" data-id="@user.MaTaiKhoan" style="font-size: 12px; padding: 6px 16px; border: 1px solid #10b981; color: #10b981;">Mở khóa</button>
+                                }
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
@@ -111,11 +114,11 @@
             <div id="fields-candidate">
                 <div class="el-form-group">
                     <label class="el-label">Họ và tên ứng viên</label>
-                    <input type="text" class="el-input" placeholder="Nguyễn Văn A">
+                    <input type="text" class="el-input" id="new-name-candidate" placeholder="Nguyễn Văn A">
                 </div>
                 <div class="el-form-group">
                     <label class="el-label">Số điện thoại</label>
-                    <input type="tel" class="el-input" placeholder="090...">
+                    <input type="tel" class="el-input" id="new-phone-candidate" placeholder="090...">
                 </div>
             </div>
 
@@ -123,15 +126,15 @@
             <div id="fields-employer" style="display: none;">
                 <div class="el-form-group">
                     <label class="el-label">Tên công ty</label>
-                    <input type="text" class="el-input" placeholder="FPT Software, ABC Tech...">
+                    <input type="text" class="el-input" id="new-company-name" placeholder="FPT Software, ABC Tech...">
                 </div>
                 <div class="el-form-group">
                     <label class="el-label">Số điện thoại</label>
-                    <input type="tel" class="el-input" placeholder="090...">
+                    <input type="tel" class="el-input" id="new-phone-employer" placeholder="090...">
                 </div>
                 <div class="el-form-group">
                     <label class="el-label">Địa chỉ trụ sở</label>
-                    <input type="text" class="el-input" placeholder="Số 123, Đường A, Quận B...">
+                    <input type="text" class="el-input" id="new-address" placeholder="Số 123, Đường A, Quận B...">
                 </div>
             </div>
 
@@ -139,7 +142,7 @@
             <div id="fields-admin" style="display: none;">
                 <div class="el-form-group">
                     <label class="el-label">Tên quản trị viên</label>
-                    <input type="text" class="el-input" placeholder="Administrator">
+                    <input type="text" class="el-input" id="new-name-admin" placeholder="Administrator">
                 </div>
             </div>
 
@@ -173,10 +176,51 @@
                 fAdmin.style.display = role === "Admin" ? "block" : "none";
             };
 
-            document.getElementById("f-add-user").onsubmit = (e) => {
+            document.getElementById("f-add-user").onsubmit = async (e) => {
                 e.preventDefault();
-                alert("Đã thêm người dùng mới vào hệ thống (Demo)");
-                modal.style.display = "none";
+                
+                const email = document.getElementById("new-email").value.trim();
+                const password = document.getElementById("new-pwd").value;
+                const role = document.getElementById("new-role").value;
+                
+                const data = {
+                    email: email,
+                    password: password,
+                    vaiTro: role
+                };
+                
+                if (role === "UngVien") {
+                    data.hoTenCandidate = document.getElementById("new-name-candidate").value.trim() || "Ứng viên mới";
+                    data.soDienThoaiCandidate = document.getElementById("new-phone-candidate").value.trim();
+                } else if (role === "NhaTuyenDung") {
+                    data.tenCongTy = document.getElementById("new-company-name").value.trim() || "Công ty mới";
+                    data.soDienThoaiEmployer = document.getElementById("new-phone-employer").value.trim();
+                    data.diaChi = document.getElementById("new-address").value.trim();
+                } else if (role === "Admin") {
+                    data.hoTenCandidate = document.getElementById("new-name-admin").value.trim() || "Quản trị viên";
+                }
+                
+                try {
+                    const response = await fetch('/Admin/AddUser', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        modal.style.display = "none";
+                        location.reload();
+                    } else {
+                        alert(result.message || "Đã xảy ra lỗi khi thêm người dùng.");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Lỗi kết nối đến máy chủ.");
+                }
             };
 
             window.onclick = (e) => {
