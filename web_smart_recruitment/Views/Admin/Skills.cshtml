@@ -1,3 +1,4 @@
+@model IEnumerable<web_smart_recruitment.Models.DanhMucKyNang>
 @{
     ViewData["Title"] = "Quản lý Kỹ năng";
     Layout = "_AdminLayout";
@@ -40,25 +41,19 @@
         </header>
 
         <div class="skill-grid" id="skill-list">
-            <!-- Dữ liệu mẫu (Static) -->
-            <div class="skill-card">
-                <div>
-                    <div style="font-weight: 700; font-size: 16px;">ASP.NET Core</div>
-                    <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px; font-weight: 600; text-transform: uppercase;">BACKEND</div>
+            @foreach (var skill in Model)
+            {
+                <div class="skill-card">
+                    <div>
+                        <div style="font-weight: 700; font-size: 16px;">@skill.TenKyNang</div>
+                        <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px; font-weight: 600; text-transform: uppercase;">@(skill.PhanLoai ?? "OTHER")</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <!-- Nút sửa sẽ tích hợp hành động ở Bước 2 -->
+                        <button class="el-icon-btn btn-edit-skill" data-id="@skill.MaKyNang" data-name="@skill.TenKyNang" data-cat="@skill.PhanLoai"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="el-icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                </div>
-            </div>
-            <div class="skill-card">
-                <div>
-                    <div style="font-weight: 700; font-size: 16px;">SQL Server</div>
-                    <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px; font-weight: 600; text-transform: uppercase;">DATABASE</div>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="el-icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                </div>
-            </div>
+            }
         </div>
     </main>
 </div>
@@ -103,23 +98,39 @@
 
             btnAdd.onclick = () => {
                 title.innerText = "Thêm kỹ năng mới";
+                document.getElementById("f-skill").reset();
                 modal.style.display = "grid";
             };
 
-            const editBtns = document.querySelectorAll('.el-icon-btn');
-            editBtns.forEach(btn => {
-                btn.onclick = () => {
-                    title.innerText = "Chỉnh sửa kỹ năng";
-                    modal.style.display = "grid";
-                };
-            });
-
             btnClose.onclick = () => modal.style.display = "none";
 
-            document.getElementById("f-skill").onsubmit = (e) => {
+            document.getElementById("f-skill").onsubmit = async (e) => {
                 e.preventDefault();
-                alert("Đã lưu kỹ năng (Demo)");
-                modal.style.display = "none";
+                
+                const name = document.getElementById("sk-name").value.trim();
+                const cat = document.getElementById("sk-cat").value;
+
+                try {
+                    const response = await fetch('/Admin/AddSkill', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ tenKyNang: name, phanLoai: cat })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        modal.style.display = "none";
+                        location.reload();
+                    } else {
+                        alert(result.message || "Đã xảy ra lỗi.");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Lỗi kết nối đến máy chủ.");
+                }
             };
 
             window.onclick = (e) => {
