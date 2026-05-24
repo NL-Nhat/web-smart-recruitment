@@ -270,6 +270,42 @@ namespace web_smart_recruitment.Controllers
             public string TenKyNang { get; set; } = null!;
             public string? PhanLoai { get; set; }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateSkill([FromBody] UpdateSkillModel model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.TenKyNang))
+            {
+                return Json(new { success = false, message = "Tên kỹ năng không được trống." });
+            }
+
+            var skill = await _context.DanhMucKyNangs.FirstOrDefaultAsync(s => s.MaKyNang == model.MaKyNang);
+            if (skill == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy kỹ năng." });
+            }
+
+            var exists = await _context.DanhMucKyNangs.AnyAsync(s => s.MaKyNang != model.MaKyNang && s.TenKyNang.ToLower() == model.TenKyNang.ToLower().Trim());
+            if (exists)
+            {
+                return Json(new { success = false, message = "Tên kỹ năng này đã tồn tại." });
+            }
+
+            skill.TenKyNang = model.TenKyNang.Trim();
+            skill.PhanLoai = model.PhanLoai;
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Cập nhật kỹ năng thành công!" });
+        }
+
+        public class UpdateSkillModel
+        {
+            public int MaKyNang { get; set; }
+            public string TenKyNang { get; set; } = null!;
+            public string? PhanLoai { get; set; }
+        }
+
         public IActionResult Reports() => View();
         public IActionResult Profile() => View();
         public IActionResult Roles() => View();

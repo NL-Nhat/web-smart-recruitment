@@ -65,6 +65,7 @@
         <p class="el-text-muted" style="margin-bottom: 32px;">Kỹ năng này sẽ được dùng làm tiêu chí so khớp AI.</p>
         
         <form id="f-skill">
+            <input type="hidden" id="sk-id" value="">
             <div class="el-form-group">
                 <label class="el-label">Tên kỹ năng</label>
                 <input type="text" class="el-input" id="sk-name" required placeholder="VD: ReactJS">
@@ -95,28 +96,52 @@
             const btnAdd = document.getElementById("btn-add-skill");
             const btnClose = document.getElementById("btn-close-sk");
             const title = document.getElementById("sk-title");
+            const skillIdInput = document.getElementById("sk-id");
 
             btnAdd.onclick = () => {
                 title.innerText = "Thêm kỹ năng mới";
                 document.getElementById("f-skill").reset();
+                skillIdInput.value = "";
                 modal.style.display = "grid";
             };
+
+            // Gắn sự kiện khi click nút sửa
+            document.querySelectorAll(".btn-edit-skill").forEach(btn => {
+                btn.onclick = () => {
+                    const id = btn.getAttribute("data-id");
+                    const name = btn.getAttribute("data-name");
+                    const cat = btn.getAttribute("data-cat");
+
+                    title.innerText = "Chỉnh sửa kỹ năng";
+                    skillIdInput.value = id;
+                    document.getElementById("sk-name").value = name;
+                    document.getElementById("sk-cat").value = cat || "OTHER";
+                    modal.style.display = "grid";
+                };
+            });
 
             btnClose.onclick = () => modal.style.display = "none";
 
             document.getElementById("f-skill").onsubmit = async (e) => {
                 e.preventDefault();
                 
+                const id = skillIdInput.value;
                 const name = document.getElementById("sk-name").value.trim();
                 const cat = document.getElementById("sk-cat").value;
 
+                const isEdit = id !== "";
+                const endpoint = isEdit ? '/Admin/UpdateSkill' : '/Admin/AddSkill';
+                const bodyData = isEdit 
+                    ? { maKyNang: parseInt(id), tenKyNang: name, phanLoai: cat }
+                    : { tenKyNang: name, phanLoai: cat };
+
                 try {
-                    const response = await fetch('/Admin/AddSkill', {
+                    const response = await fetch(endpoint, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ tenKyNang: name, phanLoai: cat })
+                        body: JSON.stringify(bodyData)
                     });
                     
                     const result = await response.json();
