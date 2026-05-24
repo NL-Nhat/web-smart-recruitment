@@ -263,7 +263,7 @@
                         else if (Model.TrangThai == "PhongVan")
                         {
                             <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">Ứng viên đang ở vòng phỏng vấn.</p>
-                            <a href="#" class="el-btn-primary" style="justify-content: center; width: 100%;">Xem lịch hẹn phỏng vấn</a>
+                            <a href="@Url.Action("Interviews", "Hr", new { jobId = Model.MaTin })" class="el-btn-primary" style="justify-content: center; width: 100%;">Xem lịch hẹn phỏng vấn</a>
                         }
                         else
                         {
@@ -298,13 +298,13 @@
             <h2 style="margin-top: 0; font-size: 24px; font-weight: 700;">Hẹn lịch phỏng vấn</h2>
             <p class="el-text-muted" style="font-size: 14px; margin-bottom: 24px;">Thiết lập thời gian và hình thức phỏng vấn cho ứng viên.</p>
             
-            <form asp-action="ScheduleInterview" method="post">
+            <form asp-action="ScheduleInterview" method="post" id="schedule-form">
                 <input type="hidden" name="maDon" value="@Model.MaDon" />
                 
                 <div class="sr-grid sr-grid--2" style="gap: 16px;">
                     <div class="form-group">
                         <label>Ngày phỏng vấn</label>
-                        <input type="date" name="NgayPhuongVan" class="form-control" required />
+                        <input type="date" name="NgayPhuongVan" id="input-ngayphongvan" class="form-control" required />
                     </div>
                     <div class="form-group">
                         <label>Giờ phỏng vấn</label>
@@ -354,16 +354,43 @@
         </div>
     </div>
 
+    <!-- Modal Thông báo Lỗi -->
+    <div id="error-modal" class="modal-backdrop" style="display: none; z-index: 2000;">
+        <div class="modal-container" style="max-width: 400px; text-align: center;">
+            <div style="color: var(--el-danger); margin-bottom: 16px;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <h3 style="margin-top: 0; font-size: 20px; font-weight: 700; color: var(--el-black);">Lỗi thiết lập</h3>
+            <p style="color: var(--el-dark-gray); margin-bottom: 24px;">Ngày phỏng vấn không được nhỏ hơn ngày hiện tại.</p>
+            <button type="button" onclick="document.getElementById('error-modal').style.display = 'none'" class="el-btn-primary" style="width: 100%; justify-content: center;">Đã hiểu</button>
+        </div>
+    </div>
+
     <script>
         function toggleHinhThuc() {
             var select = document.getElementById('hinh-thuc-select').value;
             if (select === 'Online') {
                 document.getElementById('link-hop-group').style.display = 'block';
+                document.getElementById('link-hop-group').querySelector('input').setAttribute('required', 'required');
                 document.getElementById('dia-diem-group').style.display = 'none';
+                document.getElementById('dia-diem-group').querySelector('input').removeAttribute('required');
             } else {
                 document.getElementById('link-hop-group').style.display = 'none';
+                document.getElementById('link-hop-group').querySelector('input').removeAttribute('required');
                 document.getElementById('dia-diem-group').style.display = 'block';
+                document.getElementById('dia-diem-group').querySelector('input').setAttribute('required', 'required');
             }
         }
+        
+        document.getElementById('schedule-form').addEventListener('submit', function(e) {
+            var selectedDate = new Date(document.getElementById('input-ngayphongvan').value);
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                e.preventDefault();
+                document.getElementById('error-modal').style.display = 'grid';
+            }
+        });
     </script>
 }
