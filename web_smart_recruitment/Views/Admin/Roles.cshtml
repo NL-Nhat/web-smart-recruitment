@@ -1,3 +1,4 @@
+@model IEnumerable<web_smart_recruitment.Models.VaiTro>
 @{
     ViewData["Title"] = "Quản lý Vai trò";
     Layout = "_AdminLayout";
@@ -51,49 +52,24 @@
                     </tr>
                 </thead>
                 <tbody id="role-table-body">
-                    <!-- Dữ liệu mẫu (Static) -->
-                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
-                        <td style="padding: 16px 24px; font-weight: 600;">#1</td>
-                        <td style="padding: 16px 24px;">
-                            <span style="font-weight: 700; color: var(--el-black);">Admin</span>
-                        </td>
-                        <td style="padding: 16px 24px; color: var(--el-warm-gray); font-size: 13px;">Quản trị viên toàn hệ thống, có quyền quản lý người dùng và cấu hình.</td>
-                        <td style="padding: 16px 24px; text-align: right;">
-                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                <button class="el-icon-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
-                        <td style="padding: 16px 24px; font-weight: 600;">#2</td>
-                        <td style="padding: 16px 24px;">
-                            <span style="font-weight: 700; color: var(--el-black);">NhaTuyenDung</span>
-                        </td>
-                        <td style="padding: 16px 24px; color: var(--el-warm-gray); font-size: 13px;">Tài khoản doanh nghiệp, đăng tin tuyển dụng và quản lý ứng viên.</td>
-                        <td style="padding: 16px 24px; text-align: right;">
-                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                <button class="el-icon-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
-                        <td style="padding: 16px 24px; font-weight: 600;">#3</td>
-                        <td style="padding: 16px 24px;">
-                            <span style="font-weight: 700; color: var(--el-black);">UngVien</span>
-                        </td>
-                        <td style="padding: 16px 24px; color: var(--el-warm-gray); font-size: 13px;">Tài khoản người tìm việc, nộp đơn ứng tuyển và quản lý hồ sơ cá nhân.</td>
-                        <td style="padding: 16px 24px; text-align: right;">
-                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                <button class="el-icon-btn">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @foreach (var role in Model)
+                    {
+                        <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                            <td style="padding: 16px 24px; font-weight: 600;">#@role.MaVaiTro</td>
+                            <td style="padding: 16px 24px;">
+                                <span style="font-weight: 700; color: var(--el-black);">@role.TenVaiTro</span>
+                            </td>
+                            <td style="padding: 16px 24px; color: var(--el-warm-gray); font-size: 13px;">@(role.MoTa ?? "Chưa có mô tả quyền hạn.")</td>
+                            <td style="padding: 16px 24px; text-align: right;">
+                                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                    <!-- Nút sửa sẽ tích hợp hành động ở Bước 2 -->
+                                    <button class="el-icon-btn btn-edit-role" data-id="@role.MaVaiTro" data-name="@role.TenVaiTro" data-desc="@role.MoTa">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
@@ -134,23 +110,39 @@
 
             btnAdd.onclick = () => {
                 title.innerText = "Thêm vai trò mới";
+                document.getElementById("f-role").reset();
                 modal.style.display = "grid";
             };
 
-            const editBtns = document.querySelectorAll('.el-icon-btn');
-            editBtns.forEach(btn => {
-                btn.onclick = () => {
-                    title.innerText = "Chỉnh sửa vai trò";
-                    modal.style.display = "grid";
-                };
-            });
-
             btnClose.onclick = () => modal.style.display = "none";
 
-            document.getElementById("f-role").onsubmit = (e) => {
+            document.getElementById("f-role").onsubmit = async (e) => {
                 e.preventDefault();
-                alert("Đã lưu thay đổi vai trò (Demo)");
-                modal.style.display = "none";
+                
+                const name = document.getElementById("role-name").value.trim();
+                const desc = document.getElementById("role-desc").value.trim();
+
+                try {
+                    const response = await fetch('/Admin/AddRole', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ tenVaiTro: name, moTa: desc })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        modal.style.display = "none";
+                        location.reload();
+                    } else {
+                        alert(result.message || "Đã xảy ra lỗi.");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("Lỗi kết nối đến máy chủ.");
+                }
             };
 
             window.onclick = (e) => {
