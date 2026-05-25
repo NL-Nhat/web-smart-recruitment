@@ -1,3 +1,4 @@
+@using web_smart_recruitment.Controllers
 @{
     ViewData["Title"] = "Bảng điều khiển HR";
 }
@@ -56,10 +57,10 @@
 <main class="sr-main">
     <div style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-            <h1 class="el-display-hero" style="font-size: 36px; margin: 0;">Chào buổi sáng!</h1>
+            <h1 class="el-display-hero" style="font-size: 36px; margin: 0;">Chào buổi sáng, @ViewBag.CompanyName!</h1>
             <p class="el-text-muted">Chào mừng trở lại. Đây là tổng quan về tình hình tuyển dụng của bạn.</p>
         </div>
-        <a asp-action="JobForm" class="el-btn-primary" style="height: 48px; padding: 0 24px; font-size: 15px;">+ Đăng tin mới</a>
+        <a asp-action="JobForm" class="el-btn-primary" style="height: 48px; padding: 0 24px; font-size: 15px; display: flex; align-items: center; justify-content: center; text-decoration: none;">+ Đăng tin mới</a>
     </div>
 
     <div class="hr-hero-stats">
@@ -68,28 +69,28 @@
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
             </div>
             <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Tin đang mở</div>
-            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;" id="stat-jobs">5</div>
+            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;" id="stat-jobs">@ViewBag.ActiveJobsCount</div>
         </div>
         <div class="stat-card-premium">
             <div class="stat-icon" style="background: #DCFCE7; color: #15803D;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
             <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Tổng ứng viên</div>
-            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;" id="stat-apps">128</div>
+            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;" id="stat-apps">@ViewBag.TotalCandidatesCount</div>
         </div>
         <div class="stat-card-premium">
             <div class="stat-icon" style="background: #FEF3C7; color: #B45309;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
             <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">Đã tuyển tháng này</div>
-            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;">12</div>
+            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;">@ViewBag.HiredThisMonthCount</div>
         </div>
         <div class="stat-card-premium">
             <div class="stat-icon" style="background: #F3E8FF; color: #7E22CE;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path><path d="M16.24 16.24l2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path><path d="M4.93 19.07l2.83-2.83"></path><path d="M16.24 7.76l2.83-2.83"></path></svg>
             </div>
             <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase;">AI Analysis Score</div>
-            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;">88.4%</div>
+            <div style="font-size: 32px; font-weight: 700; margin-top: 4px;">@(ViewBag.AvgAiScore > 0 ? $"{ViewBag.AvgAiScore:F1}%" : "0.0%")</div>
         </div>
     </div>
 
@@ -98,32 +99,47 @@
             <div class="el-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                     <h2 style="font-size: 20px; margin: 0; font-weight: 700;">Tin tuyển dụng gần đây</h2>
-                    <a asp-action="Jobs" style="font-size: 14px; font-weight: 600; color: var(--el-black);">Tất cả →</a>
+                    <a asp-action="Jobs" style="font-size: 14px; font-weight: 600; color: var(--el-black); text-decoration: none;">Tất cả →</a>
                 </div>
                 <div id="job-list" style="display: flex; flex-direction: column; gap: 12px;">
-                    <!-- Dữ liệu mẫu (Static) -->
-                    <div class="el-bordered-item" style="padding: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 600; font-size: 15px;">Senior .NET Developer</div>
-                                <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px;">
-                                    Hạn nộp: 30/06/2024 · 45 ứng viên
+                    @if (ViewBag.RecentJobs != null && ((List<web_smart_recruitment.Models.TinTuyenDung>)ViewBag.RecentJobs).Any())
+                    {
+                        foreach (var job in (List<web_smart_recruitment.Models.TinTuyenDung>)ViewBag.RecentJobs)
+                        {
+                            <div class="el-bordered-item" style="padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <a href="@Url.Action("Applications", "Hr", new { maTin = job.MaTin })" style="font-weight: 600; font-size: 15px; text-decoration: none; color: var(--el-black); transition: color 0.2s;" onmouseover="this.style.color='var(--el-primary)'" onmouseout="this.style.color='var(--el-black)'">@job.TieuDe</a>
+                                        <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px;">
+                                            Hạn nộp: @(job.HanNopCv.HasValue ? job.HanNopCv.Value.ToString("dd/MM/yyyy") : "Không thời hạn") · @job.DonUngTuyens.Count ứng viên
+                                        </div>
+                                    </div>
+                                    @if (job.TrangThai == "DangMo")
+                                    {
+                                        <div class="el-status el-status--success" style="font-size: 10px;">ĐANG MỞ</div>
+                                    }
+                                    else if (job.TrangThai == "DaDong")
+                                    {
+                                        <div class="el-status el-status--danger" style="font-size: 10px;">ĐÃ ĐÓNG</div>
+                                    }
+                                    else if (job.TrangThai == "ChoDuyet")
+                                    {
+                                        <div class="el-status el-status--warning" style="font-size: 10px;">CHỜ DUYỆT</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="el-status" style="font-size: 10px;">@job.TrangThai</div>
+                                    }
                                 </div>
                             </div>
-                            <div class="el-status el-status--success" style="font-size: 10px;">ĐANG MỞ</div>
+                        }
+                    }
+                    else
+                    {
+                        <div style="padding: 20px 0; text-align: center; color: var(--el-warm-gray); font-size: 14px;">
+                            Bạn chưa có tin tuyển dụng nào. Hãy tạo mới ngay!
                         </div>
-                    </div>
-                    <div class="el-bordered-item" style="padding: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 600; font-size: 15px;">Frontend ReactJS Engineer</div>
-                                <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 4px;">
-                                    Hạn nộp: 15/06/2024 · 28 ứng viên
-                                </div>
-                            </div>
-                            <div class="el-status el-status--success" style="font-size: 10px;">ĐANG MỞ</div>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
         </div>
@@ -132,21 +148,25 @@
             <div class="el-card">
                 <h2 style="font-size: 20px; margin: 0 0 24px; font-weight: 700;">Hoạt động gần đây</h2>
                 <div class="activity-list">
-                    <div class="activity-item">
-                        <div class="activity-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
-                        <div>
-                            <div style="font-size: 14px; font-weight: 600;">Nguyễn Văn A <span style="font-weight: 400; color: var(--el-warm-gray);">vừa nộp đơn vào</span> Senior .NET</div>
-                            <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 2px;">2 phút trước</div>
+                    @if (ViewBag.RecentActivities != null && ((List<HrController.HrActivityDto>)ViewBag.RecentActivities).Any())
+                    {
+                        foreach (var act in (List<HrController.HrActivityDto>)ViewBag.RecentActivities)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-icon" style="@act.IconColor">@Html.Raw(act.IconHtml)</div>
+                                <div>
+                                    <div style="font-size: 14px; font-weight: 600;">@act.Title <span style="font-weight: 400; color: var(--el-warm-gray);">@act.Description</span></div>
+                                    <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 2px;">@HrController.GetRelativeTime(act.Time)</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div style="padding: 20px 0; text-align: center; color: var(--el-warm-gray); font-size: 14px;">
+                            Chưa có hoạt động tuyển dụng nào gần đây.
                         </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon" style="color: var(--el-success);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div>
-                        <div>
-                            <div style="font-size: 14px; font-weight: 600;">AI Analysis Hoàn tất</div>
-                            <div style="font-size: 14px; color: var(--el-warm-gray);">Vị trí Frontend ReactJS có 5 ứng viên mới đạt > 90%</div>
-                            <div style="font-size: 12px; color: var(--el-warm-gray); margin-top: 2px;">15 phút trước</div>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
         </div>
@@ -155,6 +175,6 @@
 
 @section Scripts {
     <script>
-        // Bảng điều khiển HR hiện đang hiển thị dữ liệu tĩnh mẫu.
+        // Bảng điều khiển HR đã được kết nối với dữ liệu từ DB.
     </script>
 }

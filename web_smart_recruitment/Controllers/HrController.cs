@@ -17,7 +17,158 @@ namespace web_smart_recruitment.Controllers
             _context = context;
         }
 
-        public IActionResult Dashboard() => View();
+        public class HrActivityDto
+        {
+            public DateTime Time { get; set; }
+            public string Title { get; set; } = null!;
+            public string Description { get; set; } = null!;
+            public string IconHtml { get; set; } = null!;
+            public string IconColor { get; set; } = null!;
+        }
+
+        public static string GetRelativeTime(DateTime dt)
+        {
+            var ts = DateTime.Now - dt;
+            if (ts.TotalSeconds < 0) return "vừa xong";
+            if (ts.TotalMinutes < 1) return "vừa xong";
+            if (ts.TotalMinutes < 60) return $"{(int)ts.TotalMinutes} phút trước";
+            if (ts.TotalHours < 24) return $"{(int)ts.TotalHours} giờ trước";
+            if (ts.TotalDays < 30) return $"{(int)ts.TotalDays} ngày trước";
+            return dt.ToString("dd/MM/yyyy HH:mm");
+        }
+
+        public async Task<IActionResult> Dashboard()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // Lấy thông tin nhà tuyển dụng
+            var employer = await _context.NhaTuyenDungs.FirstOrDefaultAsync(n => n.MaNhaTuyenDung == userId);
+            ViewBag.CompanyName = employer?.TenCongTy ?? User.Identity?.Name ?? "Nhà tuyển dụng";
+
+            // 1. Tin đang mở (Active Jobs)
+            int activeJobsCount = await _context.TinTuyenDungs
+                .CountAsync(t => t.MaNhaTuyenDung == userId && t.TrangThai == "DangMo" && (t.DaXoa == false || t.DaXoa == null));
+
+            // 2. Tổng ứng viên (Total Candidates)
+            int totalCandidatesCount = await _context.DonUngTuyens
+                .CountAsync(d => d.MaTinNavigation.MaNhaTuyenDung == userId && (d.MaTinNavigation.DaXoa == false || d.MaTinNavigation.DaXoa == null));
+
+            // 3. Đã tuyển tháng này (Hired this month)
+            int currentMonth = DateTime.Today.Month;
+            int currentYear = DateTime.Today.Year;
+            int hiredThisMonthCount = await _context.DonUngTuyens
+                .CountAsync(d => d.MaTinNavigation.MaNhaTuyenDung == userId 
+                    && d.TrangThai == "TrungTuyen" 
+                    && ((d.NgayCapNhat != null && d.NgayCapNhat.Value.Month == currentMonth && d.NgayCapNhat.Value.Year == currentYear)
+                        || (d.NgayCapNhat == null && d.NgayNop != null && d.NgayNop.Value.Month == currentMonth && d.NgayNop.Value.Year == currentYear)));
+
+            // 4. AI Analysis Score (Average DiemPhuHop)
+            double avgAiScore = await _context.KetQuaAis
+                .Where(k => k.MaDonNavigation.MaTinNavigation.MaNhaTuyenDung == userId && k.TrangThaiXuLy == "HoanThanh" && k.DiemPhuHop != null)
+                .AverageAsync(k => (double?)k.DiemPhuHop) ?? 0.0;
+
+            // 5. Tin tuyển dụng gần đây (Recent Jobs - Top 5)
+            var recentJobs = await _context.TinTuyenDungs
+                .Include(t => t.DonUngTuyens)
+                .Where(t => t.MaNhaTuyenDung == userId && (t.DaXoa == false || t.DaXoa == null))
+                .OrderByDescending(t => t.NgayTao)
+                .Take(5)
+                .ToListAsync();
+
+            // 6. Hoạt động gần đây (Recent Activities)
+            var recentApps = await _context.DonUngTuyens
+                .Include(d => d.MaUngVienNavigation)
+                .Include(d => d.MaTinNavigation)
+                .Where(d => d.MaTinNavigation.MaNhaTuyenDung == userId)
+                .OrderByDescending(d => d.NgayNop)
+                .Take(5)
+                .ToListAsync();
+
+            var recentAiResults = await _context.KetQuaAis
+                .Include(k => k.MaDonNavigation)
+                    .ThenInclude(d => d.MaUngVienNavigation)
+                .Include(k => k.MaDonNavigation)
+                    .ThenInclude(d => d.MaTinNavigation)
+                .Where(k => k.MaDonNavigation.MaTinNavigation.MaNhaTuyenDung == userId && k.TrangThaiXuLy == "HoanThanh")
+                .OrderByDescending(k => k.NgayPhanTich)
+                .Take(5)
+                .ToListAsync();
+
+            var recentInterviews = await _context.LichHenPhongVans
+                .Include(l => l.MaDonNavigation)
+                    .ThenInclude(d => d.MaUngVienNavigation)
+                .Include(l => l.MaDonNavigation)
+                    .ThenInclude(d => d.MaTinNavigation)
+                .Where(l => l.MaDonNavigation.MaTinNavigation.MaNhaTuyenDung == userId)
+                .OrderByDescending(l => l.NgayTao)
+                .Take(5)
+                .ToListAsync();
+
+            var activities = new List<HrActivityDto>();
+
+            foreach (var app in recentApps)
+            {
+                if (app.NgayNop.HasValue)
+                {
+                    activities.Add(new HrActivityDto
+                    {
+                        Time = app.NgayNop.Value,
+                        Title = app.MaUngVienNavigation?.HoTen ?? "Ứng viên",
+                        Description = $"vừa nộp đơn vào {app.MaTinNavigation?.TieuDe ?? "tin tuyển dụng"}",
+                        IconHtml = "<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"></path><circle cx=\"12\" cy=\"7\" r=\"4\"></circle></svg>",
+                        IconColor = ""
+                    });
+                }
+            }
+
+            foreach (var ai in recentAiResults)
+            {
+                if (ai.NgayPhanTich.HasValue)
+                {
+                    activities.Add(new HrActivityDto
+                    {
+                        Time = ai.NgayPhanTich.Value,
+                        Title = "AI Analysis Hoàn tất",
+                        Description = $"Vị trí {ai.MaDonNavigation?.MaTinNavigation?.TieuDe ?? "tin tuyển dụng"} có ứng viên {ai.MaDonNavigation?.MaUngVienNavigation?.HoTen ?? "mới"} đạt {ai.DiemPhuHop:F0}%",
+                        IconHtml = "<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z\"></path></svg>",
+                        IconColor = "color: var(--el-success);"
+                    });
+                }
+            }
+
+            foreach (var iv in recentInterviews)
+            {
+                if (iv.NgayTao.HasValue)
+                {
+                    activities.Add(new HrActivityDto
+                    {
+                        Time = iv.NgayTao.Value,
+                        Title = "Lên lịch phỏng vấn",
+                        Description = $"Đã lên lịch với {iv.MaDonNavigation?.MaUngVienNavigation?.HoTen ?? "ứng viên"} cho vị trí {iv.MaDonNavigation?.MaTinNavigation?.TieuDe ?? "tin tuyển dụng"}",
+                        IconHtml = "<svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"></line><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"></line><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"></line></svg>",
+                        IconColor = "color: var(--el-warning);"
+                    });
+                }
+            }
+
+            var sortedActivities = activities
+                .OrderByDescending(a => a.Time)
+                .Take(5)
+                .ToList();
+
+            ViewBag.ActiveJobsCount = activeJobsCount;
+            ViewBag.TotalCandidatesCount = totalCandidatesCount;
+            ViewBag.HiredThisMonthCount = hiredThisMonthCount;
+            ViewBag.AvgAiScore = avgAiScore;
+            ViewBag.RecentJobs = recentJobs;
+            ViewBag.RecentActivities = sortedActivities;
+
+            return View();
+        }
         
         // Chức năng Xem danh sách tin tuyển dụng của nhà tuyển dụng
         public async Task<IActionResult> Jobs(string status = null, int page = 1)
