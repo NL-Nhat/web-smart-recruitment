@@ -246,6 +246,23 @@
 
                     <div class="el-card" style="margin-top: 40px; border: 2px solid var(--el-black);">
                         <h3 style="margin-top: 0; font-size: 18px; font-weight: 700;">Hành động</h3>
+                        @{
+                            // Kiểm tra xem có thoả điều kiện để hiển thị chức năng Đặt lịch/Từ chối hồ sơ hay không
+                            bool showScheduleAndReject = false;
+                            if (Model.TrangThai == "DaChapNhan")
+                            {
+                                showScheduleAndReject = true;
+                            }
+                            else if (Model.TrangThai == "PhongVan")
+                            {
+                                var latestInterview = Model.LichHenPhongVans?.OrderByDescending(l => l.NgayTao ?? DateTime.MinValue).FirstOrDefault();
+                                if (latestInterview != null && latestInterview.TrangThai == "DaHuy")
+                                {
+                                    showScheduleAndReject = true;
+                                }
+                            }
+                        }
+
                         @if (Model.TrangThai == "AIDaLoc")
                         {
                             <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">AI đã lọc xong. Bạn có thể chấp nhận hoặc từ chối hồ sơ này.</p>
@@ -255,10 +272,16 @@
                                 <button type="submit" name="newStatus" value="TuChoi" class="el-btn-primary" style="background: #B91C1C; justify-content: center; width: 100%;">Từ chối hồ sơ</button>
                             </form>
                         }
-                        else if (Model.TrangThai == "DaChapNhan")
+                        else if (showScheduleAndReject)
                         {
-                            <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">Hồ sơ đã được chấp nhận. Vui lòng đặt lịch hẹn phỏng vấn.</p>
-                            <button type="button" onclick="document.getElementById('interview-modal').style.display = 'grid'" class="el-btn-primary" style="justify-content: center; width: 100%;">Đặt lịch hẹn phỏng vấn</button>
+                            <p class="el-text-muted" style="font-size: 13px; margin-bottom: 20px;">Hồ sơ đang chờ xếp lịch phỏng vấn.</p>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <button type="button" onclick="document.getElementById('interview-modal').style.display = 'grid'" class="el-btn-primary" style="justify-content: center; width: 100%;">Đặt lịch hẹn phỏng vấn</button>
+                                <form asp-action="UpdateApplicationStatus" method="post" style="display: flex; flex-direction: column; width: 100%;">
+                                    <input type="hidden" name="maDon" value="@Model.MaDon" />
+                                    <button type="submit" name="newStatus" value="TuChoi" class="el-btn-primary" style="background: #B91C1C; justify-content: center; width: 100%;">Từ chối hồ sơ</button>
+                                </form>
+                            </div>
                         }
                         else if (Model.TrangThai == "PhongVan")
                         {
