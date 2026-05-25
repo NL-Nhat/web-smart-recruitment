@@ -494,6 +494,35 @@ namespace web_smart_recruitment.Controllers
 
             return RedirectToAction("Jobs");
         }
+
+        // Chức năng: Xóa tin tuyển dụng (Soft Delete)
+        [HttpPost]
+        public async Task<IActionResult> DeleteJob(int maTin)
+        {
+            // 1. Lấy ID tài khoản của Nhà tuyển dụng đang đăng nhập từ Claims
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // 2. Dùng LINQ để tìm tin tuyển dụng:
+            // - Đảm bảo tin thuộc quyền sở hữu của nhà tuyển dụng này (bảo mật)
+            var job = await _context.TinTuyenDungs
+                .FirstOrDefaultAsync(t => t.MaTin == maTin && t.MaNhaTuyenDung == userId);
+
+            if (job != null)
+            {
+                // 3. Thực hiện Soft Delete: Không xóa thật khỏi DB mà chỉ cập nhật cờ DaXoa = true
+                job.DaXoa = true;
+                job.NgayCapNhat = DateTime.Now;
+                
+                await _context.SaveChangesAsync();
+            }
+
+            // Quay lại trang danh sách tin sau khi xử lý xong
+            return RedirectToAction("Jobs");
+        }
         public IActionResult JobStatus() => View();
         public IActionResult Company() => View();
         public async Task<IActionResult> Profile()

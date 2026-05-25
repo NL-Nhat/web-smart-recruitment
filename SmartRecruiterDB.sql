@@ -584,6 +584,7 @@ select *from UngVien
 select *from NhaTuyenDung
 select *from TinTuyenDung
 select *from ChiTietKyNang_TinTuyenDung
+select *from ChiTietKyNang_UngVien
 select *from DanhMucKyNang
 select *from DonUngTuyen
 select *from KetQua_AI
