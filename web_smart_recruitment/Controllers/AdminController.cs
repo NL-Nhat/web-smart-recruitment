@@ -361,7 +361,223 @@ namespace web_smart_recruitment.Controllers
             public int MaKyNang { get; set; }
         }
 
-        public IActionResult Reports() => View();
+        // Lớp model phụ trợ để lưu trữ dữ liệu hoạt động gần nhất
+        public class ActivityLog
+        {
+            public DateTime? Time { get; set; }
+            public string Type { get; set; } = null!;
+            public string Content { get; set; } = null!;
+            public string Actor { get; set; } = null!;
+            public string CssClass { get; set; } = null!;
+        }
+
+        public async Task<IActionResult> Reports()
+        {
+            var currentYear = DateTime.Now.Year;
+            
+            // 1. Thống kê lượt ứng tuyển theo tháng trong năm nay (Tối ưu bằng LINQ GroupBy trực tiếp ở DB)
+            var appsByMonthRaw = await _context.DonUngTuyens
+                .Where(d => d.NgayNop.HasValue && d.NgayNop.Value.Year == currentYear)
+                .GroupBy(d => d.NgayNop.Value.Month)
+                .Select(g => new { Month = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            // Khởi tạo danh sách 12 tháng mặc định là 0
+            var appsByMonth = new Dictionary<int, int>();
+            for (int i = 1; i <= 12; i++) appsByMonth[i] = 0;
+            
+            // Cập nhật số liệu thực tế
+            foreach (var item in appsByMonthRaw)
+            {
+                appsByMonth[item.Month] = item.Count;
+            }
+
+            // 2. Thống kê phân bổ vai trò người dùng (Tối ưu bằng cách đếm số lượng tài khoản theo từng vai trò)
+            var roleDistribution = await _context.TaiKhoans
+                .Include(t => t.MaVaiTroNavigation)
+                .GroupBy(t => t.MaVaiTroNavigation.TenVaiTro)
+                .Select(g => new { Role = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            int totalCandidates = roleDistribution.FirstOrDefault(r => r.Role == "UngVien")?.Count ?? 0;
+            int totalEmployers = roleDistribution.FirstOrDefault(r => r.Role == "NhaTuyenDung")?.Count ?? 0;
+            int totalAdmins = roleDistribution.FirstOrDefault(r => r.Role == "Admin")?.Count ?? 0;
+            int totalUsers = totalCandidates + totalEmployers + totalAdmins;
+            
+            // Tính phần trăm để vẽ biểu đồ hình tròn trên View
+            ViewBag.CandidatePct = totalUsers > 0 ? (totalCandidates * 100 / totalUsers) : 0;
+            ViewBag.EmployerPct = totalUsers > 0 ? (totalEmployers * 100 / totalUsers) : 0;
+            ViewBag.AdminPct = totalUsers > 0 ? (totalAdmins * 100 / totalUsers) : 0;
+
+            // 3. Danh sách hoạt động gần nhất (Kết hợp Tin tuyển dụng, Ứng tuyển, Người dùng mới)
+            
+            // Lấy 5 tin tuyển dụng mới nhất (Dùng Join để lấy tên công ty tối ưu)
+            var recentJobs = await _context.TinTuyenDungs
+                .OrderByDescending(t => t.NgayTao)
+                .Take(5)
+                .Join(_context.NhaTuyenDungs, t => t.MaNhaTuyenDung, n => n.MaNhaTuyenDung, (t, n) => new ActivityLog {
+                    Time = t.NgayTao,
+                    Type = "TIN TUYỂN DỤNG",
+                    Content = "Tạo mới tin: " + t.TieuDe,
+                    Actor = n.TenCongTy ?? "Nhà tuyển dụng",
+                    CssClass = "el-status--info"
+                })
+                .ToListAsync();
+
+            // Lấy 5 lượt ứng tuyển mới nhất
+            var recentApps = await _context.DonUngTuyens
+                .OrderByDescending(d => d.NgayNop)
+                .Take(5)
+                .Join(_context.UngViens, d => d.MaUngVien, u => u.MaUngVien, (d, u) => new ActivityLog {
+                    Time = d.NgayNop,
+                    Type = "ỨNG TUYỂN",
+                    Content = "Nộp hồ sơ ứng tuyển vào mã tin #" + d.MaTin,
+                    Actor = u.HoTen ?? "Ứng viên",
+                    CssClass = "el-status--success"
+                })
+                .ToListAsync();
+
+            // Lấy 5 người dùng mới nhất
+            var recentUsers = await _context.TaiKhoans
+                .OrderByDescending(t => t.NgayTao)
+                .Take(5)
+                .Join(_context.VaiTros, t => t.MaVaiTro, v => v.MaVaiTro, (t, v) => new ActivityLog {
+                    Time = t.NgayTao,
+                    Type = "NGƯỜI DÙNG",
+                    Content = "Đăng ký tài khoản (" + v.TenVaiTro + ")",
+                    Actor = t.Email,
+                    CssClass = "el-status--warning"
+                })
+                .ToListAsync();
+
+            // Gộp cả 3 loại hoạt động lại và sắp xếp lấy 10 hoạt động mới nhất (Clean code)
+            var recentActivities = recentJobs.Union(recentApps).Union(recentUsers)
+                .OrderByDescending(x => x.Time)
+                .Take(10)
+                .ToList();
+
+            ViewBag.AppsByMonth = appsByMonth;
+            ViewBag.RecentActivities = recentActivities;
+            
+            return View();
+        }
+
+        /// <summary>
+        /// Xuất file Excel (định dạng CSV UTF-8) tổng hợp 100 hoạt động gần nhất.
+        /// Sử dụng BOM để đảm bảo Excel nhận dạng đúng tiếng Việt.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> ExportExcel()
+        {
+            // Tối ưu hóa: Giới hạn lấy 50 bản ghi mỗi loại để đảm bảo hiệu suất
+            var recentJobs = await _context.TinTuyenDungs.OrderByDescending(t => t.NgayTao).Take(50)
+                .Join(_context.NhaTuyenDungs, t => t.MaNhaTuyenDung, n => n.MaNhaTuyenDung, (t, n) => new ActivityLog {
+                    Time = t.NgayTao, Type = "TIN TUYỂN DỤNG", Content = "Tạo mới tin: " + t.TieuDe, Actor = n.TenCongTy ?? "Nhà tuyển dụng", CssClass = ""
+                }).ToListAsync();
+
+            var recentApps = await _context.DonUngTuyens.OrderByDescending(d => d.NgayNop).Take(50)
+                .Join(_context.UngViens, d => d.MaUngVien, u => u.MaUngVien, (d, u) => new ActivityLog {
+                    Time = d.NgayNop, Type = "ỨNG TUYỂN", Content = "Ứng tuyển mã tin #" + d.MaTin, Actor = u.HoTen ?? "Ứng viên", CssClass = ""
+                }).ToListAsync();
+
+            var recentUsers = await _context.TaiKhoans.OrderByDescending(t => t.NgayTao).Take(50)
+                .Join(_context.VaiTros, t => t.MaVaiTro, v => v.MaVaiTro, (t, v) => new ActivityLog {
+                    Time = t.NgayTao, Type = "NGƯỜI DÙNG", Content = "Đăng ký (" + v.TenVaiTro + ")", Actor = t.Email, CssClass = ""
+                }).ToListAsync();
+
+            var allActivities = recentJobs.Union(recentApps).Union(recentUsers).OrderByDescending(x => x.Time).ToList();
+
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("Thời gian,Loại dữ liệu,Nội dung,Người thực hiện");
+
+            foreach (var item in allActivities)
+            {
+                // Escape dấu phẩy và ngoặc kép để chuẩn định dạng CSV
+                var content = item.Content.Replace("\"", "\"\"");
+                var actor = item.Actor.Replace("\"", "\"\"");
+                builder.AppendLine($"{item.Time:dd/MM/yyyy HH:mm},{item.Type},\"{content}\",\"{actor}\"");
+            }
+
+            var bom = new byte[] { 0xEF, 0xBB, 0xBF }; // Byte Order Mark giúp Excel đọc UTF8 chuẩn
+            var finalBytes = bom.Concat(System.Text.Encoding.UTF8.GetBytes(builder.ToString())).ToArray();
+
+            return File(finalBytes, "text/csv", $"BaoCaoTongHop_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        }
+
+        /// <summary>
+        /// Tạo báo cáo mới (xuất file tùy chỉnh) theo yêu cầu của admin
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> ExportCustomReport(string reportType, string dateRange)
+        {
+            // Fix SqlDateTime overflow: SQL Server DATETIME hỗ trợ từ 1/1/1753 đến 31/12/9999
+            // Sử dụng các năm như 2000 và 2100 để an toàn và dư sức bao quát dữ liệu hệ thống
+            var queryStart = new DateTime(2000, 1, 1);
+            var queryEnd = new DateTime(2100, 1, 1);
+            var now = DateTime.Now;
+
+            // Phân giải khoảng thời gian
+            if (dateRange == "ThisMonth")
+            {
+                queryStart = new DateTime(now.Year, now.Month, 1);
+                queryEnd = queryStart.AddMonths(1).AddTicks(-1);
+            }
+            else if (dateRange == "LastMonth")
+            {
+                queryStart = new DateTime(now.Year, now.Month, 1).AddMonths(-1);
+                queryEnd = new DateTime(now.Year, now.Month, 1).AddTicks(-1);
+            }
+
+            var logs = new List<ActivityLog>();
+
+            // Sử dụng LINQ linh hoạt tùy theo reportType
+            if (reportType == "All" || reportType == "Jobs")
+            {
+                var jobs = await _context.TinTuyenDungs
+                    .Where(t => t.NgayTao >= queryStart && t.NgayTao <= queryEnd)
+                    .Join(_context.NhaTuyenDungs, t => t.MaNhaTuyenDung, n => n.MaNhaTuyenDung, (t, n) => new ActivityLog {
+                        Time = t.NgayTao, Type = "TIN TUYỂN DỤNG", Content = "Tạo mới tin: " + t.TieuDe, Actor = n.TenCongTy ?? "HR", CssClass = ""
+                    }).ToListAsync();
+                logs.AddRange(jobs);
+            }
+
+            if (reportType == "All" || reportType == "Apps")
+            {
+                var apps = await _context.DonUngTuyens
+                    .Where(d => d.NgayNop >= queryStart && d.NgayNop <= queryEnd)
+                    .Join(_context.UngViens, d => d.MaUngVien, u => u.MaUngVien, (d, u) => new ActivityLog {
+                        Time = d.NgayNop, Type = "ỨNG TUYỂN", Content = "Ứng tuyển tin #" + d.MaTin, Actor = u.HoTen ?? "Ứng viên", CssClass = ""
+                    }).ToListAsync();
+                logs.AddRange(apps);
+            }
+
+            if (reportType == "All" || reportType == "Users")
+            {
+                var users = await _context.TaiKhoans
+                    .Where(t => t.NgayTao >= queryStart && t.NgayTao <= queryEnd)
+                    .Join(_context.VaiTros, t => t.MaVaiTro, v => v.MaVaiTro, (t, v) => new ActivityLog {
+                        Time = t.NgayTao, Type = "NGƯỜI DÙNG", Content = "Đăng ký mới (" + v.TenVaiTro + ")", Actor = t.Email, CssClass = ""
+                    }).ToListAsync();
+                logs.AddRange(users);
+            }
+
+            var finalLogs = logs.OrderByDescending(x => x.Time).ToList();
+
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("Thời gian,Loại dữ liệu,Nội dung,Người thực hiện");
+
+            foreach (var item in finalLogs)
+            {
+                var content = item.Content.Replace("\"", "\"\"");
+                var actor = item.Actor.Replace("\"", "\"\"");
+                builder.AppendLine($"{item.Time:dd/MM/yyyy HH:mm},{item.Type},\"{content}\",\"{actor}\"");
+            }
+
+            var bom = new byte[] { 0xEF, 0xBB, 0xBF };
+            var bytes = bom.Concat(System.Text.Encoding.UTF8.GetBytes(builder.ToString())).ToArray();
+
+            return File(bytes, "text/csv", $"CustomReport_{dateRange}_{DateTime.Now:yyyyMMdd}.csv");
+        }
         
         public async Task<IActionResult> Profile()
         {

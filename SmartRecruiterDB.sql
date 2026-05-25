@@ -100,10 +100,10 @@ CREATE TABLE TinTuyenDung (
     YeuCauCongViec NVARCHAR(MAX) NOT NULL, 
     QuyenLoi NVARCHAR(MAX),
     TrangThai VARCHAR(50) DEFAULT 'DangMo', 
-    HanNopCV DATETIME,
+    HanNopCV DATETIME not null,
     DaXoa BIT DEFAULT 0, 
-    NgayTao DATETIME DEFAULT GETDATE(),
-    NgayCapNhat DATETIME DEFAULT GETDATE(),
+    NgayTao DATETIME DEFAULT GETDATE() not null,
+    NgayCapNhat DATETIME DEFAULT GETDATE() not null,
     CONSTRAINT CHK_TinTuyenDung_TrangThai CHECK (TrangThai IN ('DangMo', 'DaDong')),
     CONSTRAINT CHK_TinTuyenDung_HinhThuc CHECK (HinhThucLamViec IN ('FullTime', 'PartTime', 'Online', 'Intern')),
     CONSTRAINT CHK_TinTuyenDung_Luong CHECK (MucLuongToiThieu >= 0 AND MucLuongToiDa >= MucLuongToiThieu)
