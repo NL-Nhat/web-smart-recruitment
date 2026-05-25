@@ -1,3 +1,4 @@
+@model web_smart_recruitment.Models.TaiKhoan
 @{
     ViewData["Title"] = "Hồ sơ Admin";
     Layout = "_AdminLayout";
@@ -26,24 +27,26 @@
                 <div class="el-grid el-grid--2" style="row-gap: 24px;">
                     <div class="el-form-group">
                         <label class="el-label">Email quản trị</label>
-                        <input type="email" class="el-input" id="email" value="admin@smartrecruiter.com" readonly>
+                        <input type="email" class="el-input" id="email" value="@Model.Email" required disabled>
                     </div>
                     <div class="el-form-group">
                         <label class="el-label">Họ và tên</label>
-                        <input type="text" class="el-input" id="name" value="Quản trị viên hệ thống">
+                        <input type="text" class="el-input" id="name" value="Quản trị viên hệ thống" readonly style="background: #F1F5F9; cursor: not-allowed;">
                     </div>
                     <div class="el-form-group">
                         <label class="el-label">Mật khẩu hiện tại</label>
-                        <input type="password" class="el-input" placeholder="********">
+                        <input type="password" class="el-input" id="currentPassword" placeholder="********" disabled>
                     </div>
                     <div class="el-form-group">
                         <label class="el-label">Mật khẩu mới</label>
-                        <input type="password" class="el-input" placeholder="Nhập nếu muốn đổi">
+                        <input type="password" class="el-input" id="newPassword" placeholder="********" disabled>
                     </div>
                 </div>
 
                 <div style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 16px;">
-                    <button type="submit" class="el-btn-primary" style="padding: 0 40px; height: 52px; font-size: 16px;">Lưu cập nhật</button>
+                    <button type="button" id="btn-edit" class="el-btn-primary" style="padding: 0 40px; height: 52px; font-size: 16px;">Chỉnh sửa</button>
+                    <button type="button" id="btn-cancel" class="el-btn-white" style="padding: 0 40px; height: 52px; font-size: 16px; display: none; border: 1px solid var(--el-border);">Hủy bỏ</button>
+                    <button type="submit" id="btn-save" class="el-btn-primary" style="padding: 0 40px; height: 52px; font-size: 16px; display: none;">Lưu cập nhật</button>
                 </div>
             </form>
         </div>
@@ -52,6 +55,115 @@
 
 @section Scripts {
     <script>
-        // Chức năng hồ sơ admin hiện đang hiển thị dữ liệu tĩnh.
+        document.addEventListener('DOMContentLoaded', function () {
+            const emailInput = document.getElementById('email');
+            const currentPwdInput = document.getElementById('currentPassword');
+            const newPwdInput = document.getElementById('newPassword');
+
+            const btnEdit = document.getElementById('btn-edit');
+            const btnCancel = document.getElementById('btn-cancel');
+            const btnSave = document.getElementById('btn-save');
+            const form = document.getElementById('f-profile');
+            const msgDiv = document.getElementById('msg');
+
+            let originalEmail = emailInput.value;
+
+            btnEdit.addEventListener('click', function () {
+                // Chuyển sang chế độ Chỉnh sửa
+                emailInput.disabled = false;
+                currentPwdInput.disabled = false;
+                newPwdInput.disabled = false;
+
+                btnEdit.style.display = 'none';
+                btnCancel.style.display = 'inline-block';
+                btnSave.style.display = 'inline-block';
+            });
+
+            btnCancel.addEventListener('click', function () {
+                // Khôi phục và quay lại chế độ Xem
+                emailInput.value = originalEmail;
+                emailInput.disabled = true;
+
+                currentPwdInput.value = '';
+                currentPwdInput.disabled = true;
+                currentPwdInput.placeholder = '********';
+
+                newPwdInput.value = '';
+                newPwdInput.disabled = true;
+                newPwdInput.placeholder = '********';
+
+                btnEdit.style.display = 'inline-block';
+                btnCancel.style.display = 'none';
+                btnSave.style.display = 'none';
+                
+                msgDiv.innerHTML = '';
+            });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const email = emailInput.value.trim();
+                const currentPassword = currentPwdInput.value;
+                const newPassword = newPwdInput.value;
+
+                // Client-side validation: Nếu có nhập mật khẩu mới, bắt buộc nhập mật khẩu hiện tại
+                if (newPassword && !currentPassword) {
+                    msgDiv.innerHTML = `<div class="el-alert el-alert--danger" style="margin-bottom: 24px; padding: 16px; background: #fee2e2; color: #b91c1c; border-radius: 6px; font-weight: 500;">Vui lòng nhập mật khẩu hiện tại để thay đổi mật khẩu mới.</div>`;
+                    return;
+                }
+
+                // Vô hiệu hóa nút lưu khi đang xử lý
+                btnSave.disabled = true;
+                const originalBtnText = btnSave.innerText;
+                btnSave.innerText = 'Đang xử lý...';
+
+                fetch('/Admin/UpdateProfile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        currentPassword: currentPassword || null,
+                        newPassword: newPassword || null
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        msgDiv.innerHTML = `<div class="el-alert el-alert--success" style="margin-bottom: 24px; padding: 16px; background: #dcfce7; color: #15803d; border-radius: 6px; font-weight: 500;">${data.message}</div>`;
+                        
+                        // Cập nhật lại email gốc
+                        originalEmail = email;
+                        emailInput.value = email;
+
+                        // Xóa các trường mật khẩu
+                        currentPwdInput.value = '';
+                        newPwdInput.value = '';
+
+                        // Quay lại chế độ xem
+                        emailInput.disabled = true;
+                        currentPwdInput.disabled = true;
+                        currentPwdInput.placeholder = '********';
+                        newPwdInput.disabled = true;
+                        newPwdInput.placeholder = '********';
+
+                        btnEdit.style.display = 'inline-block';
+                        btnCancel.style.display = 'none';
+                        btnSave.style.display = 'none';
+                    } else {
+                        msgDiv.innerHTML = `<div class="el-alert el-alert--danger" style="margin-bottom: 24px; padding: 16px; background: #fee2e2; color: #b91c1c; border-radius: 6px; font-weight: 500;">${data.message}</div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    msgDiv.innerHTML = `<div class="el-alert el-alert--danger" style="margin-bottom: 24px; padding: 16px; background: #fee2e2; color: #b91c1c; border-radius: 6px; font-weight: 500;">Lỗi hệ thống hoặc lỗi kết nối.</div>`;
+                })
+                .finally(() => {
+                    btnSave.disabled = false;
+                    btnSave.innerText = originalBtnText;
+                });
+            });
+        });
     </script>
 }

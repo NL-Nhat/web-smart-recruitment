@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using web_smart_recruitment.Models;
 using web_smart_recruitment.Models.ViewModels;
 using web_smart_recruitment.Services;
@@ -347,7 +348,84 @@ namespace web_smart_recruitment.Controllers
         }
 
         public IActionResult Reports() => View();
-        public IActionResult Profile() => View();
+        
+        public async Task<IActionResult> Profile()
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            {
+                return RedirectToAction("Login", "Admin");
+            }
+
+            var account = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == userId);
+            if (account == null)
+            {
+                return RedirectToAction("Login", "Admin");
+            }
+
+            return View(account);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileModel model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.Email))
+            {
+                return Json(new { success = false, message = "Email không được để trống." });
+            }
+
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            {
+                return Json(new { success = false, message = "Không tìm thấy phiên đăng nhập." });
+            }
+
+            var account = await _context.TaiKhoans.FirstOrDefaultAsync(t => t.MaTaiKhoan == userId);
+            if (account == null)
+            {
+                return Json(new { success = false, message = "Tài khoản không tồn tại." });
+            }
+
+            // Kiểm tra trùng email với tài khoản khác
+            var exists = await _context.TaiKhoans.AnyAsync(t => t.Email.ToLower() == model.Email.ToLower().Trim() && t.MaTaiKhoan != userId);
+            if (exists)
+            {
+                return Json(new { success = false, message = "Email này đã được sử dụng bởi một tài khoản khác." });
+            }
+
+            // Cập nhật mật khẩu nếu được cung cấp mật khẩu mới
+            if (!string.IsNullOrEmpty(model.NewPassword))
+            {
+                if (string.IsNullOrEmpty(model.CurrentPassword))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới." });
+                }
+
+                if (!_authService.VerifyPassword(model.CurrentPassword, account.MatKhauHash))
+                {
+                    return Json(new { success = false, message = "Mật khẩu hiện tại không chính xác." });
+                }
+
+                account.MatKhauHash = _authService.HashPassword(model.NewPassword);
+            }
+
+            account.Email = model.Email.Trim();
+            account.NgayCapNhat = DateTime.Now;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+
+                // Cập nhật lại Auth Cookies để đồng bộ Email mới của Admin
+                SetAuthCookies(account, "Admin", "Quản trị viên");
+                return Json(new { success = true, message = "Cập nhật thông tin hồ sơ thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+        
         public async Task<IActionResult> Roles()
         {
             var roles = await _context.VaiTros.ToListAsync();
@@ -452,6 +530,30 @@ namespace web_smart_recruitment.Controllers
             {
                 return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
             }
+        }
+
+        private void SetAuthCookies(TaiKhoan account, string roleName, string fullName)
+        {
+            var accessToken = _authService.GenerateAccessToken(account, roleName, fullName);
+            var refreshToken = _authService.GenerateRefreshToken(account);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Yêu cầu HTTPS
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            };
+
+            Response.Cookies.Append("AccessToken", accessToken, cookieOptions);
+            Response.Cookies.Append("RefreshToken", refreshToken, cookieOptions);
+        }
+
+        public class UpdateProfileModel
+        {
+            public string Email { get; set; } = null!;
+            public string? CurrentPassword { get; set; }
+            public string? NewPassword { get; set; }
         }
 
         public class DeleteRoleModel
