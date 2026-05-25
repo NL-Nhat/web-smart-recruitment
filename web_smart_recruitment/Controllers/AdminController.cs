@@ -421,6 +421,44 @@ namespace web_smart_recruitment.Controllers
             public string? MoTa { get; set; }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteRole([FromBody] DeleteRoleModel model)
+        {
+            if (model == null)
+            {
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
+            }
+
+            var role = await _context.VaiTros.FirstOrDefaultAsync(r => r.MaVaiTro == model.MaVaiTro);
+            if (role == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy vai trò cần xóa." });
+            }
+
+            // Nghiệp vụ: Chỉ được xóa khi chưa có ai có vai trò đó
+            var isAssigned = await _context.TaiKhoans.AnyAsync(t => t.MaVaiTro == model.MaVaiTro);
+            if (isAssigned)
+            {
+                return Json(new { success = false, message = "Không thể xóa vai trò này vì đang có người dùng thuộc vai trò này!" });
+            }
+
+            try
+            {
+                _context.VaiTros.Remove(role);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Xóa vai trò thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        public class DeleteRoleModel
+        {
+            public int MaVaiTro { get; set; }
+        }
+
         public class AddUserModel
         {
             public string Email { get; set; } = null!;
