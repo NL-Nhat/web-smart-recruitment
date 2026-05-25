@@ -654,6 +654,7 @@ namespace web_smart_recruitment.Controllers
                 .Include(d => d.MaUngVienNavigation)
                 .Include(d => d.MaTinNavigation)
                 .Include(d => d.KetQuaAis)
+                .Include(d => d.LichHenPhongVans)
                 .FirstOrDefaultAsync(d => d.MaDon == maDon && d.MaTinNavigation.MaNhaTuyenDung == maNhaTuyenDung);
 
             // 3. Nếu không tìm thấy đơn (hoặc đơn không thuộc về nhà tuyển dụng này), trả về lỗi 404
@@ -727,8 +728,8 @@ namespace web_smart_recruitment.Controllers
                     NgayPhuongVan = NgayPhuongVan,
                     GioPhuongVan = GioPhuongVan,
                     HinhThuc = HinhThuc,
-                    LinkHop = string.IsNullOrWhiteSpace(LinkHop) ? null : LinkHop,
-                    DiaDiem = string.IsNullOrWhiteSpace(DiaDiem) ? null : DiaDiem,
+                    LinkHop = (HinhThuc == "Online") ? (string.IsNullOrWhiteSpace(LinkHop) ? null : LinkHop) : null,
+                    DiaDiem = (HinhThuc != "Online") ? (string.IsNullOrWhiteSpace(DiaDiem) ? null : DiaDiem) : null,
                     GhiChu = string.IsNullOrWhiteSpace(GhiChu) ? null : GhiChu,
                     TrangThai = "ChoXacNhan",
                     NgayTao = DateTime.Now
