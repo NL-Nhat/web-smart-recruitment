@@ -13,6 +13,9 @@
             border: 1px solid rgba(0,0,0,0.05);
             margin-bottom: 32px;
         }
+        /* Style cho Modal thiết kế riêng */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; place-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; border-radius: 24px; width: 100%; max-width: 500px; padding: 40px; }
         .bar-chart-demo {
             display: flex;
             align-items: flex-end;
@@ -52,41 +55,58 @@
                 <p class="el-text-muted">Phân tích chuyên sâu về dữ liệu tuyển dụng và người dùng trên toàn hệ thống.</p>
             </div>
             <div style="display: flex; gap: 12px;">
-                <button class="el-btn-white" style="display: flex; align-items: center; gap: 8px;">
+                <a href="@Url.Action("ExportExcel", "Admin")" class="el-btn-white" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    Xuất file Excel
-                </button>
-                <button class="el-btn-primary">Tạo báo cáo mới</button>
+                    Xuất file Excel (Tổng hợp)
+                </a>
+                <button class="el-btn-primary" id="btn-open-report-modal">Tạo báo cáo tùy chỉnh</button>
             </div>
         </header>
+
+@{
+    // Tính toán tỷ lệ biểu đồ tròn cho phân bổ vai trò
+    var pctCandidate = ViewBag.CandidatePct ?? 0;
+    var pctEmployer = ViewBag.EmployerPct ?? 0;
+    var pctAdmin = ViewBag.AdminPct ?? 0;
+    
+    // Tính toán giá trị min/max cho biểu đồ cột
+    var appsByMonth = ViewBag.AppsByMonth as Dictionary<int, int>;
+    int maxApps = appsByMonth != null && appsByMonth.Any() ? appsByMonth.Values.Max() : 0;
+    if (maxApps == 0) maxApps = 1; // Ngăn chia cho 0
+}
 
         <div class="sr-grid" style="grid-template-columns: 1fr 1fr; gap: 32px;">
             <div class="report-card">
                 <h3 style="margin-top: 0; font-size: 18px; font-weight: 700; margin-bottom: 24px;">Lượt ứng tuyển theo tháng</h3>
                 <div class="bar-chart-demo">
-                    <div class="bar-item" style="height: 40%;"><span class="bar-label">Tháng 1</span></div>
-                    <div class="bar-item" style="height: 65%;"><span class="bar-label">Tháng 2</span></div>
-                    <div class="bar-item" style="height: 50%;"><span class="bar-label">Tháng 3</span></div>
-                    <div class="bar-item" style="height: 85%;"><span class="bar-label">Tháng 4</span></div>
-                    <div class="bar-item" style="height: 70%;"><span class="bar-label">Tháng 5</span></div>
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        var count = appsByMonth != null && appsByMonth.ContainsKey(i) ? appsByMonth[i] : 0;
+                        var heightPct = (int)((double)count / maxApps * 100);
+                        if (heightPct == 0) heightPct = 5; // Độ cao tối thiểu để nhìn thấy cột
+                        
+                        <div class="bar-item" style="height: @(heightPct)%;" title="@count lượt ứng tuyển">
+                            <span class="bar-label">Thg @i</span>
+                        </div>
+                    }
                 </div>
             </div>
             <div class="report-card">
                 <h3 style="margin-top: 0; font-size: 18px; font-weight: 700; margin-bottom: 24px;">Phân bổ vai trò người dùng</h3>
                 <div style="display: flex; gap: 24px; align-items: center; height: 160px; justify-content: center;">
-                    <div style="width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--el-black) 0% 70%, #94A3B8 70% 95%, #E2E8F0 95% 100%);"></div>
+                    <div style="width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--el-black) 0% @(pctCandidate)%, #94A3B8 @(pctCandidate)% @(pctCandidate + pctEmployer)%, #E2E8F0 @(pctCandidate + pctEmployer)% 100%);"></div>
                     <div style="font-size: 13px;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                             <div style="width:12px; height:12px; background:var(--el-black); border-radius:3px;"></div>
-                            <span>Ứng viên (70%)</span>
+                            <span>Ứng viên (@pctCandidate%)</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                             <div style="width:12px; height:12px; background:#94A3B8; border-radius:3px;"></div>
-                            <span>Nhà tuyển dụng (25%)</span>
+                            <span>Nhà tuyển dụng (@pctEmployer%)</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div style="width:12px; height:12px; background:#E2E8F0; border-radius:3px;"></div>
-                            <span>Admin (5%)</span>
+                            <span>Admin (@pctAdmin%)</span>
                         </div>
                     </div>
                 </div>
@@ -107,20 +127,71 @@
                     </tr>
                 </thead>
                 <tbody style="font-size: 14px;">
-                    <tr style="border-bottom: 1px solid var(--el-border-subtle);">
-                        <td style="padding: 16px 24px;">22/04/2026 21:05</td>
-                        <td style="padding: 16px 24px;"><span class="el-status el-status--info">TIN TUYỂN DỤNG</span></td>
-                        <td style="padding: 16px 24px;">Tạo mới tin "Senior AI Engineer"</td>
-                        <td style="padding: 16px 24px; font-weight: 600;">FPT Software</td>
-                    </tr>
+                    @if (ViewBag.RecentActivities != null)
+                    {
+                        foreach (var activity in ViewBag.RecentActivities)
+                        {
+                            <tr style="border-bottom: 1px solid var(--el-border-subtle);">
+                                <td style="padding: 16px 24px;">@(activity.Time?.ToString("dd/MM/yyyy HH:mm"))</td>
+                                <td style="padding: 16px 24px;"><span class="el-status @activity.CssClass">@activity.Type</span></td>
+                                <td style="padding: 16px 24px;">@activity.Content</td>
+                                <td style="padding: 16px 24px; font-weight: 600;">@activity.Actor</td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>
     </main>
 </div>
 
+<!-- Giao diện Modal tạo báo cáo mới -->
+<div class="modal-overlay" id="modal-report">
+    <div class="modal-content">
+        <h2 style="font-size: 24px; font-weight: 800; margin-top: 0; margin-bottom: 8px;">Tạo báo cáo tùy chỉnh</h2>
+        <p class="el-text-muted" style="margin-bottom: 32px;">Lọc dữ liệu để xuất ra file Excel (.csv) theo yêu cầu.</p>
+        
+        <form asp-action="ExportCustomReport" asp-controller="Admin" method="post">
+            <div class="el-form-group">
+                <label class="el-label">Loại báo cáo</label>
+                <select class="el-select" name="reportType">
+                    <option value="All">Tất cả dữ liệu</option>
+                    <option value="Jobs">Chỉ Tin tuyển dụng</option>
+                    <option value="Apps">Chỉ Lượt ứng tuyển</option>
+                    <option value="Users">Chỉ Người dùng đăng ký</option>
+                </select>
+            </div>
+            <div class="el-form-group">
+                <label class="el-label">Khoảng thời gian</label>
+                <select class="el-select" name="dateRange">
+                    <option value="AllTime">Toàn thời gian</option>
+                    <option value="ThisMonth">Tháng hiện tại</option>
+                    <option value="LastMonth">Tháng trước</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 40px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="el-btn-white" id="btn-close-report">Hủy bỏ</button>
+                <button type="submit" class="el-btn-primary" style="padding: 0 32px;" onclick="setTimeout(()=>document.getElementById('modal-report').style.display='none', 1000)">Xuất báo cáo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        // Chức năng báo cáo hiện đang hiển thị dữ liệu tĩnh.
+        // Dữ liệu báo cáo thống kê đã được load động từ Database thông qua ViewBag.
+        
+        // Xử lý bật tắt Modal tạo báo cáo mới
+        const modalReport = document.getElementById("modal-report");
+        const btnOpen = document.getElementById("btn-open-report-modal");
+        const btnClose = document.getElementById("btn-close-report");
+
+        btnOpen.onclick = () => modalReport.style.display = "grid";
+        btnClose.onclick = () => modalReport.style.display = "none";
+
+        window.onclick = (e) => {
+            if (e.target == modalReport) modalReport.style.display = "none";
+        };
     </script>
 }
