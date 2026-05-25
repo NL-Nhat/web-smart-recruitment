@@ -24,7 +24,21 @@ namespace web_smart_recruitment.Controllers
         }
 
         public IActionResult Login() => View();
-        public IActionResult Dashboard() => View();
+        
+        public async Task<IActionResult> Dashboard()
+        {
+            var countUsers = await _context.TaiKhoans.CountAsync();
+            var countHr = await _context.NhaTuyenDungs.CountAsync();
+            var countJobs = await _context.TinTuyenDungs.CountAsync();
+            var countApps = await _context.DonUngTuyens.CountAsync();
+
+            ViewBag.CountUsers = countUsers;
+            ViewBag.CountHr = countHr;
+            ViewBag.CountJobs = countJobs;
+            ViewBag.CountApps = countApps;
+
+            return View();
+        }
 
         public async Task<IActionResult> Users()
         {
