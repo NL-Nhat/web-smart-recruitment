@@ -21,30 +21,30 @@
                 <p class="el-text-muted">Chào mừng trở lại, quản trị viên hệ thống. Đây là tóm tắt hoạt động hôm nay.</p>
             </div>
             <div style="display: flex; gap: 12px;">
-                <button class="el-btn-white">Cài đặt hệ thống</button>
-                <button class="el-btn-primary">Xuất báo cáo tổng hợp</button>
+                <a href="@Url.Action("Profile", "Admin")" class="el-btn-white" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Cài đặt hệ thống</a>
+                <a href="@Url.Action("Reports", "Admin")" class="el-btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Xuất báo cáo tổng hợp</a>
             </div>
         </header>
 
         <div class="stat-grid-admin">
             <div class="stat-card-admin">
                 <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Tổng người dùng</div>
-                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-users">1,248</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-users">@ViewBag.CountUsers</div>
                 <div style="font-size: 12px; color: var(--el-success); margin-top: 8px; font-weight: 600;">↑ 12.5% <span style="color: #94A3B8; font-weight: 400;">so với tháng trước</span></div>
             </div>
             <div class="stat-card-admin">
                 <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Nhà tuyển dụng</div>
-                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-hr">86</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-hr">@ViewBag.CountHr</div>
                 <div style="font-size: 12px; color: var(--el-success); margin-top: 8px; font-weight: 600;">+4 <span style="color: #94A3B8; font-weight: 400;">công ty mới tuần này</span></div>
             </div>
             <div class="stat-card-admin">
                 <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Tin tuyển dụng</div>
-                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-jobs">312</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-jobs">@ViewBag.CountJobs</div>
                 <div style="font-size: 12px; color: var(--el-warning); margin-top: 8px; font-weight: 600;">12 <span style="color: #94A3B8; font-weight: 400;">tin sắp hết hạn</span></div>
             </div>
             <div class="stat-card-admin">
                 <div class="el-text-muted" style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Lượt ứng tuyển</div>
-                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-apps">5,672</div>
+                <div style="font-size: 32px; font-weight: 800; margin-top: 8px;" id="count-apps">@ViewBag.CountApps</div>
                 <div style="font-size: 12px; color: var(--el-success); margin-top: 8px; font-weight: 600;">+85 <span style="color: #94A3B8; font-weight: 400;">hồ sơ mới hôm nay</span></div>
             </div>
         </div>
