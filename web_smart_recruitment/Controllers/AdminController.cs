@@ -348,6 +348,7 @@ namespace web_smart_recruitment.Controllers
         }
 
         public IActionResult Reports() => View();
+        
         public async Task<IActionResult> Profile()
         {
             var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -417,8 +418,113 @@ namespace web_smart_recruitment.Controllers
 
                 // Cập nhật lại Auth Cookies để đồng bộ Email mới của Admin
                 SetAuthCookies(account, "Admin", "Quản trị viên");
-
                 return Json(new { success = true, message = "Cập nhật thông tin hồ sơ thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+        
+        public async Task<IActionResult> Roles()
+        {
+            var roles = await _context.VaiTros.ToListAsync();
+            return View(roles);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddRole([FromBody] AddRoleModel model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.TenVaiTro))
+            {
+                return Json(new { success = false, message = "Tên vai trò không được trống." });
+            }
+
+            var exists = await _context.VaiTros.AnyAsync(r => r.TenVaiTro.ToLower() == model.TenVaiTro.ToLower().Trim());
+            if (exists)
+            {
+                return Json(new { success = false, message = "Tên vai trò này đã tồn tại." });
+            }
+
+            var newRole = new VaiTro
+            {
+                TenVaiTro = model.TenVaiTro.Trim(),
+                MoTa = model.MoTa?.Trim()
+            };
+
+            _context.VaiTros.Add(newRole);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Thêm vai trò mới thành công!" });
+        }
+
+        public class AddRoleModel
+        {
+            public string TenVaiTro { get; set; } = null!;
+            public string? MoTa { get; set; }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDetailModel model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.TenVaiTro))
+            {
+                return Json(new { success = false, message = "Tên vai trò không được trống." });
+            }
+
+            var role = await _context.VaiTros.FirstOrDefaultAsync(r => r.MaVaiTro == model.MaVaiTro);
+            if (role == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy vai trò cần sửa." });
+            }
+
+            var exists = await _context.VaiTros.AnyAsync(r => r.MaVaiTro != model.MaVaiTro && r.TenVaiTro.ToLower() == model.TenVaiTro.ToLower().Trim());
+            if (exists)
+            {
+                return Json(new { success = false, message = "Tên vai trò này đã tồn tại." });
+            }
+
+            role.TenVaiTro = model.TenVaiTro.Trim();
+            role.MoTa = model.MoTa?.Trim();
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Cập nhật vai trò thành công!" });
+        }
+
+        public class UpdateRoleDetailModel
+        {
+            public int MaVaiTro { get; set; }
+            public string TenVaiTro { get; set; } = null!;
+            public string? MoTa { get; set; }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteRole([FromBody] DeleteRoleModel model)
+        {
+            if (model == null)
+            {
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ." });
+            }
+
+            var role = await _context.VaiTros.FirstOrDefaultAsync(r => r.MaVaiTro == model.MaVaiTro);
+            if (role == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy vai trò cần xóa." });
+            }
+
+            // Nghiệp vụ: Chỉ được xóa khi chưa có ai có vai trò đó
+            var isAssigned = await _context.TaiKhoans.AnyAsync(t => t.MaVaiTro == model.MaVaiTro);
+            if (isAssigned)
+            {
+                return Json(new { success = false, message = "Không thể xóa vai trò này vì đang có người dùng thuộc vai trò này!" });
+            }
+
+            try
+            {
+                _context.VaiTros.Remove(role);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Xóa vai trò thành công!" });
             }
             catch (Exception ex)
             {
@@ -450,7 +556,10 @@ namespace web_smart_recruitment.Controllers
             public string? NewPassword { get; set; }
         }
 
-        public IActionResult Roles() => View();
+        public class DeleteRoleModel
+        {
+            public int MaVaiTro { get; set; }
+        }
 
         public class AddUserModel
         {
