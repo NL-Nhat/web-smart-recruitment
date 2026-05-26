@@ -69,9 +69,9 @@
             {
                 @foreach (var item in Model)
                 {
-                    <div class="el-bordered-item app-item">
+                    <div class="el-bordered-item app-item" onclick="window.location.href='/Candidate/AiCandidate?maDon=@item.MaDon'" style="cursor: pointer;" title="Xem chi tiết đánh giá AI">
                         <div>
-                            <a href="/Candidate/JobDetail?maTin=@item.MaTin" style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 4px;">@item.TieuDeCongViec</a>
+                            <a href="/Candidate/AiCandidate?maDon=@item.MaDon" style="font-weight: 600; font-size: 16px; display: block; margin-bottom: 4px; color: var(--el-black); text-decoration: none;">@item.TieuDeCongViec</a>
                             <span class="el-text-muted" style="font-size: 13px;">@item.TenCongTy</span>
                         </div>
                         <div class="el-text-warm" style="font-size: 14px;">@item.NgayNop.ToString("dd/MM/yyyy")</div>
