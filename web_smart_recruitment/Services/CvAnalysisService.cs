@@ -1,9 +1,10 @@
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using UglyToad.PdfPig;
 using web_smart_recruitment.Models;
+using web_smart_recruitment.Models.Dtos;
+using web_smart_recruitment.Enums;
 
 namespace web_smart_recruitment.Services
 {
@@ -458,8 +459,8 @@ namespace web_smart_recruitment.Services
 
             if (existing != null)
             {
-                // Cập nhật bản ghi đã có (trường hợp chạy lại)
-                existing.TrangThaiXuLy    = "HoanThanh";
+                // Cập nhật bản ghi đã có (trường hợp gọi lại sau khi thất bại)
+                existing.TrangThaiXuLy    = TrangThaiKetQuaAi.HoanThanh;
                 existing.DiemPhuHop       = (decimal?)aiResult.DiemPhuHop;
                 existing.TomTatUngVien    = aiResult.TomTatUngVien;
                 existing.KyNangPhuHopJson = kyNangPhuHopJson;
@@ -473,10 +474,10 @@ namespace web_smart_recruitment.Services
             else
             {
                 // Tạo bản ghi mới trong bảng KetQua_AI
-                var ketQua = new KetQuaAi
+                _context.KetQuaAis.Add(new KetQuaAi
                 {
                     MaDon             = maDon,
-                    TrangThaiXuLy     = "HoanThanh",
+                    TrangThaiXuLy     = TrangThaiKetQuaAi.HoanThanh,
                     DiemPhuHop        = (decimal?)aiResult.DiemPhuHop,
                     TomTatUngVien     = aiResult.TomTatUngVien,
                     KyNangPhuHopJson  = kyNangPhuHopJson,
@@ -486,16 +487,15 @@ namespace web_smart_recruitment.Services
                     DeXuat            = aiResult.DeXuat,
                     PhanHoiGocTuAi    = rawJsonFromAI, // Lưu raw JSON để debug
                     NgayPhanTich      = DateTime.Now
-                };
-                _context.KetQuaAis.Add(ketQua);
+                });
             }
 
-            // Cập nhật trạng thái đơn ứng tuyển sang "AIDaLoc"
+            // Cập nhật trạng thái đơn ứng tuyển sang AIDaLoc (AI đã lọc xong)
             var don = await _context.DonUngTuyens.FindAsync(maDon);
             if (don != null)
             {
-                don.TrangThai    = "AIDaLoc";
-                don.NgayCapNhat  = DateTime.Now;
+                don.TrangThai   = TrangThaiDon.AIDaLoc;
+                don.NgayCapNhat = DateTime.Now;
             }
 
             await _context.SaveChangesAsync();
@@ -510,17 +510,17 @@ namespace web_smart_recruitment.Services
             var existing = await _context.KetQuaAis.FirstOrDefaultAsync(k => k.MaDon == maDon);
             if (existing != null)
             {
-                existing.TrangThaiXuLy = "Loi";
-                existing.PhanHoiGocTuAi = errorMessage; // Lưu thông tin lỗi để debug
-                existing.NgayPhanTich  = DateTime.Now;
+                existing.TrangThaiXuLy  = TrangThaiKetQuaAi.Loi;
+                existing.PhanHoiGocTuAi = errorMessage; // Lưu chi tiết lỗi để debug
+                existing.NgayPhanTich   = DateTime.Now;
             }
             else
             {
                 _context.KetQuaAis.Add(new KetQuaAi
                 {
                     MaDon           = maDon,
-                    TrangThaiXuLy   = "Loi",
-                    PhanHoiGocTuAi  = errorMessage, // Lưu thông tin lỗi để debug
+                    TrangThaiXuLy   = TrangThaiKetQuaAi.Loi,
+                    PhanHoiGocTuAi  = errorMessage, // Lưu chi tiết lỗi để debug
                     NgayPhanTich    = DateTime.Now
                 });
             }
@@ -528,32 +528,5 @@ namespace web_smart_recruitment.Services
         }
     }
 
-    // =========================================================================
-    // DTO (Data Transfer Object): Cấu trúc dữ liệu AI trả về
-    // Class này dùng để ép kiểu (Deserialize) chuỗi JSON từ Gemini AI
-    // Các tên property phải khớp với tên key trong JSON AI trả về
-    // =========================================================================
-    public class AiResponseDto
-    {
-        [JsonPropertyName("DiemPhuHop")]
-        public double DiemPhuHop { get; set; }
-
-        [JsonPropertyName("TomTatUngVien")]
-        public string? TomTatUngVien { get; set; }
-
-        [JsonPropertyName("KyNangPhuHop")]
-        public List<string>? KyNangPhuHop { get; set; }
-
-        [JsonPropertyName("KyNangThieu")]
-        public List<string>? KyNangThieu { get; set; }
-
-        [JsonPropertyName("DiemManh")]
-        public string? DiemManh { get; set; }
-
-        [JsonPropertyName("DiemYeu")]
-        public string? DiemYeu { get; set; }
-
-        [JsonPropertyName("DeXuat")]
-        public string? DeXuat { get; set; }
-    }
+    // AiResponseDto đã được chuyển sang Models/Dtos/AiResponseDto.cs
 }

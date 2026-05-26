@@ -1,19 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using web_smart_recruitment.Models;
-using web_smart_recruitment.Services;
+using web_smart_recruitment.Models.Dtos;
+using web_smart_recruitment.Models.RequestModels.Candidate;
 using web_smart_recruitment.Models.ViewModels;
-using System.IO;
+using web_smart_recruitment.Services;
+using web_smart_recruitment.Enums;
 
 namespace web_smart_recruitment.Controllers
 {
+    /// <summary>
+    /// Controller cho Ứng viên:
+    /// Tìm việc, nộp đơn, xem lịch phỏng vấn, quản lý hồ sơ cá nhân và kỹ năng.
+    /// </summary>
     [Authorize(Roles = "UngVien")]
     public class CandidateController : Controller
     {
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        // Hàng đợi xử lý CV ngầm - inject từ DI Container
+        // Hàng đợi xử lý CV ngầm — inject từ DI Container (xem CvAnalysisBackgroundService)
         private readonly CvAnalysisQueue _cvQueue;
 
         public CandidateController(
@@ -21,86 +28,33 @@ namespace web_smart_recruitment.Controllers
             IWebHostEnvironment webHostEnvironment,
             CvAnalysisQueue cvQueue)
         {
-            _context = context;
+            _context            = context;
             _webHostEnvironment = webHostEnvironment;
-            _cvQueue = cvQueue;
+            _cvQueue            = cvQueue;
         }
 
-        // Chức năng nộp đơn ứng tuyển cho Ứng viên
-        [Authorize(Roles = "UngVien")]
-        [HttpPost]
-        public async Task<IActionResult> Apply(int maTin, IFormFile cvFile)
+        // =====================================================================
+        // HELPER METHODS
+        // =====================================================================
+
+        /// <summary>
+        /// Lấy ID tài khoản của ứng viên đang đăng nhập từ JWT Claims.
+        /// Trả về 0 nếu chưa đăng nhập hoặc Claims không hợp lệ.
+        /// </summary>
+        private int GetCurrentUserId()
         {
-            // 1. Kiểm tra file CV đầu vào
-            if (cvFile == null || cvFile.Length == 0)
-            {
-                return Json(new { success = false, message = "Vui lòng chọn file CV của bạn." });
-            }
-
-            // 2. Lấy ID người dùng hiện tại từ Claims
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out int userId))
-            {
-                return Json(new { success = false, message = "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại." });
-            }
-
-            try
-            {
-                // 3. Xử lý lưu file PDF vào thư mục wwwroot/uploads/cvs
-                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "cvs");
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-                // Tạo tên file duy nhất để tránh bị ghi đè
-                string uniqueFileName = $"{Guid.NewGuid()}_{cvFile.FileName}";
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await cvFile.CopyToAsync(fileStream);
-                }
-
-                // 4. Tạo đơn ứng tuyển mới và lưu thông tin CV
-                var donUngTuyen = new DonUngTuyen
-                {
-                    MaTin = maTin,
-                    MaUngVien = userId,
-                    TenFile = cvFile.FileName,
-                    DuongDanFile = "/uploads/cvs/" + uniqueFileName,
-                    DinhDang = Path.GetExtension(cvFile.FileName).ToLower(),
-                    NgayNop = DateTime.Now,
-                    TrangThai = "DaNop",
-                    NgayCapNhat = DateTime.Now
-                };
-                _context.DonUngTuyens.Add(donUngTuyen);
-                await _context.SaveChangesAsync();
-
-                // ============================================================
-                // KÍCH HOẠT PHÂN TÍCH CV NGẦM (Background Processing)
-                //
-                // Bước 6a: Tạo bản ghi KetQua_AI với trạng thái "DangXuLy"
-                // để HR có thể thấy đơn đang được AI xử lý
-                // ============================================================
-                _context.KetQuaAis.Add(new KetQuaAi
-                {
-                    MaDon         = donUngTuyen.MaDon,
-                    TrangThaiXuLy = "DangXuLy",  // Trạng thái khởi tạo
-                    NgayPhanTich  = DateTime.Now
-                });
-                await _context.SaveChangesAsync();
-
-                // Bước 6b: Đẩy MaDon vào hàng đợi để Background Service xử lý ngầm
-                // Controller trả về response ngay, người dùng không cần chờ AI phân tích
-                await _cvQueue.EnqueueAsync(donUngTuyen.MaDon);
-
-                return Json(new { success = true, message = "Nộp đơn thành công! Nhà tuyển dụng sẽ nhận được hồ sơ của bạn." });
-            }
-            catch (Exception ex)
-            {
-                // Trả về thông báo lỗi nếu có sự cố hệ thống
-                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
-            }
+            var idStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(idStr, out int id) ? id : 0;
         }
 
+        // =====================================================================
+        // TÌM VIỆC LÀM (KHÔNG YÊU CẦU ĐĂNG NHẬP)
+        // =====================================================================
+
+        /// <summary>
+        /// Trang tìm kiếm việc làm công khai.
+        /// Hỗ trợ tìm theo từ khóa (q) và địa điểm (loc).
+        /// </summary>
         [AllowAnonymous]
         public IActionResult Jobs(string q, string loc)
         {
@@ -108,22 +62,23 @@ namespace web_smart_recruitment.Controllers
                 .Include(t => t.MaNhaTuyenDungNavigation)
                 .Include(t => t.ChiTietKyNangTinTuyenDungs)
                     .ThenInclude(c => c.MaKyNangNavigation)
-                .Where(t => t.TrangThai == "DangMo" && (t.DaXoa == false || t.DaXoa == null));
+                .Where(t => t.TrangThai == TrangThaiTin.DangMo && (t.DaXoa == false || t.DaXoa == null));
 
             if (!string.IsNullOrEmpty(q))
-            {
-                query = query.Where(t => t.TieuDe.Contains(q) || t.MoTaCongViec.Contains(q) || t.MaNhaTuyenDungNavigation.TenCongTy.Contains(q));
-            }
+                query = query.Where(t => t.TieuDe.Contains(q)
+                                      || t.MoTaCongViec.Contains(q)
+                                      || t.MaNhaTuyenDungNavigation.TenCongTy.Contains(q));
 
             if (!string.IsNullOrEmpty(loc))
-            {
                 query = query.Where(t => t.DiaDiem.Contains(loc));
-            }
 
-            var jobs = query.OrderByDescending(t => t.NgayTao).ToList();
-            return View(jobs);
+            return View(query.OrderByDescending(t => t.NgayTao).ToList());
         }
 
+        /// <summary>
+        /// Chi tiết tin tuyển dụng — hiển thị công khai.
+        /// Kiểm tra xem ứng viên đang đăng nhập đã ứng tuyển tin này chưa.
+        /// </summary>
         [AllowAnonymous]
         public IActionResult JobDetail(int maTin)
         {
@@ -135,196 +90,282 @@ namespace web_smart_recruitment.Controllers
 
             if (job == null) return NotFound();
 
-            // Kiểm tra xem ứng viên hiện tại đã nộp đơn cho tin này chưa
+            // Kiểm tra xem ứng viên đã nộp đơn cho tin này chưa
             bool hasApplied = false;
-            if (User.Identity.IsAuthenticated && User.IsInRole("UngVien"))
+            if (User.Identity?.IsAuthenticated == true && User.IsInRole("UngVien"))
             {
-                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (int.TryParse(userIdStr, out int userId))
-                {
-                    hasApplied = _context.DonUngTuyens.Any(d => d.MaTin == maTin && d.MaUngVien == userId);
-                }
+                int userId = GetCurrentUserId();
+                hasApplied = userId > 0 && _context.DonUngTuyens.Any(d => d.MaTin == maTin && d.MaUngVien == userId);
             }
             ViewBag.HasApplied = hasApplied;
 
             return View(job);
         }
 
-        [Authorize(Roles = "UngVien")]
+        /// <summary>
+        /// Trang thông tin chi tiết của nhà tuyển dụng và các tin đang tuyển của họ.
+        /// </summary>
+        [AllowAnonymous]
+        public IActionResult CompanyDetail(int maNhaTuyenDung)
+        {
+            var company = _context.NhaTuyenDungs.FirstOrDefault(n => n.MaNhaTuyenDung == maNhaTuyenDung);
+            if (company == null) return NotFound();
+
+            ViewBag.ActiveJobs = _context.TinTuyenDungs
+                .Where(t => t.MaNhaTuyenDung == maNhaTuyenDung
+                         && t.TrangThai == TrangThaiTin.DangMo
+                         && (t.DaXoa == false || t.DaXoa == null))
+                .OrderByDescending(t => t.NgayTao)
+                .ToList();
+
+            return View(company);
+        }
+
+        // =====================================================================
+        // NỘP ĐƠN ỨNG TUYỂN
+        // =====================================================================
+
+        /// <summary>
+        /// Nộp đơn ứng tuyển kèm file CV (PDF).
+        ///
+        /// Quy trình:
+        /// 1. Lưu file CV lên server
+        /// 2. Tạo đơn ứng tuyển (DonUngTuyen) với trạng thái DaNop
+        /// 3. Tạo bản ghi KetQua_AI với trạng thái DangXuLy (placeholder cho AI)
+        /// 4. Đẩy maDon vào hàng đợi — Background Service sẽ tự động phân tích
+        ///
+        /// Controller trả về ngay lập tức, ứng viên không cần chờ AI xong.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> Apply(int maTin, IFormFile cvFile)
+        {
+            if (cvFile == null || cvFile.Length == 0)
+                return Json(new { success = false, message = "Vui lòng chọn file CV của bạn." });
+
+            int userId = GetCurrentUserId();
+            if (userId == 0)
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại." });
+
+            try
+            {
+                // Lưu file CV vào thư mục wwwroot/uploads/cvs
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "cvs");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                // Tên file duy nhất (GUID) để tránh bị ghi đè khi trùng tên
+                string uniqueFileName = $"{Guid.NewGuid()}_{cvFile.FileName}";
+                string filePath       = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    await cvFile.CopyToAsync(fileStream);
+
+                // Tạo đơn ứng tuyển với trạng thái ban đầu là DaNop
+                var donUngTuyen = new DonUngTuyen
+                {
+                    MaTin         = maTin,
+                    MaUngVien     = userId,
+                    TenFile       = cvFile.FileName,
+                    DuongDanFile  = "/uploads/cvs/" + uniqueFileName,
+                    DinhDang      = Path.GetExtension(cvFile.FileName).ToLower(),
+                    NgayNop       = DateTime.Now,
+                    TrangThai     = TrangThaiDon.DaNop,
+                    NgayCapNhat   = DateTime.Now
+                };
+                _context.DonUngTuyens.Add(donUngTuyen);
+                await _context.SaveChangesAsync();
+
+                // ============================================================
+                // KÍCH HOẠT PHÂN TÍCH CV NGẦM (Background Processing)
+                //
+                // Tạo bản ghi KetQua_AI với trạng thái DangXuLy để HR biết
+                // đơn đang được AI xử lý. Background Service sẽ cập nhật
+                // trạng thái thành HoanThanh hoặc Loi sau khi xong.
+                // ============================================================
+                _context.KetQuaAis.Add(new KetQuaAi
+                {
+                    MaDon         = donUngTuyen.MaDon,
+                    TrangThaiXuLy = TrangThaiKetQuaAi.DangXuLy,
+                    NgayPhanTich  = DateTime.Now
+                });
+                await _context.SaveChangesAsync();
+
+                // Đẩy MaDon vào hàng đợi để Background Service xử lý ngầm
+                // (không block luồng hiện tại)
+                await _cvQueue.EnqueueAsync(donUngTuyen.MaDon);
+
+                return Json(new { success = true, message = "Nộp đơn thành công! Nhà tuyển dụng sẽ nhận được hồ sơ của bạn." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        // =====================================================================
+        // THEO DÕI ĐƠN ỨNG TUYỂN
+        // =====================================================================
+
+        /// <summary>
+        /// Danh sách tất cả đơn ứng tuyển của ứng viên, kèm điểm AI.
+        /// </summary>
         public async Task<IActionResult> Applications()
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out int userId))
-            {
-                return RedirectToAction("Login", "Auth");
-            }
+            int userId = GetCurrentUserId();
+            if (userId == 0) return RedirectToAction("Login", "Auth");
 
-            var query = _context.DonUngTuyens
-                .Include(d => d.MaTinNavigation)
-                    .ThenInclude(t => t.MaNhaTuyenDungNavigation)
+            var applications = await _context.DonUngTuyens
+                .Include(d => d.MaTinNavigation).ThenInclude(t => t.MaNhaTuyenDungNavigation)
                 .Include(d => d.KetQuaAis)
-                .Where(d => d.MaUngVien == userId);
-
-            var applications = await query
+                .Where(d => d.MaUngVien == userId)
                 .OrderByDescending(d => d.NgayNop)
                 .Select(d => new ApplicationsViewModel
                 {
-                    MaDon = d.MaDon,
-                    MaTin = d.MaTin ?? 0,
-                    TieuDeCongViec = d.MaTinNavigation != null ? d.MaTinNavigation.TieuDe : "Cong viec da bi xoa",
-                    TenCongTy = d.MaTinNavigation != null && d.MaTinNavigation.MaNhaTuyenDungNavigation != null 
-                        ? d.MaTinNavigation.MaNhaTuyenDungNavigation.TenCongTy ?? "Nha tuyen dung" 
-                        : "Cong ty an danh",
-                    LogoCongTy = d.MaTinNavigation != null && d.MaTinNavigation.MaNhaTuyenDungNavigation != null 
-                        ? d.MaTinNavigation.MaNhaTuyenDungNavigation.Logo 
-                        : null,
-                    NgayNop = d.NgayNop ?? DateTime.Now,
-                    TrangThai = d.TrangThai ?? "DaNop",
-                    DiemPhuHop = d.KetQuaAis.FirstOrDefault() != null ? d.KetQuaAis.FirstOrDefault().DiemPhuHop : null,
-                    TrangThaiAI = d.KetQuaAis.FirstOrDefault() != null ? d.KetQuaAis.FirstOrDefault().TrangThaiXuLy : null
+                    MaDon            = d.MaDon,
+                    MaTin            = d.MaTin ?? 0,
+                    TieuDeCongViec   = d.MaTinNavigation != null ? d.MaTinNavigation.TieuDe : "Công việc đã bị xóa",
+                    TenCongTy        = d.MaTinNavigation != null && d.MaTinNavigation.MaNhaTuyenDungNavigation != null
+                                        ? d.MaTinNavigation.MaNhaTuyenDungNavigation.TenCongTy ?? "Nhà tuyển dụng"
+                                        : "Công ty ẩn danh",
+                    LogoCongTy       = d.MaTinNavigation != null && d.MaTinNavigation.MaNhaTuyenDungNavigation != null
+                                        ? d.MaTinNavigation.MaNhaTuyenDungNavigation.Logo
+                                        : null,
+                    NgayNop          = d.NgayNop ?? DateTime.Now,
+                    TrangThai        = d.TrangThai ?? TrangThaiDon.DaNop,
+                    DiemPhuHop       = d.KetQuaAis.FirstOrDefault() != null ? d.KetQuaAis.FirstOrDefault()!.DiemPhuHop : null,
+                    TrangThaiAI      = d.KetQuaAis.FirstOrDefault() != null ? d.KetQuaAis.FirstOrDefault()!.TrangThaiXuLy : null
                 })
                 .ToListAsync();
 
             return View(applications);
         }
-        
-        [Authorize(Roles = "UngVien")]
+
+        // =====================================================================
+        // LỊCH HẸN PHỎNG VẤN
+        // =====================================================================
+
+        /// <summary>
+        /// Danh sách lịch hẹn phỏng vấn của ứng viên, sắp xếp theo ngày gần nhất.
+        /// Tính thêm số buổi phỏng vấn trong tuần này để hiển thị thống kê.
+        /// </summary>
         public IActionResult Interviews()
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out int userId))
-            {
-                return RedirectToAction("Login", "Auth");
-            }
+            int userId = GetCurrentUserId();
+            if (userId == 0) return RedirectToAction("Login", "Auth");
 
-            var query = _context.LichHenPhongVans
-                .Include(l => l.MaDonNavigation)
-                    .ThenInclude(d => d.MaTinNavigation)
-                        .ThenInclude(t => t.MaNhaTuyenDungNavigation)
-                .Where(l => l.MaDonNavigation.MaUngVien == userId);
-
-            var interviews = query
+            var interviews = _context.LichHenPhongVans
+                .Include(l => l.MaDonNavigation).ThenInclude(d => d.MaTinNavigation)
+                    .ThenInclude(t => t!.MaNhaTuyenDungNavigation)
+                .Where(l => l.MaDonNavigation.MaUngVien == userId)
                 .OrderBy(l => l.NgayPhuongVan)
                 .ThenBy(l => l.GioPhuongVan)
                 .ToList();
 
-            // Tinh so buoi phong van trong tuan nay
-            var today = DateOnly.FromDateTime(DateTime.Today);
-            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
-            var startOfWeek = today.AddDays(-1 * diff);
-            var endOfWeek = startOfWeek.AddDays(7);
+            // Tính phạm vi tuần hiện tại (Thứ Hai đến Chủ Nhật)
+            var today        = DateOnly.FromDateTime(DateTime.Today);
+            int daysSinceMonday = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var startOfWeek  = today.AddDays(-daysSinceMonday);
+            var endOfWeek    = startOfWeek.AddDays(7);
 
-            ViewBag.InterviewsThisWeek = interviews.Count(l => l.NgayPhuongVan >= startOfWeek && l.NgayPhuongVan < endOfWeek && l.TrangThai != "DaHuy");
+            ViewBag.InterviewsThisWeek = interviews.Count(l =>
+                l.NgayPhuongVan >= startOfWeek
+             && l.NgayPhuongVan < endOfWeek
+             && l.TrangThai != TrangThaiLichHen.DaHuy);
 
             return View(interviews);
         }
 
-        [Authorize(Roles = "UngVien")]
+        /// <summary>
+        /// Ứng viên xác nhận tham gia lịch hẹn phỏng vấn.
+        /// Chỉ cho phép xác nhận khi lịch đang ở trạng thái ChoXacNhan.
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> AcceptInterview(int maLichHen)
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out int userId))
-            {
+            int userId = GetCurrentUserId();
+            if (userId == 0)
                 return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
-            }
 
             var interview = await _context.LichHenPhongVans
                 .Include(l => l.MaDonNavigation)
                 .FirstOrDefaultAsync(l => l.MaLichHen == maLichHen && l.MaDonNavigation.MaUngVien == userId);
 
             if (interview == null)
-            {
                 return Json(new { success = false, message = "Không tìm thấy lịch phỏng vấn này." });
-            }
 
-            if (interview.TrangThai != "ChoXacNhan")
-            {
+            if (interview.TrangThai != TrangThaiLichHen.ChoXacNhan)
                 return Json(new { success = false, message = "Lịch phỏng vấn này không thể xác nhận ở trạng thái hiện tại." });
-            }
 
-            interview.TrangThai = "DaXacNhan";
+            interview.TrangThai = TrangThaiLichHen.DaXacNhan;
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Đã xác nhận chấp nhận lịch hẹn phỏng vấn!" });
         }
 
-        [Authorize(Roles = "UngVien")]
+        /// <summary>
+        /// Ứng viên từ chối lịch hẹn phỏng vấn.
+        /// Chỉ cho phép từ chối khi lịch đang ở trạng thái ChoXacNhan.
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> DeclineInterview(int maLichHen)
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out int userId))
-            {
+            int userId = GetCurrentUserId();
+            if (userId == 0)
                 return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
-            }
 
             var interview = await _context.LichHenPhongVans
                 .Include(l => l.MaDonNavigation)
                 .FirstOrDefaultAsync(l => l.MaLichHen == maLichHen && l.MaDonNavigation.MaUngVien == userId);
 
             if (interview == null)
-            {
                 return Json(new { success = false, message = "Không tìm thấy lịch phỏng vấn này." });
-            }
 
-            if (interview.TrangThai != "ChoXacNhan")
-            {
+            if (interview.TrangThai != TrangThaiLichHen.ChoXacNhan)
                 return Json(new { success = false, message = "Lịch phỏng vấn này không thể từ chối ở trạng thái hiện tại." });
-            }
 
-            interview.TrangThai = "DaHuy";
+            interview.TrangThai = TrangThaiLichHen.DaHuy;
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Đã xác nhận từ chối lịch hẹn phỏng vấn!" });
         }
-        
-        [Authorize(Roles = "UngVien")]
+
+        // =====================================================================
+        // HỒ SƠ CÁ NHÂN
+        // =====================================================================
+
         public async Task<IActionResult> Profile()
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (int.TryParse(userIdStr, out int userId))
-            {
-                var candidate = await _context.UngViens
-                    .Include(u => u.ChiTietKyNangUngViens)
-                        .ThenInclude(ck => ck.MaKyNangNavigation)
-                    .FirstOrDefaultAsync(u => u.MaUngVien == userId);
-                
-                if (candidate != null)
-                {
-                    return View(candidate);
-                }
-            }
-            return RedirectToAction("Login", "Auth");
+            int userId = GetCurrentUserId();
+            if (userId == 0) return RedirectToAction("Login", "Auth");
+
+            var candidate = await _context.UngViens
+                .Include(u => u.ChiTietKyNangUngViens).ThenInclude(ck => ck.MaKyNangNavigation)
+                .FirstOrDefaultAsync(u => u.MaUngVien == userId);
+
+            if (candidate == null) return RedirectToAction("Login", "Auth");
+
+            return View(candidate);
         }
 
-        [Authorize(Roles = "UngVien")]
         [HttpPost]
-        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileModel model)
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest model)
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out int userId))
-            {
+            int userId = GetCurrentUserId();
+            if (userId == 0)
                 return Json(new { success = false, message = "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại." });
-            }
 
             if (model == null || string.IsNullOrWhiteSpace(model.HoTen))
-            {
                 return Json(new { success = false, message = "Họ tên không được để trống." });
-            }
 
             try
             {
                 var candidate = await _context.UngViens.FirstOrDefaultAsync(u => u.MaUngVien == userId);
                 if (candidate == null)
-                {
                     return Json(new { success = false, message = "Không tìm thấy thông tin ứng viên." });
-                }
 
-                candidate.HoTen = model.HoTen;
-                candidate.SoDienThoai = model.SoDienThoai;
+                candidate.HoTen           = model.HoTen;
+                candidate.SoDienThoai     = model.SoDienThoai;
                 candidate.SoNamKinhNghiem = model.SoNamKinhNghiem ?? 0;
-                candidate.LinkLinkedIn = model.LinkLinkedIn;
+                candidate.LinkLinkedIn    = model.LinkLinkedIn;
                 candidate.ChucDanhHienTai = model.ChucDanhHienTai;
 
                 await _context.SaveChangesAsync();
@@ -336,23 +377,29 @@ namespace web_smart_recruitment.Controllers
             }
         }
 
-        [Authorize(Roles = "UngVien")]
+        // =====================================================================
+        // QUẢN LÝ KỸ NĂNG
+        // =====================================================================
+
+        /// <summary>
+        /// Lấy danh sách kỹ năng chưa có trong hồ sơ của ứng viên để hiển thị lên dropdown thêm kỹ năng.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAvailableSkills()
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out int userId))
-            {
+            int userId = GetCurrentUserId();
+            if (userId == 0)
                 return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
-            }
 
             try
             {
+                // Lấy danh sách MaKyNang ứng viên đã có
                 var existingSkillIds = await _context.ChiTietKyNangUngViens
                     .Where(c => c.MaUngVien == userId)
                     .Select(c => c.MaKyNang)
                     .ToListAsync();
 
+                // Lọc ra những kỹ năng chưa có trong hồ sơ
                 var availableSkills = await _context.DanhMucKyNangs
                     .Where(s => !existingSkillIds.Contains(s.MaKyNang))
                     .Select(s => new { s.MaKyNang, s.TenKyNang })
@@ -366,34 +413,24 @@ namespace web_smart_recruitment.Controllers
             }
         }
 
-        [Authorize(Roles = "UngVien")]
         [HttpPost]
-        public async Task<IActionResult> AddSkill([FromBody] AddSkillModel model)
+        public async Task<IActionResult> AddSkill([FromBody] AddSkillRequest model)
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out int userId))
-            {
+            int userId = GetCurrentUserId();
+            if (userId == 0)
                 return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
-            }
 
             try
             {
-                var exists = await _context.ChiTietKyNangUngViens
-                    .AnyAsync(c => c.MaUngVien == userId && c.MaKyNang == model.MaKyNang);
-
-                if (exists)
-                {
+                if (await _context.ChiTietKyNangUngViens.AnyAsync(c => c.MaUngVien == userId && c.MaKyNang == model.MaKyNang))
                     return Json(new { success = false, message = "Kỹ năng này đã tồn tại trong hồ sơ của bạn." });
-                }
 
-                var skillDetail = new ChiTietKyNangUngVien
+                _context.ChiTietKyNangUngViens.Add(new ChiTietKyNangUngVien
                 {
-                    MaUngVien = userId,
-                    MaKyNang = model.MaKyNang,
+                    MaUngVien       = userId,
+                    MaKyNang        = model.MaKyNang,
                     SoNamKinhNghiem = 0
-                };
-
-                _context.ChiTietKyNangUngViens.Add(skillDetail);
+                });
                 await _context.SaveChangesAsync();
 
                 var skillName = await _context.DanhMucKyNangs
@@ -401,7 +438,7 @@ namespace web_smart_recruitment.Controllers
                     .Select(s => s.TenKyNang)
                     .FirstOrDefaultAsync();
 
-                return Json(new { success = true, message = "Thêm kỹ năng thành công!", skillId = model.MaKyNang, skillName = skillName });
+                return Json(new { success = true, message = "Thêm kỹ năng thành công!", skillId = model.MaKyNang, skillName });
             }
             catch (Exception ex)
             {
@@ -409,15 +446,12 @@ namespace web_smart_recruitment.Controllers
             }
         }
 
-        [Authorize(Roles = "UngVien")]
         [HttpPost]
-        public async Task<IActionResult> DeleteSkill([FromBody] DeleteSkillModel model)
+        public async Task<IActionResult> DeleteSkill([FromBody] DeleteSkillRequest model)
         {
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(userIdStr, out int userId))
-            {
+            int userId = GetCurrentUserId();
+            if (userId == 0)
                 return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
-            }
 
             try
             {
@@ -425,9 +459,7 @@ namespace web_smart_recruitment.Controllers
                     .FirstOrDefaultAsync(c => c.MaUngVien == userId && c.MaKyNang == model.MaKyNang);
 
                 if (skillDetail == null)
-                {
                     return Json(new { success = false, message = "Không tìm thấy kỹ năng này." });
-                }
 
                 _context.ChiTietKyNangUngViens.Remove(skillDetail);
                 await _context.SaveChangesAsync();
@@ -438,46 +470,6 @@ namespace web_smart_recruitment.Controllers
             {
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
-        }
-
-        public class UpdateProfileModel
-        {
-            public string HoTen { get; set; } = null!;
-            public string? SoDienThoai { get; set; }
-            public int? SoNamKinhNghiem { get; set; }
-            public string? LinkLinkedIn { get; set; }
-            public string? ChucDanhHienTai { get; set; }
-        }
-
-        public class AddSkillModel
-        {
-            public int MaKyNang { get; set; }
-        }
-
-        public class DeleteSkillModel
-        {
-            public int MaKyNang { get; set; }
-        }
-        
-        [AllowAnonymous]
-        public IActionResult CompanyDetail(int maNhaTuyenDung)
-        {
-            var company = _context.NhaTuyenDungs
-                .FirstOrDefault(n => n.MaNhaTuyenDung == maNhaTuyenDung);
-
-            if (company == null)
-            {
-                return NotFound();
-            }
-
-            var activeJobs = _context.TinTuyenDungs
-                .Where(t => t.MaNhaTuyenDung == maNhaTuyenDung && t.TrangThai == "DangMo" && (t.DaXoa == false || t.DaXoa == null))
-                .OrderByDescending(t => t.NgayTao)
-                .ToList();
-
-            ViewBag.ActiveJobs = activeJobs;
-
-            return View(company);
         }
     }
 }

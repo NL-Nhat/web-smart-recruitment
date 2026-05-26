@@ -288,12 +288,12 @@ INSERT INTO ChiTietKyNang_UngVien (MaUngVien, MaKyNang, SoNamKinhNghiem) VALUES
 -- ---------------------------------------------------------
 SET IDENTITY_INSERT TinTuyenDung ON;
 INSERT INTO TinTuyenDung (MaTin, MaNhaTuyenDung, TieuDe, PhongBan, DiaDiem, HinhThucLamViec, MucLuongToiThieu, MucLuongToiDa, MoTaCongViec, YeuCauCongViec, QuyenLoi, TrangThai, HanNopCV, DaXoa, NgayTao, NgayCapNhat) VALUES 
-(1, 3, N'Senior .NET Developer', 'FSU1', N'Hà Nội', 'FullTime', 30000000, 50000000, N'Phát triển core banking...', N'Ít nhất 4 năm C#, ASP.NET Core', N'Lương tháng 13, BHYT', 'DangMo', '2024-12-31', 0, '2024-04-01 08:00', '2024-04-01 08:00'),
-(2, 4, N'Frontend ReactJS (Middle)', 'ZaloPay', N'TP.HCM', 'FullTime', 20000000, 35000000, N'Làm UI/UX cho ví điện tử...', N'Tối thiểu 2 năm ReactJS, Redux, TS', N'Ăn trưa miễn phí', 'DangMo', '2024-11-30', 0, '2024-04-05 09:00', '2024-04-05 09:00'),
-(3, 5, N'Java Backend Engineer', 'Viettel Digital', N'Hà Nội', 'FullTime', 25000000, 45000000, N'Xây dựng hệ thống High availability', N'Có kinh nghiệm Spring Boot, Microservices', N'Thưởng dự án', 'DangMo', '2024-10-15', 0, '2024-04-10 10:00', '2024-04-10 10:00'),
-(4, 6, N'AI / Machine Learning Engineer', 'Data Team', N'TP.HCM', 'FullTime', 40000000, 70000000, N'Xây dựng model recommend...', N'Thành thạo Python, Tensorflow/PyTorch', N'Cấp Macbook Pro', 'DangMo', '2024-12-01', 0, '2024-04-15 11:00', '2024-04-15 11:00'),
-(5, 3, N'Fresher .NET', 'FSU2', N'Đà Nẵng', 'Intern', 5000000, 10000000, N'Đào tạo từ đầu', N'Biết cơ bản C#', N'Được mentor kèm cặp', 'DaDong', '2024-03-30', 0, '2024-02-01 08:00', '2024-03-30 23:59'),
-(6, 4, N'Remote DevOps Engineer', 'Cloud Team', N'Toàn quốc', 'Online', 35000000, 55000000, N'Quản lý hệ thống AWS', N'Cứng Docker, K8s, AWS', N'Làm việc tại nhà', 'DaDong', '2024-12-31', 1, '2024-04-20 08:00', '2024-04-22 09:00');
+(1, 3, N'Senior .NET Developer', 'FSU1', N'Hà Nội', 'FullTime', 30000000, 50000000, N'Phát triển core banking...', N'Ít nhất 4 năm C#, ASP.NET Core', N'Lương tháng 13, BHYT', 'DangMo', '2026-12-31', 0, '2024-04-01 08:00', '2026-04-01 08:00'),
+(2, 4, N'Frontend ReactJS (Middle)', 'ZaloPay', N'TP.HCM', 'FullTime', 20000000, 35000000, N'Làm UI/UX cho ví điện tử...', N'Tối thiểu 2 năm ReactJS, Redux, TS', N'Ăn trưa miễn phí', 'DangMo', '2026-11-30', 0, '2026-04-05 09:00', '2026-04-05 09:00'),
+(3, 5, N'Java Backend Engineer', 'Viettel Digital', N'Hà Nội', 'FullTime', 25000000, 45000000, N'Xây dựng hệ thống High availability', N'Có kinh nghiệm Spring Boot, Microservices', N'Thưởng dự án', 'DangMo', '2026-10-15', 0, '2026-04-10 10:00', '2024-04-10 10:00'),
+(4, 6, N'AI / Machine Learning Engineer', 'Data Team', N'TP.HCM', 'FullTime', 40000000, 70000000, N'Xây dựng model recommend...', N'Thành thạo Python, Tensorflow/PyTorch', N'Cấp Macbook Pro', 'DangMo', '2026-06-01', 0, '2026-04-15 11:00', '2026-04-15 11:00'),
+(5, 3, N'Fresher .NET', 'FSU2', N'Đà Nẵng', 'Intern', 5000000, 10000000, N'Đào tạo từ đầu', N'Biết cơ bản C#', N'Được mentor kèm cặp', 'DaDong', '2026-03-30', 0, '2026-02-01 08:00', '2026-03-30 23:59'),
+(6, 4, N'Remote DevOps Engineer', 'Cloud Team', N'Toàn quốc', 'Online', 35000000, 55000000, N'Quản lý hệ thống AWS', N'Cứng Docker, K8s, AWS', N'Làm việc tại nhà', 'DaDong', '2026-12-31', 1, '2026-04-20 08:00', '2026-04-22 09:00');
 SET IDENTITY_INSERT TinTuyenDung OFF;
 
 -- ---------------------------------------------------------
@@ -494,16 +494,16 @@ INSERT INTO ChiTietKyNang_UngVien (MaUngVien, MaKyNang, SoNamKinhNghiem) VALUES
 -- ---------------------------------------------------------
 SET IDENTITY_INSERT TinTuyenDung ON;
 INSERT INTO TinTuyenDung (MaTin, MaNhaTuyenDung, TieuDe, PhongBan, DiaDiem, HinhThucLamViec, MucLuongToiThieu, MucLuongToiDa, MoTaCongViec, YeuCauCongViec, QuyenLoi, TrangThai, HanNopCV) VALUES 
-(7, 15, N'Senior Golang Developer', 'Backend', N'TP.HCM', 'FullTime', 40000000, 60000000, N'Xây dựng core system e-commerce', N'3+ năm Golang, Microservices, Redis', N'Thưởng cổ phiếu', 'DangMo', '2024-12-31'),
+(7, 15, N'Senior Golang Developer', 'Backend', N'TP.HCM', 'FullTime', 40000000, 60000000, N'Xây dựng core system e-commerce', N'3+ năm Golang, Microservices, Redis', N'Thưởng cổ phiếu', 'DangMo', '2026-12-31'),
 (8, 16, N'PHP/Laravel Dev', 'Product', N'Hà Nội', 'FullTime', 15000000, 25000000, N'Bảo trì hệ thống ERP nội bộ', N'2 năm PHP Laravel, MySQL', N'BHXH full lương', 'DangMo', '2024-10-30'),
-(9, 17, N'Mobile Dev (Flutter)', 'Mobile App', N'Hà Nội', 'FullTime', 20000000, 35000000, N'Làm app ví điện tử', N'Thành thạo Flutter, biết Native là lợi thế', N'Môi trường trẻ trung', 'DangMo', '2024-11-15'),
-(10, 18, N'QA Automation Engineer', 'Testing', N'Đà Nẵng', 'FullTime', 18000000, 28000000, N'Viết script auto test cho Web & App', N'Selenium, Appium, Java/Python', N'Làm việc với khách Âu', 'DangMo', '2024-12-01'),
-(11, 19, N'Senior Business Analyst', 'Consulting', N'TP.HCM', 'FullTime', 30000000, 45000000, N'Lấy yêu cầu khách hàng, vẽ flow', N'Kinh nghiệm BA 4 năm+, UML, SQL', N'Cơ hội Onsite', 'DangMo', '2024-11-20'),
+(9, 17, N'Mobile Dev (Flutter)', 'Mobile App', N'Hà Nội', 'FullTime', 20000000, 35000000, N'Làm app ví điện tử', N'Thành thạo Flutter, biết Native là lợi thế', N'Môi trường trẻ trung', 'DangMo', '2026-11-15'),
+(10, 18, N'QA Automation Engineer', 'Testing', N'Đà Nẵng', 'FullTime', 18000000, 28000000, N'Viết script auto test cho Web & App', N'Selenium, Appium, Java/Python', N'Làm việc với khách Âu', 'DangMo', '2026-12-01'),
+(11, 19, N'Senior Business Analyst', 'Consulting', N'TP.HCM', 'FullTime', 30000000, 45000000, N'Lấy yêu cầu khách hàng, vẽ flow', N'Kinh nghiệm BA 4 năm+, UML, SQL', N'Cơ hội Onsite', 'DangMo', '2026-11-20'),
 (12, 20, N'Data Engineer', 'Data Lab', N'Hà Nội', 'FullTime', 35000000, 55000000, N'Xây dựng Data Warehouse', N'Python, Postgres, AWS/GCP', N'Chế độ chuyên gia', 'DangMo', '2024-12-31'),
-(13, 15, N'UI/UX Designer', 'Design Team', N'TP.HCM', 'FullTime', 15000000, 25000000, N'Thiết kế giao diện App, Web', N'Thành thạo Figma, tư duy UX tốt', N'Cấp Mac Studio', 'DangMo', '2024-10-10'),
-(14, 16, N'VueJS Frontend Dev', 'Storefront', N'Toàn quốc', 'Online', 18000000, 30000000, N'Phát triển trang bán hàng', N'Kinh nghiệm VueJS 2 năm+', N'Remote linh hoạt', 'DangMo', '2024-11-11'),
-(15, 17, N'iOS Developer (Fresher)', 'Mobile App', N'Hà Nội', 'Intern', 5000000, 8000000, N'Học việc iOS', N'Nắm vững Swift cơ bản', N'Trợ cấp thực tập', 'DaDong', '2024-05-30'),
-(16, 18, N'System Administrator', 'IT Helpdesk', N'TP.HCM', 'FullTime', 20000000, 30000000, N'Quản trị server, mạng nội bộ', N'Linux, Windows Server, Network', N'Bảo hiểm PVI', 'DaDong', '2024-06-01');
+(13, 15, N'UI/UX Designer', 'Design Team', N'TP.HCM', 'FullTime', 15000000, 25000000, N'Thiết kế giao diện App, Web', N'Thành thạo Figma, tư duy UX tốt', N'Cấp Mac Studio', 'DangMo', '2026-10-10'),
+(14, 16, N'VueJS Frontend Dev', 'Storefront', N'Toàn quốc', 'Online', 18000000, 30000000, N'Phát triển trang bán hàng', N'Kinh nghiệm VueJS 2 năm+', N'Remote linh hoạt', 'DangMo', '2026-11-11'),
+(15, 17, N'iOS Developer (Fresher)', 'Mobile App', N'Hà Nội', 'Intern', 5000000, 8000000, N'Học việc iOS', N'Nắm vững Swift cơ bản', N'Trợ cấp thực tập', 'DaDong', '2026-05-30'),
+(16, 18, N'System Administrator', 'IT Helpdesk', N'TP.HCM', 'FullTime', 20000000, 30000000, N'Quản trị server, mạng nội bộ', N'Linux, Windows Server, Network', N'Bảo hiểm PVI', 'DaDong', '2026-06-01');
 SET IDENTITY_INSERT TinTuyenDung OFF;
 
 -- ---------------------------------------------------------
