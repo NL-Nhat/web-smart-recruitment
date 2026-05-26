@@ -274,6 +274,30 @@ namespace web_smart_recruitment.Controllers
             return View(interviews);
         }
 
+        // =====================================================================
+        // XEM CHI TIẾT ĐÁNH GIÁ AI
+        // =====================================================================
+
+        /// <summary>
+        /// Xem chi tiết kết quả phân tích AI cho đơn ứng tuyển của chính ứng viên.
+        /// </summary>
+        public async Task<IActionResult> AiCandidate(int maDon)
+        {
+            int userId = GetCurrentUserId();
+            if (userId == 0) return RedirectToAction("Login", "Auth");
+
+            var application = await _context.DonUngTuyens
+                .Include(d => d.MaUngVienNavigation)
+                .Include(d => d.MaTinNavigation)
+                .Include(d => d.KetQuaAis)
+                .Include(d => d.LichHenPhongVans)
+                .FirstOrDefaultAsync(d => d.MaDon == maDon && d.MaUngVien == userId);
+
+            if (application == null) return NotFound();
+
+            return View(application);
+        }
+
         /// <summary>
         /// Ứng viên xác nhận tham gia lịch hẹn phỏng vấn.
         /// Chỉ cho phép xác nhận khi lịch đang ở trạng thái ChoXacNhan.
